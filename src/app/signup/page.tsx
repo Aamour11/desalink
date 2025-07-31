@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   Card,
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogoIcon } from "@/components/icons";
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-md">
@@ -27,13 +28,23 @@ export default function LoginPage() {
         </Link>
         <Card className="shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="font-headline text-2xl">Selamat Datang Kembali</CardTitle>
+            <CardTitle className="font-headline text-2xl">Buat Akun Admin</CardTitle>
             <CardDescription>
-              Masuk untuk melanjutkan ke dasbor Anda.
+              Isi formulir untuk mendaftar sebagai Admin Desa.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action="/dashboard" className="space-y-6">
+               <div className="space-y-2">
+                <Label htmlFor="name">Nama Lengkap</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  required
+                  className="bg-background"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -49,15 +60,15 @@ export default function LoginPage() {
                 <Input id="password" type="password" required  className="bg-background"/>
               </div>
               <Button type="submit" className="w-full !mt-8" size="lg">
-                Login
+                Daftar
               </Button>
             </form>
           </CardContent>
         </Card>
          <p className="text-center text-sm text-muted-foreground mt-6">
-          Belum punya akun admin?{' '}
-          <Link href="/signup" className="font-semibold text-primary hover:underline">
-            Buat Akun
+          Sudah punya akun?{' '}
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Login di sini
           </Link>
         </p>
       </div>
