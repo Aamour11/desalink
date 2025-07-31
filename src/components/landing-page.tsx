@@ -136,7 +136,7 @@ export function LandingPage() {
               className="relative rounded-xl shadow-2xl shadow-primary/10 border"
             >
               <Image
-                src="https://placehold.co/1200x675/png"
+                src="https://placehold.co/1200x675/eaf8f9/48bfe3.png"
                 alt="Dashboard Preview"
                 width={1200}
                 height={675}
