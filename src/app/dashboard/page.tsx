@@ -3,7 +3,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { Store, Users, FileText, CheckCircle } from "lucide-react";
 import { UmkmPerTypeChart } from "@/components/dashboard/umkm-per-type-chart";
 import { UmkmPerRtRwChart } from "@/components/dashboard/umkm-per-rtrw-chart";
-import { AISummary } from "@/components/dashboard/ai-summary";
+// import { AISummary } from "@/components/dashboard/ai-summary";
 
 export default function DashboardPage() {
   const totalUmkm = mockUmkm.length;
@@ -66,11 +66,11 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      <AISummary 
+      {/* <AISummary 
         totalUmkm={totalUmkm}
         umkmPerRtRw={umkmPerRtRw}
         umkmPerType={umkmPerType}
-      />
+      /> */}
 
     </div>
   );
