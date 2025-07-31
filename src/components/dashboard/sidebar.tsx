@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -64,12 +65,12 @@ export function DashboardSidebar() {
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
-                asChild
                 isActive={pathname.startsWith(item.href) && (item.href === '/dashboard' ? pathname === item.href : true) }
                 icon={<item.icon />}
                 tooltip={{ children: item.label, side: "right" }}
+                onClick={() => router.push(item.href)}
               >
-                <Link href={item.href}>{item.label}</Link>
+                {item.label}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
