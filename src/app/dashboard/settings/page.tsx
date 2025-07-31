@@ -9,14 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { mockUsers } from "@/lib/data";
+import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
 
 export default function SettingsPage() {
   const currentUser = mockUsers[0];
@@ -92,22 +86,13 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
            <div className="space-y-2">
-            <Label htmlFor="theme">Tema Tampilan</Label>
-             <Select defaultValue="system">
-                <SelectTrigger id="theme" className="w-[240px]">
-                    <SelectValue placeholder="Pilih tema" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="light">Terang</SelectItem>
-                    <SelectItem value="dark">Gelap</SelectItem>
-                    <SelectItem value="system">Sistem</SelectItem>
-                </SelectContent>
-            </Select>
+            <Label>Tema Tampilan</Label>
+            <ThemeSwitcher />
+             <p className="text-xs text-muted-foreground">
+              Pilih antara tema terang, gelap, atau bawaan sistem.
+            </p>
           </div>
         </CardContent>
-         <CardFooter className="border-t bg-muted/50 px-6 py-4">
-            <Button>Simpan Preferensi</Button>
-        </CardFooter>
       </Card>
     </div>
   );
