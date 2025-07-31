@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { deleteUmkm } from "@/lib/actions";
+import { deleteUmkm } from "@/server/actions";
 
 export function UmkmTableActions({ umkmId }: { umkmId: string }) {
   const { toast } = useToast();

@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { umkmSchema } from "@/lib/schema";
-import { createUmkm, updateUmkm } from "@/lib/actions";
+import { createUmkm, updateUmkm } from "@/server/actions";
 import type { UMKM } from "@/lib/types";
 
 type UmkmFormValues = z.infer<typeof umkmSchema>;
