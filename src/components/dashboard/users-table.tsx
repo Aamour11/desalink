@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -15,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +25,7 @@ import { ScrollArea } from "../ui/scroll-area";
 
 export function UsersTable({ data }: { data: User[] }) {
   return (
-    <ScrollArea className="rounded-md border">
+    <ScrollArea className="rounded-md border shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
@@ -49,7 +51,10 @@ export function UsersTable({ data }: { data: User[] }) {
                     className="rounded-full"
                     data-ai-hint="person avatar"
                   />
-                  <span>{user.name}</span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{user.name}</span>
+                    <span className="text-sm text-muted-foreground">{user.id}</span>
+                  </div>
                 </div>
               </TableCell>
               <TableCell>{user.email}</TableCell>
@@ -58,6 +63,7 @@ export function UsersTable({ data }: { data: User[] }) {
                   variant={
                     user.role === "Admin Desa" ? "default" : "secondary"
                   }
+                  className="capitalize"
                 >
                   {user.role}
                 </Badge>
@@ -72,9 +78,15 @@ export function UsersTable({ data }: { data: User[] }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                     <DropdownMenuItem asChild>
+                      <Link href={`/dashboard/users/${user.id}`}>
+                        <Eye className="mr-2 h-4 w-4" /> Lihat Profil
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem>
                       <Pencil className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive focus:text-destructive">
                       <Trash2 className="mr-2 h-4 w-4" /> Hapus
                     </DropdownMenuItem>
