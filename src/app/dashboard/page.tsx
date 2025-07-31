@@ -28,36 +28,36 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="font-headline text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Ringkasan statistik UMKM Desa X</p>
+        <h1 className="font-headline text-3xl font-bold tracking-tight">Dasbor Utama</h1>
+        <p className="text-muted-foreground">Ringkasan statistik UMKM Desa Anda.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total UMKM"
           value={totalUmkm}
-          icon={<Store className="h-4 w-4 text-muted-foreground" />}
+          icon={<Store className="h-5 w-5 text-muted-foreground" />}
         />
         <StatsCard
           title="UMKM Aktif"
           value={activeUmkm}
-          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />}
+          icon={<CheckCircle className="h-5 w-5 text-muted-foreground" />}
         />
         <StatsCard
           title="Memiliki NIB"
           value={umkmWithNib}
-          icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+          icon={<FileText className="h-5 w-5 text-muted-foreground" />}
         />
         <StatsCard
           title="Total Karyawan"
           value={mockUmkm.reduce((sum, u) => sum + u.employeeCount, 0)}
-          icon={<Users className="h-4 w-4 text-muted-foreground" />}
+          icon={<Users className="h-5 w-5 text-muted-foreground" />}
         />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-5">
+      <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
             <UmkmPerRtRwChart data={chartDataPerRtRw} />
         </div>
