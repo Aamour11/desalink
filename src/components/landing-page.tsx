@@ -136,12 +136,12 @@ export function LandingPage() {
               className="relative rounded-xl shadow-2xl shadow-primary/10 border"
             >
               <Image
-                src="https://placehold.co/1200x675/eaf8f9/48bfe3.png"
+                src="https://placehold.co/1200x675/e2f5e8/4CAF50.png"
                 alt="Dashboard Preview"
                 width={1200}
                 height={675}
                 className="rounded-xl"
-                data-ai-hint="dashboard community"
+                data-ai-hint="village landscape"
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-background/50 via-background/20 to-transparent"></div>
             </motion.div>
