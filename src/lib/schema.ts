@@ -20,3 +20,9 @@ export const umkmSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().url().optional(),
 });
+
+export const signupSchema = z.object({
+  name: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
+  email: z.string().email({ message: "Format email tidak valid." }),
+  password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
+});

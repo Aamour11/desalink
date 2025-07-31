@@ -2,11 +2,56 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { umkmSchema } from "@/lib/schema";
+import bcrypt from "bcryptjs";
+import { umkmSchema, signupSchema } from "@/lib/schema";
 import pool from './db';
-import type { UMKM } from "@/lib/types";
 
-// This is a mock implementation. In a real app, you would interact with a database.
+// --- USER ACTIONS ---
+
+export async function createUser(values: z.infer<typeof signupSchema>) {
+  const validatedFields = signupSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    throw new Error("Data tidak valid.");
+  }
+
+  const { name, email, password } = validatedFields.data;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  
+  try {
+    const connection = await pool.getConnection();
+
+    // Check if user already exists
+    const [existingUsers]: [any[], any] = await connection.execute('SELECT email FROM users WHERE email = ?', [email]);
+    if (existingUsers.length > 0) {
+      connection.release();
+      throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
+    }
+    
+    // Insert new user
+    const query = 'INSERT INTO users (name, email, password_hash, role, rtRw, avatarUrl) VALUES (?, ?, ?, ?, ?, ?)';
+    await connection.execute(query, [
+        name,
+        email,
+        hashedPassword,
+        "Admin Desa", // Default role for signup
+        "-",
+        `https://placehold.co/100x100.png?text=${name.charAt(0)}`
+    ]);
+    
+    connection.release();
+  } catch (error) {
+    console.error('Database Error:', error);
+    if (error instanceof Error) {
+        // Rethrow custom error messages or a generic one
+        throw new Error(error.message || 'Gagal membuat akun pengguna.');
+    }
+    throw new Error('Gagal membuat akun pengguna karena kesalahan tidak diketahui.');
+  }
+}
+
+
+// --- UMKM ACTIONS ---
 
 export async function createUmkm(values: z.infer<typeof umkmSchema>) {
   const validatedFields = umkmSchema.safeParse(values);
@@ -39,7 +84,6 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
     console.error('Database Error:', error);
     throw new Error('Gagal membuat data UMKM.');
   }
-
 
   revalidatePath("/dashboard/umkm");
 }
@@ -80,7 +124,6 @@ export async function updateUmkm(
      console.error('Database Error:', error);
     throw new Error('Gagal memperbarui data UMKM.');
   }
-
 
   revalidatePath(`/dashboard/umkm`);
   revalidatePath(`/dashboard/umkm/${id}/edit`);
