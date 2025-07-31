@@ -10,32 +10,33 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
   Users,
   Store,
   LogOut,
-  LifeBuoy,
   Settings,
+  ChevronDown,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
-import { Button } from "../ui/button";
 import { mockUsers } from "@/lib/data";
-import Image from "next/image";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
   { href: "/dashboard/umkm", icon: Store, label: "UMKM" },
   { href: "/dashboard/users", icon: Users, label: "Pengguna" },
 ];
-
-const secondaryNavItems = [
-    { href: "#", icon: LifeBuoy, label: "Bantuan" },
-    { href: "#", icon: Settings, label: "Pengaturan" },
-]
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -57,52 +58,70 @@ export function DashboardSidebar() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
-                <SidebarMenuButton
-                  isActive={pathname === item.href}
-                  icon={<item.icon />}
-                  tooltip={{ children: item.label, side: "right" }}
-                >
-                  {item.label}
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href}
+                icon={<item.icon />}
+                tooltip={{ children: item.label, side: "right" }}
+              >
+                <Link href={item.href}>{item.label}</Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="flex flex-col gap-4">
-        <SidebarSeparator />
-         <SidebarMenu>
-            {secondaryNavItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                <Link href={item.href} legacyBehavior passHref>
-                    <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    icon={<item.icon />}
-                    tooltip={{ children: item.label, side: "right" }}
-                    >
-                    {item.label}
-                    </SidebarMenuButton>
-                </Link>
-                </SidebarMenuItem>
-            ))}
-        </SidebarMenu>
-        <SidebarSeparator />
-         <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent transition-colors group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center">
-            <Avatar className="h-10 w-10">
-                <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
+      <SidebarFooter className="flex flex-col gap-2 !p-2">
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-sidebar-accent transition-colors group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center">
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={currentUser.avatarUrl}
+                  alt={currentUser.name}
+                  data-ai-hint="user avatar"
+                />
                 <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <p className="text-sm font-semibold text-sidebar-accent-foreground">{currentUser.name}</p>
-                <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+              </Avatar>
+              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                <p className="text-sm font-semibold text-sidebar-accent-foreground">
+                  {currentUser.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {currentUser.email}
+                </p>
+              </div>
+              <ChevronDown className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
             </div>
-             <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto group-data-[collapsible=icon]:hidden">
-                <Link href="/login">
-                    <LogOut className="h-4 w-4" />
-                </Link>
-            </Button>
-        </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenu className="mt-2">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="#">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Pengaturan
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  variant="ghost"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link href="/login">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </CollapsibleContent>
+        </Collapsible>
       </SidebarFooter>
     </Sidebar>
   );
