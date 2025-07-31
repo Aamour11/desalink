@@ -48,26 +48,26 @@ export function DashboardSidebar() {
   const currentUser = mockUsers[0];
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="justify-center group-data-[collapsed=icon]:justify-center">
+    <Sidebar>
+      <SidebarHeader>
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <div className="bg-primary p-2 rounded-lg">
             <LogoIcon className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[collapsed=icon]:hidden">
+          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[state=collapsed]:hidden">
             DesaLink
           </span>
         </Link>
-        <SidebarTrigger className="hidden sm:flex absolute right-2 group-data-[collapsed=icon]:hidden" />
+        <SidebarTrigger className="hidden sm:flex" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
-                isActive={pathname.startsWith(item.href) && (item.href === '/dashboard' ? pathname === item.href : true) }
+                isActive={pathname === item.href}
                 icon={<item.icon />}
-                tooltip={{ children: item.label, side: "right" }}
+                tooltip={{ children: item.label }}
                 onClick={() => router.push(item.href)}
               >
                 {item.label}
@@ -76,18 +76,18 @@ export function DashboardSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="flex-col items-start gap-2 !p-2 group-data-[collapsed=icon]:items-center">
-         <div className="w-full border-t border-sidebar-border/50 group-data-[collapsed=icon]:w-2/3" />
+      <SidebarFooter className="flex-col items-start gap-2 !p-2">
+         <div className="w-full border-t border-sidebar-border/50 group-data-[state=collapsed]:w-2/3" />
          <SidebarMenu>
           <SidebarMenuItem>
              <SidebarMenuButton 
                 variant="ghost"
                 className="w-full justify-start"
-                tooltip={{ children: "Logout", side: "right" }}
+                tooltip={{ children: "Logout" }}
                 icon={<LogOut />}
                 onClick={() => router.push('/login')}
               >
-              <span className="group-data-[collapsed=icon]:hidden">Logout</span>
+              <span className="group-data-[state=collapsed]:hidden">Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
          </SidebarMenu>

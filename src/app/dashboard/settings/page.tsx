@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const currentUser = mockUsers[0];
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
+    <div className="space-y-8">
       <div>
         <h1 className="font-headline text-3xl font-bold tracking-tight">
           Pengaturan
@@ -26,74 +26,80 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Profil Pengguna</CardTitle>
-          <CardDescription>
-            Informasi ini akan ditampilkan di profil Anda.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nama Lengkap</Label>
-            <Input id="name" defaultValue={currentUser.name} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Alamat Email</Label>
-            <Input id="email" type="email" defaultValue={currentUser.email} readOnly />
-             <p className="text-xs text-muted-foreground">
-              Email tidak dapat diubah.
-            </p>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t bg-muted/50 px-6 py-4">
-            <Button>Simpan Perubahan</Button>
-        </CardFooter>
-      </Card>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profil Pengguna</CardTitle>
+              <CardDescription>
+                Informasi ini akan ditampilkan di profil Anda.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nama Lengkap</Label>
+                <Input id="name" defaultValue={currentUser.name} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Alamat Email</Label>
+                <Input id="email" type="email" defaultValue={currentUser.email} readOnly />
+                <p className="text-xs text-muted-foreground">
+                  Email tidak dapat diubah.
+                </p>
+              </div>
+            </CardContent>
+            <CardFooter className="border-t bg-muted/50 px-6 py-4">
+              <Button>Simpan Perubahan</Button>
+            </CardFooter>
+          </Card>
 
-       <Card>
-        <CardHeader>
-          <CardTitle>Ubah Kata Sandi</CardTitle>
-          <CardDescription>
-            Untuk keamanan, pastikan Anda menggunakan kata sandi yang kuat.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="current-password">Kata Sandi Saat Ini</Label>
-            <Input id="current-password" type="password" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="new-password">Kata Sandi Baru</Label>
-            <Input id="new-password" type="password" />
-          </div>
-           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Konfirmasi Kata Sandi Baru</Label>
-            <Input id="confirm-password" type="password" />
-          </div>
-        </CardContent>
-         <CardFooter className="border-t bg-muted/50 px-6 py-4">
-            <Button>Ubah Kata Sandi</Button>
-        </CardFooter>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Ubah Kata Sandi</CardTitle>
+              <CardDescription>
+                Untuk keamanan, pastikan Anda menggunakan kata sandi yang kuat.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Kata Sandi Saat Ini</Label>
+                <Input id="current-password" type="password" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Kata Sandi Baru</Label>
+                <Input id="new-password" type="password" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Konfirmasi Kata Sandi Baru</Label>
+                <Input id="confirm-password" type="password" />
+              </div>
+            </CardContent>
+            <CardFooter className="border-t bg-muted/50 px-6 py-4">
+              <Button>Ubah Kata Sandi</Button>
+            </CardFooter>
+          </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Preferensi</CardTitle>
-          <CardDescription>
-            Sesuaikan tampilan dan bahasa aplikasi.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-           <div className="space-y-2">
-            <Label>Tema Tampilan</Label>
-            <ThemeSwitcher />
-             <p className="text-xs text-muted-foreground">
-              Pilih antara tema terang, gelap, atau bawaan sistem.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferensi</CardTitle>
+              <CardDescription>
+                Sesuaikan tampilan dan bahasa aplikasi.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tema Tampilan</Label>
+                <ThemeSwitcher />
+                <p className="text-xs text-muted-foreground">
+                  Pilih antara tema terang, gelap, atau bawaan sistem.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
