@@ -80,8 +80,10 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
              <SidebarMenuButton asChild variant="ghost" className="w-full justify-start">
               <Link href="/login">
-                <LogOut />
-                <span>Logout</span>
+                <>
+                  <LogOut />
+                  <span className="group-data-[collapsed=icon]:hidden">Logout</span>
+                </>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
