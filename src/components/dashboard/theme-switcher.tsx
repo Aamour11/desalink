@@ -17,10 +17,10 @@ export function ThemeSwitcher() {
 
   if (!mounted) {
     return (
-        <div className="flex gap-2">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
+        <div className="flex items-center space-x-2">
+            <Skeleton className="h-10 w-24 rounded-md" />
+            <Skeleton className="h-10 w-24 rounded-md" />
+            <Skeleton className="h-10 w-24 rounded-md" />
         </div>
     )
   }
@@ -30,20 +30,23 @@ export function ThemeSwitcher() {
       <Button
         variant={theme === "light" ? "default" : "outline"}
         onClick={() => setTheme("light")}
+        size="sm"
       >
-        <Sun className="mr-2 h-4 w-4" />
+        <Sun className="mr-2" />
         Terang
       </Button>
       <Button
         variant={theme === "dark" ? "default" : "outline"}
         onClick={() => setTheme("dark")}
+        size="sm"
       >
-        <Moon className="mr-2 h-4 w-4" />
+        <Moon className="mr-2" />
         Gelap
       </Button>
        <Button
         variant={theme === "system" ? "default" : "outline"}
         onClick={() => setTheme("system")}
+        size="sm"
       >
         Sistem
       </Button>

@@ -48,7 +48,7 @@ export default function SettingsPage() {
                 </p>
               </div>
             </CardContent>
-            <CardFooter className="border-t bg-muted/50 px-6 py-4">
+            <CardFooter>
               <Button>Simpan Perubahan</Button>
             </CardFooter>
           </Card>
@@ -74,7 +74,7 @@ export default function SettingsPage() {
                 <Input id="confirm-password" type="password" />
               </div>
             </CardContent>
-            <CardFooter className="border-t bg-muted/50 px-6 py-4">
+            <CardFooter>
               <Button>Ubah Kata Sandi</Button>
             </CardFooter>
           </Card>
