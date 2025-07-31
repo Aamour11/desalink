@@ -1,3 +1,7 @@
+
+"use client";
+
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -7,8 +11,37 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DatabaseBackup, BellRing, UserCog } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminCenterPage() {
+    const { toast } = useToast();
+
+    const handleBackup = () => {
+        toast({
+            title: "Proses Dimulai",
+            description: "Mencadangkan data sistem... Ini mungkin memerlukan beberapa saat.",
+        });
+        setTimeout(() => {
+            toast({
+                title: "Sukses!",
+                description: "Cadangan data UMKM dan pengguna berhasil dibuat.",
+            });
+        }, 2000);
+    }
+
+    const handleNotify = () => {
+        toast({
+            title: "Mengirim Notifikasi",
+            description: "Pengumuman sedang dikirim ke semua petugas...",
+        });
+        setTimeout(() => {
+            toast({
+                title: "Terkirim!",
+                description: "Notifikasi berhasil dikirim ke semua petugas RT/RW.",
+            });
+        }, 1500);
+    }
+
   return (
     <div className="space-y-8">
       <div>
@@ -26,13 +59,15 @@ export default function AdminCenterPage() {
             <div className="bg-secondary p-3 rounded-full w-max mb-4">
               <UserCog className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle>Manajemen Pengguna Lanjutan</CardTitle>
+            <CardTitle>Manajemen Pengguna</CardTitle>
             <CardDescription>
-              Atur peran, reset kata sandi, dan kelola hak akses pengguna secara terpusat.
+              Atur peran dan kelola hak akses pengguna sistem secara terpusat.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button disabled>Kelola Pengguna</Button>
+            <Button asChild>
+                <Link href="/dashboard/users">Kelola Pengguna</Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -47,7 +82,7 @@ export default function AdminCenterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button disabled>Mulai Mencadangkan</Button>
+            <Button onClick={handleBackup}>Mulai Mencadangkan</Button>
           </CardContent>
         </Card>
 
@@ -58,11 +93,11 @@ export default function AdminCenterPage() {
             </div>
             <CardTitle>Kirim Notifikasi</CardTitle>
             <CardDescription>
-              Kirim pengumuman atau notifikasi penting ke semua Petugas RT/RW.
+              Kirim pengumuman penting ke semua Petugas RT/RW.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button disabled>Buat Notifikasi</Button>
+            <Button onClick={handleNotify}>Buat Notifikasi</Button>
           </CardContent>
         </Card>
       </div>
@@ -71,7 +106,7 @@ export default function AdminCenterPage() {
             <CardHeader>
                 <CardTitle>Catatan Pengembangan</CardTitle>
                 <CardDescription>
-                    Halaman ini adalah contoh bagaimana seorang admin bisa memiliki panel kontrol khusus. Fitur-fitur di atas saat ini dinonaktifkan dan dapat diimplementasikan di masa mendatang, seperti menghubungkan ke database, mengatur autentikasi, dan membangun logika bisnis untuk setiap fitur.
+                    Halaman ini adalah contoh bagaimana seorang admin bisa memiliki panel kontrol khusus. Fitur-fitur di atas saat ini adalah simulasi dan dapat diimplementasikan dengan logika bisnis nyata di masa mendatang, seperti menghubungkan ke database, mengatur autentikasi, dan membangun layanan notifikasi.
                 </CardDescription>
             </CardHeader>
           </Card>
