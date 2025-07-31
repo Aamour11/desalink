@@ -3,7 +3,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import React from "react";
 import {
   Users,
   LayoutGrid,
@@ -11,11 +12,94 @@ import {
   FileText,
   PlusCircle,
   Upload,
-  ArrowRight
+  ArrowRight,
+  User,
+  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { LogoIcon } from "@/components/icons";
+
+function ThreeDCardAnimation() {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const rotateX = useTransform(y, [-100, 100], [15, -15]);
+  const rotateY = useTransform(x, [-100, 100], [-15, 15]);
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct * 100);
+    y.set(yPct * 100);
+  };
+  
+   const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+     <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className="relative flex h-96 w-full max-w-4xl items-center justify-center rounded-xl bg-muted/40 p-8"
+    >
+      <div style={{ transform: "translateZ(75px)", transformStyle: "preserve-3d" }} className="absolute">
+         <div className="relative w-96 rounded-lg border bg-card p-4 shadow-lg shadow-primary/10">
+            <div className="flex justify-between items-center mb-2">
+                <h3 className="font-headline text-lg">Total UMKM</h3>
+                <Store className="text-primary" />
+            </div>
+            <p className="text-4xl font-bold">1,250</p>
+            <p className="text-sm text-muted-foreground">+15% dari bulan lalu</p>
+         </div>
+      </div>
+       <motion.div
+        style={{
+            transform: "translateZ(40px) translateX(-150px) translateY(-80px) rotateZ(-15deg)",
+            transformStyle: "preserve-3d",
+        }}
+        className="absolute"
+      >
+        <div className="w-48 p-3 rounded-lg border bg-card shadow-md shadow-primary/10">
+            <div className="flex items-center gap-2">
+                <LineChart className="w-6 h-6 text-primary" />
+                <h4 className="font-semibold">Pertumbuhan</h4>
+            </div>
+            <div className="w-full h-16 bg-primary/20 rounded-md mt-2 animate-pulse"></div>
+        </div>
+      </motion.div>
+       <motion.div
+         style={{
+            transform: "translateZ(20px) translateX(200px) translateY(60px) rotateZ(10deg)",
+            transformStyle: "preserve-3d",
+        }}
+        className="absolute flex items-center gap-2 p-2 rounded-lg border bg-card shadow-sm shadow-primary/10"
+      >
+        <User className="text-primary" />
+        <span className="text-sm font-medium">Data Pengguna</span>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 
 export function LandingPage() {
   const features = [
@@ -73,12 +157,14 @@ export function LandingPage() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
-             <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
-             </Button>
-             <Button asChild>
-                <Link href="/dashboard">Mulai <ArrowRight className="ml-2 h-4 w-4" /></Link>
-             </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/login">Login</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/dashboard">
+                Mulai <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -109,7 +195,8 @@ export function LandingPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mx-auto mt-6 max-w-[700px] text-lg text-muted-foreground md:text-xl"
             >
-              Kelola, analisis, dan kembangkan potensi UMKM di tingkat desa dan RT/RW dengan platform digital yang modern dan mudah digunakan.
+              Kelola, analisis, dan kembangkan potensi UMKM di tingkat desa dan
+              RT/RW dengan platform digital yang modern dan mudah digunakan.
             </motion.p>
             <motion.div
               variants={fadeIn}
@@ -127,34 +214,19 @@ export function LandingPage() {
         </section>
 
         <section className="bg-muted/40 py-20 sm:py-32">
-          <div className="container">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="relative rounded-xl shadow-2xl shadow-primary/10 border"
-            >
-              <Image
-                src="https://placehold.co/1200x675/e2f5e8/4CAF50.png"
-                alt="Dashboard Preview"
-                width={1200}
-                height={675}
-                className="rounded-xl"
-                data-ai-hint="village landscape"
-              />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-background/50 via-background/20 to-transparent"></div>
-            </motion.div>
+          <div className="container flex justify-center">
+            <ThreeDCardAnimation />
           </div>
         </section>
 
         <section className="container py-20 sm:py-32">
           <div className="mx-auto max-w-3xl text-center">
-             <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">
               Platform Lengkap untuk Desa Digital
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Semua yang Anda butuhkan untuk digitalisasi dan pengelolaan data UMKM yang efisien.
+              Semua yang Anda butuhkan untuk digitalisasi dan pengelolaan data
+              UMKM yang efisien.
             </p>
           </div>
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -171,10 +243,14 @@ export function LandingPage() {
                     <div className="bg-secondary p-3 rounded-full w-max mb-4">
                       {feature.icon}
                     </div>
-                    <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
+                    <CardTitle className="font-headline text-xl">
+                      {feature.title}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <p className="text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -184,13 +260,19 @@ export function LandingPage() {
       </main>
       <footer className="bg-muted/40 border-t">
         <div className="container py-8 text-center text-sm text-muted-foreground">
-           <Link href="/" className="flex items-center gap-2 w-max mx-auto mb-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 w-max mx-auto mb-4"
+          >
             <LogoIcon className="h-8 w-8 text-primary" />
             <span className="font-headline text-xl font-bold">
               DesaLink UMKM
             </span>
           </Link>
-          <p>© {new Date().getFullYear()} DesaLink UMKM. Solusi Digital untuk Desa Maju.</p>
+          <p>
+            © {new Date().getFullYear()} DesaLink UMKM. Solusi Digital untuk
+            Desa Maju.
+          </p>
         </div>
       </footer>
     </div>
