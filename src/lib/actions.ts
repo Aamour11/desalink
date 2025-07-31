@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { umkmSchema } from "@/lib/schema";
-import { mockUmkm } from "./data";
+import pool from './db';
+import type { UMKM } from "./types";
 
 // This is a mock implementation. In a real app, you would interact with a database.
 
@@ -13,19 +14,32 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
   if (!validatedFields.success) {
     throw new Error("Data tidak valid.");
   }
+  
+  const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl } = validatedFields.data;
 
-  // Simulate adding to the database
-  const newUmkm = {
-    id: `umkm-${Date.now()}`, // Generate a pseudo-unique ID
-    ...validatedFields.data,
-    // Ensure all required fields have default values if not in form
-    imageUrl: validatedFields.data.imageUrl || 'https://placehold.co/600x400.png',
-    employeeCount: validatedFields.data.employeeCount || 0,
-    startDate: validatedFields.data.startDate || new Date().toISOString().split('T')[0],
-    description: validatedFields.data.description || '',
-    nib: validatedFields.data.nib || '',
-  };
-  mockUmkm.push(newUmkm);
+  try {
+    const connection = await pool.getConnection();
+    const query = 'INSERT INTO umkm (businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    await connection.execute(query, [
+        businessName,
+        ownerName,
+        nib || null,
+        businessType,
+        address,
+        rtRw,
+        contact,
+        status,
+        startDate || new Date().toISOString().split('T')[0],
+        employeeCount || 0,
+        description || null,
+        imageUrl || 'https://placehold.co/600x400.png'
+    ]);
+    connection.release();
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Gagal membuat data UMKM.');
+  }
+
 
   revalidatePath("/dashboard/umkm");
 }
@@ -40,24 +54,48 @@ export async function updateUmkm(
     throw new Error("Data tidak valid.");
   }
   
-  // Simulate updating the database
-  const index = mockUmkm.findIndex(u => u.id === id);
-  if (index !== -1) {
-    mockUmkm[index] = { ...mockUmkm[index], ...validatedFields.data };
-  } else {
-    throw new Error("UMKM tidak ditemukan.");
+  const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl } = validatedFields.data;
+  const umkmId = id.replace('umkm-','');
+
+  try {
+    const connection = await pool.getConnection();
+    const query = 'UPDATE umkm SET businessName = ?, ownerName = ?, nib = ?, businessType = ?, address = ?, rtRw = ?, contact = ?, status = ?, startDate = ?, employeeCount = ?, description = ?, imageUrl = ? WHERE id = ?';
+    await connection.execute(query, [
+        businessName,
+        ownerName,
+        nib || null,
+        businessType,
+        address,
+        rtRw,
+        contact,
+        status,
+        startDate || new Date().toISOString().split('T')[0],
+        employeeCount || 0,
+        description || null,
+        imageUrl || 'https://placehold.co/600x400.png',
+        umkmId
+    ]);
+    connection.release();
+  } catch (error) {
+     console.error('Database Error:', error);
+    throw new Error('Gagal memperbarui data UMKM.');
   }
+
 
   revalidatePath(`/dashboard/umkm`);
   revalidatePath(`/dashboard/umkm/${id}/edit`);
 }
 
 export async function deleteUmkm(id: string) {
-    const index = mockUmkm.findIndex(u => u.id === id);
-    if (index > -1) {
-      mockUmkm.splice(index, 1);
-      revalidatePath("/dashboard/umkm");
-    } else {
-        throw new Error("UMKM tidak ditemukan.");
+    const umkmId = id.replace('umkm-','');
+    try {
+        const connection = await pool.getConnection();
+        const query = 'DELETE FROM umkm WHERE id = ?';
+        await connection.execute(query, [umkmId]);
+        connection.release();
+        revalidatePath("/dashboard/umkm");
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal menghapus data UMKM.');
     }
 }
