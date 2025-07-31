@@ -16,6 +16,7 @@ import {
   User,
   LineChart,
   Store,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -110,11 +111,11 @@ function ThreeDCardAnimation() {
       >
         <div className="flex items-center gap-3 w-48 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10">
             <div className="p-2 rounded-md bg-secondary">
-                <Users className="w-6 h-6 text-primary" />
+                <Store className="w-6 h-6 text-primary" />
             </div>
             <div>
-                <h4 className="font-semibold">Pengguna</h4>
-                <p className="text-sm text-muted-foreground">4 Admin</p>
+                <h4 className="font-semibold">Total UMKM</h4>
+                <p className="text-sm text-muted-foreground">6 Terdata</p>
             </div>
         </div>
       </motion.div>
@@ -128,11 +129,11 @@ function ThreeDCardAnimation() {
       >
         <div className="flex items-center gap-3 w-48 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10">
             <div className="p-2 rounded-md bg-secondary">
-              <Store className="w-6 h-6 text-primary" />
+              <CheckCircle className="w-6 h-6 text-primary" />
             </div>
             <div>
-                <h4 className="font-semibold">UMKM</h4>
-                <p className="text-sm text-muted-foreground">125 Terdata</p>
+                <h4 className="font-semibold">UMKM Aktif</h4>
+                <p className="text-sm text-muted-foreground">5 Aktif</p>
             </div>
         </div>
       </motion.div>
