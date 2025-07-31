@@ -27,12 +27,34 @@ import {
 } from "@/components/ui/card";
 import { LogoIcon } from "@/components/icons";
 
+
+function AnimatedBarChart() {
+  return (
+    <div className="flex h-full w-full items-end gap-1.5">
+      {[0.4, 0.7, 0.5, 0.9, 0.6].map((height, i) => (
+        <motion.div
+          key={i}
+          initial={{ height: "0%" }}
+          animate={{ height: `${height * 100}%` }}
+          transition={{
+            duration: 0.8,
+            delay: 0.5 + i * 0.1,
+            ease: "easeOut",
+          }}
+          className="w-full rounded-t-sm bg-primary/80"
+        />
+      ))}
+    </div>
+  );
+}
+
+
 function ThreeDCardAnimation() {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  const rotateX = useTransform(y, [-100, 100], [15, -15]);
-  const rotateY = useTransform(x, [-100, 100], [-15, 15]);
+  const rotateX = useTransform(y, [-100, 100], [10, -10]);
+  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -42,8 +64,8 @@ function ThreeDCardAnimation() {
     const mouseY = event.clientY - rect.top;
     const xPct = mouseX / width - 0.5;
     const yPct = mouseY / height - 0.5;
-    x.set(xPct * 100);
-    y.set(yPct * 100);
+    x.set(xPct * 50);
+    y.set(yPct * 50);
   };
   
    const handleMouseLeave = () => {
@@ -62,40 +84,73 @@ function ThreeDCardAnimation() {
       }}
       className="relative flex h-96 w-full max-w-4xl items-center justify-center rounded-xl bg-muted/40 p-8"
     >
-      <div style={{ transform: "translateZ(75px)", transformStyle: "preserve-3d" }} className="absolute">
-         <div className="relative w-96 rounded-lg border bg-card p-4 shadow-lg shadow-primary/10">
-            <div className="flex justify-between items-center mb-2">
-                <h3 className="font-headline text-lg">Total UMKM</h3>
-                <Store className="text-primary" />
+      <div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }} className="absolute w-[450px] h-64 rounded-xl border bg-card p-4 shadow-lg shadow-primary/10">
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <LogoIcon className="h-5 w-5 text-primary" />
+                <h3 className="font-headline text-md">Dashboard Overview</h3>
             </div>
-            <p className="text-4xl font-bold">1,250</p>
-            <p className="text-sm text-muted-foreground">+15% dari bulan lalu</p>
-         </div>
+            <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+            </div>
+        </div>
+        <div className="mt-4 h-48 w-full rounded-md border border-dashed border-border p-2">
+             <AnimatedBarChart />
+        </div>
       </div>
+
        <motion.div
         style={{
-            transform: "translateZ(40px) translateX(-150px) translateY(-80px) rotateZ(-15deg)",
+            transform: "translateZ(120px) translateX(-250px) translateY(-80px) rotateZ(-10deg)",
             transformStyle: "preserve-3d",
         }}
         className="absolute"
       >
-        <div className="w-48 p-3 rounded-lg border bg-card shadow-md shadow-primary/10">
-            <div className="flex items-center gap-2">
-                <LineChart className="w-6 h-6 text-primary" />
-                <h4 className="font-semibold">Pertumbuhan</h4>
+        <div className="flex items-center gap-3 w-48 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10">
+            <div className="p-2 rounded-md bg-secondary">
+                <Users className="w-6 h-6 text-primary" />
             </div>
-            <div className="w-full h-16 bg-primary/20 rounded-md mt-2 animate-pulse"></div>
+            <div>
+                <h4 className="font-semibold">Pengguna</h4>
+                <p className="text-sm text-muted-foreground">4 Admin</p>
+            </div>
         </div>
       </motion.div>
+      
        <motion.div
-         style={{
-            transform: "translateZ(20px) translateX(200px) translateY(60px) rotateZ(10deg)",
+        style={{
+            transform: "translateZ(90px) translateX(240px) translateY(-40px) rotateZ(8deg)",
             transformStyle: "preserve-3d",
         }}
-        className="absolute flex items-center gap-2 p-2 rounded-lg border bg-card shadow-sm shadow-primary/10"
+        className="absolute"
       >
-        <User className="text-primary" />
-        <span className="text-sm font-medium">Data Pengguna</span>
+        <div className="flex items-center gap-3 w-48 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10">
+            <div className="p-2 rounded-md bg-secondary">
+              <Store className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+                <h4 className="font-semibold">UMKM</h4>
+                <p className="text-sm text-muted-foreground">125 Terdata</p>
+            </div>
+        </div>
+      </motion.div>
+
+       <motion.div
+         style={{
+            transform: "translateZ(100px) translateX(180px) translateY(120px) rotateZ(-12deg)",
+            transformStyle: "preserve-3d",
+        }}
+        className="absolute flex items-center gap-3 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10"
+      >
+        <div className="p-2 rounded-md bg-secondary">
+          <FileText className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+            <h4 className="font-semibold">Laporan</h4>
+            <p className="text-sm text-muted-foreground">PDF & CSV</p>
+        </div>
       </motion.div>
     </motion.div>
   );
