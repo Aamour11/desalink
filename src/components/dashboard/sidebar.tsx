@@ -11,7 +11,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
@@ -19,21 +18,8 @@ import {
   Store,
   LogOut,
   Settings,
-  ChevronDown,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
-import { mockUsers } from "@/lib/data";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -45,7 +31,6 @@ const navItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const currentUser = mockUsers[0];
 
   return (
     <Sidebar>
@@ -58,7 +43,6 @@ export function DashboardSidebar() {
             DesaLink
           </span>
         </Link>
-        <SidebarTrigger className="hidden sm:flex" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -76,8 +60,8 @@ export function DashboardSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="flex-col items-start gap-2 !p-2">
-         <div className="w-full border-t border-sidebar-border/50 group-data-[state=collapsed]:w-2/3" />
+      <SidebarFooter>
+         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
          <SidebarMenu>
           <SidebarMenuItem>
              <SidebarMenuButton 
@@ -87,7 +71,7 @@ export function DashboardSidebar() {
                 icon={<LogOut />}
                 onClick={() => router.push('/login')}
               >
-              <span className="group-data-[state=collapsed]:hidden">Logout</span>
+              Logout
             </SidebarMenuButton>
           </SidebarMenuItem>
          </SidebarMenu>
