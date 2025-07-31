@@ -35,7 +35,8 @@ export const mockUsers: User[] = [
   },
 ];
 
-export const mockUmkm: UMKM[] = [
+// Changed from const to let to allow modification for mock purposes.
+export let mockUmkm: UMKM[] = [
   {
     id: "umkm-1",
     businessName: "Warung Makan Bu Siti",
@@ -118,7 +119,7 @@ export const mockUmkm: UMKM[] = [
     nib: "6789012345678",
     businessType: "Kuliner",
     address: "Jl. Kuliner No. 12",
-    rtRw: "003/002",
+    rtRw: "003/02",
     contact: "081234567891",
     status: "aktif",
     startDate: "2021-08-17",
