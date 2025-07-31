@@ -1,6 +1,6 @@
 import { mockUmkm } from "@/lib/data";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { Store, Users, FileText, CheckCircle, TrendingUp, Building, Award } from "lucide-react";
+import { Store, Users, FileText, CheckCircle, Award } from "lucide-react";
 import { UmkmPerTypeChart } from "@/components/dashboard/umkm-per-type-chart";
 import { UmkmPerRtRwChart } from "@/components/dashboard/umkm-per-rtrw-chart";
 import { UmkmPerYearChart } from "@/components/dashboard/umkm-per-year-chart";
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
-import { AISummary } from "@/components/dashboard/ai-summary";
 
 export default function DashboardPage() {
   const totalUmkm = mockUmkm.length;
@@ -57,13 +56,6 @@ export default function DashboardPage() {
     name,
     value,
   })).sort((a, b) => parseInt(a.name) - parseInt(b.name));
-  
-  const aiSummaryInput = {
-    totalUmkm,
-    umkmPerRtRw,
-    umkmPerType,
-  };
-
 
   return (
     <div className="space-y-6">
@@ -71,8 +63,6 @@ export default function DashboardPage() {
         <h1 className="font-headline text-3xl font-bold tracking-tight">Dasbor Utama</h1>
         <p className="text-muted-foreground">Ringkasan statistik dan agregasi data UMKM Desa Anda.</p>
       </div>
-      
-      <AISummary {...aiSummaryInput} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
