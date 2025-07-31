@@ -55,8 +55,9 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
         await createUmkm(data);
         toast({ title: "Sukses", description: "UMKM baru berhasil ditambahkan." });
       }
+      router.push("/dashboard/umkm");
     } catch (error) {
-       toast({ variant: 'destructive', title: "Gagal", description: "Terjadi kesalahan." });
+       toast({ variant: 'destructive', title: "Gagal", description: "Terjadi kesalahan saat menyimpan data." });
     }
   };
 
@@ -156,7 +157,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                            <div className="grid w-full max-w-sm items-center gap-1.5">
                             <div className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/40 bg-muted/40">
                               {field.value ? (
-                                <Image src={field.value} alt="Preview" width={200} height={112} className="h-full w-full object-cover rounded-md" />
+                                <Image src={field.value} alt="Preview" width={200} height={112} className="h-full w-full object-cover rounded-md" data-ai-hint="business product" />
                               ) : (
                                 <div className="text-center text-muted-foreground">
                                   <Upload className="mx-auto h-8 w-8" />

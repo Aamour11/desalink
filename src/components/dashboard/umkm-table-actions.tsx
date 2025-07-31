@@ -28,13 +28,13 @@ export function UmkmTableActions({ umkmId }: { umkmId: string }) {
   const { toast } = useToast();
 
   const handleDelete = async () => {
-    const result = await deleteUmkm(umkmId);
-    if (result.message) {
+    try {
+      await deleteUmkm(umkmId);
       toast({
         title: "Sukses",
-        description: result.message,
+        description: "Data UMKM berhasil dihapus.",
       });
-    } else {
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Gagal",

@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { umkmSchema } from "@/lib/schema";
 import { mockUmkm } from "./data";
 
@@ -12,10 +11,7 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
   const validatedFields = umkmSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Data tidak valid.",
-    };
+    throw new Error("Data tidak valid.");
   }
 
   // Simulate adding to the database
@@ -31,10 +27,7 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
   };
   mockUmkm.push(newUmkm);
 
-  console.log("Creating UMKM:", newUmkm);
-  
   revalidatePath("/dashboard/umkm");
-  redirect("/dashboard/umkm");
 }
 
 export async function updateUmkm(
@@ -44,36 +37,27 @@ export async function updateUmkm(
   const validatedFields = umkmSchema.safeParse(values);
 
   if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Data tidak valid.",
-    };
+    throw new Error("Data tidak valid.");
   }
   
   // Simulate updating the database
   const index = mockUmkm.findIndex(u => u.id === id);
   if (index !== -1) {
     mockUmkm[index] = { ...mockUmkm[index], ...validatedFields.data };
+  } else {
+    throw new Error("UMKM tidak ditemukan.");
   }
-  
-  console.log(`Updating UMKM ${id}:`, validatedFields.data);
 
   revalidatePath(`/dashboard/umkm`);
   revalidatePath(`/dashboard/umkm/${id}/edit`);
-  redirect("/dashboard/umkm");
 }
 
 export async function deleteUmkm(id: string) {
-  try {
-    // Simulate deleting from the database
     const index = mockUmkm.findIndex(u => u.id === id);
     if (index > -1) {
       mockUmkm.splice(index, 1);
+      revalidatePath("/dashboard/umkm");
+    } else {
+        throw new Error("UMKM tidak ditemukan.");
     }
-    console.log(`Deleting UMKM ${id}`);
-    revalidatePath("/dashboard/umkm");
-    return { message: "UMKM berhasil dihapus." };
-  } catch (e) {
-    return { message: "Gagal menghapus UMKM." };
-  }
 }

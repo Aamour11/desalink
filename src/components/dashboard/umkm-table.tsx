@@ -180,7 +180,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                   </TableCell>
                   <TableCell>{umkm.rtRw}</TableCell>
                   <TableCell>
-                    <Badge variant={umkm.status === "aktif" ? "success" : "secondary"}>
+                    <Badge variant={umkm.status === "aktif" ? "success" : "destructive"}>
                       {umkm.status}
                     </Badge>
                   </TableCell>
