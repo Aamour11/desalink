@@ -60,7 +60,7 @@ export function DashboardSidebar() {
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
-                isActive={pathname === item.href}
+                isActive={pathname.startsWith(item.href) && (item.href === '/dashboard' ? pathname === item.href : true) }
                 icon={<item.icon />}
                 tooltip={{ children: item.label, side: "right" }}
               >
@@ -100,8 +100,9 @@ export function DashboardSidebar() {
                   variant="ghost"
                   className="w-full justify-start"
                   asChild
+                  isActive={pathname === "/dashboard/settings"}
                 >
-                  <Link href="#">
+                  <Link href="/dashboard/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     Pengaturan
                   </Link>
