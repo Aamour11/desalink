@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
 import {
   Card,
   CardContent,
@@ -18,9 +18,10 @@ import {
 const chartConfig = {
   value: {
     label: "Jumlah UMKM",
-    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig;
+
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 type ChartData = {
     name: string;
@@ -56,7 +57,11 @@ export function UmkmPerRtRwChart({ data }: { data: ChartData }) {
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="value" fill="var(--color-value)" radius={8} />
+            <Bar dataKey="value" radius={8}>
+               {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Bar>
           </BarChart>
         </ChartContainer>
       </CardContent>
