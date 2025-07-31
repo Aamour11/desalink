@@ -15,14 +15,14 @@ const GenerateDashboardInputSchema = z.object({
   umkmPerRtRw: z
     .record(z.string(), z.number())
     .describe(
-      'A record (object) where keys are RT/RW identifiers and values are the number of UMKM in that RT/RW.
-      Example: { \'001/005\': 10, \'002/006\': 5 }'
+      `A record (object) where keys are RT/RW identifiers and values are the number of UMKM in that RT/RW.
+      Example: { '001/005': 10, '002/006': 5 }`
     ),
   umkmPerType: z
     .record(z.string(), z.number())
     .describe(
-      'A record (object) where keys are UMKM types (e.g., Kuliner, Fashion) and values are the number of UMKM of that type.
-      Example: { \'Kuliner\': 15, \'Fashion\': 8 }'
+      `A record (object) where keys are UMKM types (e.g., Kuliner, Fashion) and values are the number of UMKM of that type.
+      Example: { 'Kuliner': 15, 'Fashion': 8 }`
     ),
 });
 export type GenerateDashboardInput = z.infer<typeof GenerateDashboardInputSchema>;
