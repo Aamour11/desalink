@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarHeader,
@@ -43,6 +43,7 @@ const navItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const currentUser = mockUsers[0];
 
   return (
@@ -79,15 +80,13 @@ export function DashboardSidebar() {
          <SidebarMenu>
           <SidebarMenuItem>
              <SidebarMenuButton 
-                asChild
                 variant="ghost"
                 className="w-full justify-start"
                 tooltip={{ children: "Logout", side: "right" }}
                 icon={<LogOut />}
+                onClick={() => router.push('/login')}
               >
-              <Link href="/login">
-                <span className="group-data-[collapsed=icon]:hidden">Logout</span>
-              </Link>
+              <span className="group-data-[collapsed=icon]:hidden">Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
          </SidebarMenu>
