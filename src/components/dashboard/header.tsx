@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { mockUsers } from "@/lib/data";
 import { Input } from "../ui/input";
-import { Search } from "lucide-react";
+import { Search, Settings, User } from "lucide-react";
 
 export function DashboardHeader() {
   const currentUser = mockUsers[0]; // Simulate logged in user
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
       <SidebarTrigger className="sm:hidden" />
        <div className="relative flex-1 md:grow-0">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -47,15 +47,28 @@ export function DashboardHeader() {
             />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>{currentUser.name}</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {currentUser.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/settings">Profil</Link>
-            </DropdownMenuItem>
+            <Link href="/dashboard/users/user-1">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profil</span>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/settings">Pengaturan</Link>
-            </DropdownMenuItem>
+            <Link href="/dashboard/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Pengaturan</span>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/login">Logout</Link>

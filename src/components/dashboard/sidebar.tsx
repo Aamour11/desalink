@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
@@ -31,11 +32,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
   { href: "/dashboard/umkm", icon: Store, label: "UMKM" },
   { href: "/dashboard/users", icon: Users, label: "Pengguna" },
+  { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
 ];
 
 export function DashboardSidebar() {
@@ -43,16 +46,17 @@ export function DashboardSidebar() {
   const currentUser = mockUsers[0];
 
   return (
-    <Sidebar>
-      <SidebarHeader>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="justify-between">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <div className="bg-primary p-2 rounded-lg">
             <LogoIcon className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[collapsed=icon]:hidden">
             DesaLink
           </span>
         </Link>
+        <SidebarTrigger className="hidden sm:flex" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -70,59 +74,18 @@ export function DashboardSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="flex flex-col gap-2 !p-2">
-        <Collapsible>
-          <CollapsibleTrigger asChild>
-            <div className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-sidebar-accent transition-colors group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center">
-              <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src={currentUser.avatarUrl}
-                  alt={currentUser.name}
-                  data-ai-hint="user avatar"
-                />
-                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                <p className="text-sm font-semibold text-sidebar-accent-foreground">
-                  {currentUser.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {currentUser.email}
-                </p>
-              </div>
-              <ChevronDown className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <SidebarMenu className="mt-2">
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                  isActive={pathname === "/dashboard/settings"}
-                >
-                  <Link href="/dashboard/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Pengaturan
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  variant="ghost"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <Link href="/login">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </CollapsibleContent>
-        </Collapsible>
+      <SidebarFooter className="flex-col items-start gap-2 !p-2 group-data-[collapsed=icon]:items-center">
+         <div className="w-full border-t border-sidebar-border/50 group-data-[collapsed=icon]:w-2/3" />
+         <SidebarMenu>
+          <SidebarMenuItem>
+             <SidebarMenuButton asChild variant="ghost" className="w-full justify-start">
+              <Link href="/login">
+                <LogOut />
+                <span>Logout</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
