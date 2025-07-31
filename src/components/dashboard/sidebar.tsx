@@ -43,7 +43,7 @@ export function DashboardSidebar() {
         <SidebarMenu>
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
                   icon={<item.icon />}
@@ -57,7 +57,7 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <Link href="/login" legacyBehavior passHref>
+        <Link href="/login">
           <Button variant="ghost" className="w-full justify-start gap-2">
              <LogOut className="h-4 w-4" />
              <span className="group-data-[collapsible=icon]:hidden">Logout</span>
