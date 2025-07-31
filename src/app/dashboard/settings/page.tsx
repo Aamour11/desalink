@@ -9,11 +9,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { mockUsers } from "@/lib/data";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
+import { getUserById } from "@/server/actions";
 
-export default function SettingsPage() {
-  const currentUser = mockUsers[0];
+
+export default async function SettingsPage() {
+  // In a real app, you'd get the logged-in user's ID from the session.
+  // For now, we'll fetch the first user as a placeholder.
+  const currentUser = await getUserById("user-1");
+
+  if (!currentUser) {
+    return <div>Pengguna tidak ditemukan.</div>
+  }
 
   return (
     <div className="space-y-8">

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { umkmSchema, signupSchema, loginSchema } from "@/lib/schema";
 import pool from './db';
+import type { UMKM, User } from "@/lib/types";
 
 // --- USER ACTIONS ---
 
@@ -78,7 +79,7 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
     ]);
     
     connection.release();
-  } catch (error) {
+  } catch (error) => {
     console.error('Database Error:', error);
     if (error instanceof Error) {
         // Rethrow custom error messages or a generic one
@@ -179,4 +180,96 @@ export async function deleteUmkm(id: string) {
         console.error('Database Error:', error);
         throw new Error('Gagal menghapus data UMKM.');
     }
+}
+
+// --- DATA FETCHING ---
+export async function getUmkmData(): Promise<UMKM[]> {
+    try {
+        const connection = await pool.getConnection();
+        const [rows]: [any[], any] = await connection.execute('SELECT * FROM umkm ORDER BY createdAt DESC');
+        connection.release();
+        
+        return rows.map(row => ({
+            ...row,
+            id: `umkm-${row.id}`,
+            startDate: new Date(row.startDate).toISOString().split('T')[0]
+        }));
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal mengambil data UMKM.');
+    }
+}
+
+export async function getUsersData(): Promise<User[]> {
+    try {
+        const connection = await pool.getConnection();
+        const [rows]: [any[], any] = await connection.execute('SELECT id, name, email, role, rtRw, avatarUrl FROM users ORDER BY name');
+        connection.release();
+         return rows.map(row => ({
+            ...row,
+            id: `user-${row.id}`,
+        }));
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal mengambil data Pengguna.');
+    }
+}
+
+export async function getUmkmById(id: string): Promise<UMKM | null> {
+    const umkmId = id.replace('umkm-','');
+    try {
+        const connection = await pool.getConnection();
+        const [rows]: [any[], any] = await connection.execute('SELECT * FROM umkm WHERE id = ?', [umkmId]);
+        connection.release();
+
+        if (rows.length === 0) return null;
+        
+        const row = rows[0];
+        return {
+             ...row,
+            id: `umkm-${row.id}`,
+            startDate: new Date(row.startDate).toISOString().split('T')[0]
+        };
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal mengambil data UMKM by ID.');
+    }
+}
+
+
+export async function getUserById(id: string): Promise<User | null> {
+    const userId = id.replace('user-','');
+    try {
+        const connection = await pool.getConnection();
+        const [rows]: [any[], any] = await connection.execute('SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?', [userId]);
+        connection.release();
+
+        if (rows.length === 0) return null;
+        
+        const row = rows[0];
+        return {
+             ...row,
+            id: `user-${row.id}`,
+        };
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal mengambil data Pengguna by ID.');
+    }
+}
+
+export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
+  if (!rtRw || rtRw === '-') return [];
+  try {
+    const connection = await pool.getConnection();
+    const [rows]: [any[], any] = await connection.execute('SELECT * FROM umkm WHERE rtRw = ? ORDER BY createdAt DESC', [rtRw]);
+    connection.release();
+    return rows.map(row => ({
+      ...row,
+      id: `umkm-${row.id}`,
+      startDate: new Date(row.startDate).toISOString().split('T')[0],
+    }));
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Gagal mengambil data UMKM yang dikelola.');
+  }
 }

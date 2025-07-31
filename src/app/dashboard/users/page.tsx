@@ -2,9 +2,11 @@ import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UsersTable } from "@/components/dashboard/users-table";
-import { mockUsers } from "@/lib/data";
+import { getUsersData } from "@/server/actions";
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  const users = await getUsersData();
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -22,7 +24,7 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <UsersTable data={mockUsers} />
+      <UsersTable data={users} />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { mockUmkm } from "@/lib/data";
+import { getUmkmData } from "@/server/actions";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Store, Users, FileText, CheckCircle, Award } from "lucide-react";
 import { UmkmPerTypeChart } from "@/components/dashboard/umkm-per-type-chart";
@@ -14,26 +14,28 @@ import {
 import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
 
-export default function DashboardPage() {
-  const totalUmkm = mockUmkm.length;
-  const activeUmkm = mockUmkm.filter((u) => u.status === "aktif").length;
-  const umkmWithNib = mockUmkm.filter((u) => u.nib).length;
+export default async function DashboardPage() {
+  const allUmkm = await getUmkmData();
+
+  const totalUmkm = allUmkm.length;
+  const activeUmkm = allUmkm.filter((u) => u.status === "aktif").length;
+  const umkmWithNib = allUmkm.filter((u) => u.nib).length;
   
-  const totalEmployees = mockUmkm.reduce((sum, u) => sum + u.employeeCount, 0);
+  const totalEmployees = allUmkm.reduce((sum, u) => sum + u.employeeCount, 0);
   const averageEmployees = totalUmkm > 0 ? (totalEmployees / totalUmkm).toFixed(1) : 0;
 
-  const umkmPerType = mockUmkm.reduce((acc, umkm) => {
+  const umkmPerType = allUmkm.reduce((acc, umkm) => {
     acc[umkm.businessType] = (acc[umkm.businessType] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const umkmPerRtRw = mockUmkm.reduce((acc, umkm) => {
+  const umkmPerRtRw = allUmkm.reduce((acc, umkm) => {
     const key = umkm.rtRw;
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
-  const umkmPerYear = mockUmkm
+  const umkmPerYear = allUmkm
     .filter(u => u.startDate)
     .reduce((acc, umkm) => {
       const year = new Date(umkm.startDate).getFullYear().toString();
@@ -41,7 +43,7 @@ export default function DashboardPage() {
       return acc;
     }, {} as Record<string, number>);
 
-  const newestUmkm = mockUmkm.length > 0 ? mockUmkm.reduce((latest, current) => {
+  const newestUmkm = allUmkm.length > 0 ? allUmkm.reduce((latest, current) => {
     return new Date(latest.startDate) > new Date(current.startDate) ? latest : current;
   }) : null;
 

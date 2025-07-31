@@ -6,11 +6,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { mockUmkm } from "@/lib/data";
+import { getUmkmById } from "@/server/actions";
 import { notFound } from "next/navigation";
 
-export default function EditUmkmPage({ params }: { params: { id: string } }) {
-  const umkm = mockUmkm.find((u) => u.id === params.id);
+export default async function EditUmkmPage({ params }: { params: { id: string } }) {
+  const umkm = await getUmkmById(params.id);
 
   if (!umkm) {
     notFound();

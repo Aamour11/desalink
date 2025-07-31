@@ -2,10 +2,10 @@ import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UmkmTable } from "@/components/dashboard/umkm-table";
-import { mockUmkm } from "@/lib/data";
+import { getUmkmData } from "@/server/actions";
 import type { UMKM } from "@/lib/types";
 
-export default function UmkmPage({
+export default async function UmkmPage({
   searchParams,
 }: {
   searchParams?: {
@@ -18,7 +18,9 @@ export default function UmkmPage({
   const typeFilter = searchParams?.type || "all";
   const statusFilter = searchParams?.status || "all";
 
-  const filteredUmkm: UMKM[] = mockUmkm.filter((umkm) => {
+  const allUmkm = await getUmkmData();
+
+  const filteredUmkm: UMKM[] = allUmkm.filter((umkm) => {
     const matchesQuery =
       umkm.businessName.toLowerCase().includes(query.toLowerCase()) ||
       umkm.ownerName.toLowerCase().includes(query.toLowerCase()) ||

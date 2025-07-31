@@ -13,12 +13,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { mockUsers } from "@/lib/data";
 import { Input } from "../ui/input";
 import { Search, Settings, User } from "lucide-react";
 
+// NOTE: In a real app, user data should be fetched from a session or context after login.
+// For this demo, we'll use a static placeholder.
+const placeholderUser = {
+    id: "user-1",
+    name: "Admin Desa",
+    email: "admin@desa.com",
+    avatarUrl: "https://placehold.co/100x100.png",
+};
+
+
 export function DashboardHeader() {
-  const currentUser = mockUsers[0]; // Simulate logged in user
+  const currentUser = placeholderUser; 
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
@@ -59,7 +68,7 @@ export function DashboardHeader() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/users/user-1">
+            <Link href={`/dashboard/users/${currentUser.id}`}>
               <User className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </Link>

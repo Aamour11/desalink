@@ -1,4 +1,4 @@
-import { mockUsers, mockUmkm } from "@/lib/data";
+import { getUserById, getUmkmManagedByUser } from "@/server/actions";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,14 +15,14 @@ import { ArrowLeft, AtSign, MapPin, User as UserIcon, Briefcase } from "lucide-r
 import { UmkmTable } from "@/components/dashboard/umkm-table";
 import type { UMKM } from "@/lib/types";
 
-export default function UserProfilePage({ params }: { params: { id: string } }) {
-  const user = mockUsers.find((u) => u.id === params.id);
+export default async function UserProfilePage({ params }: { params: { id: string } }) {
+  const user = await getUserById(params.id);
 
   if (!user) {
     notFound();
   }
 
-  const umkmManagedByUser = mockUmkm.filter(umkm => umkm.rtRw === user.rtRw);
+  const umkmManagedByUser = await getUmkmManagedByUser(user.rtRw);
 
   return (
     <div className="space-y-8">
@@ -88,7 +88,13 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
                 </CardHeader>
                 <CardContent>
                     {user.role === "Petugas RT/RW" ? (
-                        <UmkmTable data={umkmManagedByUser} />
+                       umkmManagedByUser.length > 0 ? (
+                         <UmkmTable data={umkmManagedByUser} />
+                       ): (
+                         <p className="text-center text-muted-foreground py-8">
+                            Belum ada data UMKM untuk wilayah ini.
+                        </p>
+                       )
                     ) : (
                         <p className="text-center text-muted-foreground py-8">
                             Admin Desa memiliki akses ke semua data UMKM.
