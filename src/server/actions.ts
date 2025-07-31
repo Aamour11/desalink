@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from "zod";
@@ -79,7 +80,7 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
     ]);
     
     connection.release();
-  } catch (error) => {
+  } catch (error) {
     console.error('Database Error:', error);
     if (error instanceof Error) {
         // Rethrow custom error messages or a generic one
