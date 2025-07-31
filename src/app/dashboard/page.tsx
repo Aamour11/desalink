@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
+import { AISummary } from "@/components/dashboard/ai-summary";
 
 export default function DashboardPage() {
   const totalUmkm = mockUmkm.length;
@@ -28,7 +29,8 @@ export default function DashboardPage() {
   }, {} as Record<string, number>);
 
   const umkmPerRtRw = mockUmkm.reduce((acc, umkm) => {
-    acc[umkm.rtRw] = (acc[umkm.rtRw] || 0) + 1;
+    const key = umkm.rtRw;
+    acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
@@ -55,6 +57,13 @@ export default function DashboardPage() {
     name,
     value,
   })).sort((a, b) => parseInt(a.name) - parseInt(b.name));
+  
+  const aiSummaryInput = {
+    totalUmkm,
+    umkmPerRtRw,
+    umkmPerType,
+  };
+
 
   return (
     <div className="space-y-6">
@@ -62,6 +71,8 @@ export default function DashboardPage() {
         <h1 className="font-headline text-3xl font-bold tracking-tight">Dasbor Utama</h1>
         <p className="text-muted-foreground">Ringkasan statistik dan agregasi data UMKM Desa Anda.</p>
       </div>
+      
+      <AISummary {...aiSummaryInput} />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
