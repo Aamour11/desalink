@@ -7,10 +7,17 @@ import {
   FileText,
   PlusCircle,
   Upload,
-  ArrowLeft
+  ArrowLeft,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { LogoIcon } from "@/components/icons";
 
 export default function FeaturesPage() {
@@ -55,7 +62,7 @@ export default function FeaturesPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <LogoIcon className="h-8 w-8 text-primary" />
@@ -63,12 +70,12 @@ export default function FeaturesPage() {
               DesaLink UMKM
             </span>
           </Link>
-           <Button asChild>
-              <Link href="/dashboard">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Kembali ke Dashboard
-              </Link>
-           </Button>
+          <Button asChild>
+            <Link href="/dashboard">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Kembali ke Dashboard
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -79,36 +86,74 @@ export default function FeaturesPage() {
               Fitur Unggulan
             </h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Jelajahi kemampuan platform DesaLink UMKM yang dirancang untuk menyederhanakan manajemen data dan mendorong pertumbuhan ekonomi lokal.
+              Jelajahi kemampuan platform DesaLink UMKM yang dirancang untuk
+              menyederhanakan manajemen data dan mendorong pertumbuhan ekonomi
+              lokal.
             </p>
           </div>
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-              <Card key={index} className="flex flex-col bg-background/50 h-full">
+              <Card
+                key={index}
+                className="flex flex-col bg-background/50 h-full"
+              >
                 <CardHeader>
                   <div className="bg-secondary p-3 rounded-full w-max mb-4">
                     {feature.icon}
                   </div>
-                  <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="font-headline text-xl">
+                    {feature.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <p className="text-muted-foreground">
+                    {feature.description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
+             <Card className="flex flex-col bg-secondary/80 h-full md:col-span-2 lg:col-span-3">
+              <CardHeader>
+                <div className="bg-background/80 p-3 rounded-full w-max mb-4">
+                  <Cpu className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="font-headline text-xl">
+                  Bagaimana Data Diolah?
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-muted-foreground">
+                  Ingin tahu lebih dalam tentang bagaimana data mentah diubah
+                  menjadi statistik dan grafik yang informatif di dasbor? Kami
+                  telah menyiapkan halaman khusus yang menjelaskan alur kerja
+                  dan algoritma di balik layar.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button asChild variant="outline" className="bg-background">
+                  <Link href="/algorithms">Pelajari Algoritma</Link>
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </section>
       </main>
 
-       <footer className="bg-muted/40 border-t">
+      <footer className="bg-muted/40 border-t">
         <div className="container py-8 text-center text-sm text-muted-foreground">
-           <Link href="/" className="flex items-center gap-2 w-max mx-auto mb-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 w-max mx-auto mb-4"
+          >
             <LogoIcon className="h-8 w-8 text-primary" />
             <span className="font-headline text-xl font-bold">
               DesaLink UMKM
             </span>
           </Link>
-          <p>© {new Date().getFullYear()} DesaLink UMKM. Solusi Digital untuk Desa Maju.</p>
+          <p>
+            © {new Date().getFullYear()} DesaLink UMKM. Solusi Digital untuk
+            Desa Maju.
+          </p>
         </div>
       </footer>
     </div>
