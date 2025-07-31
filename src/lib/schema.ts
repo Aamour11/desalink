@@ -26,3 +26,8 @@ export const signupSchema = z.object({
   email: z.string().email({ message: "Format email tidak valid." }),
   password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
 });
+
+export const loginSchema = z.object({
+  email: z.string().email({ message: "Format email tidak valid." }),
+  password: z.string().min(1, { message: "Kata sandi tidak boleh kosong." }),
+});
