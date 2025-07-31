@@ -15,6 +15,7 @@ import {
   ArrowRight,
   User,
   LineChart,
+  Store,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
