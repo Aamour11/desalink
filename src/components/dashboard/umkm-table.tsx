@@ -3,6 +3,9 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import Papa from "papaparse";
 import {
   Table,
   TableBody,
@@ -23,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { UmkmTableActions } from "./umkm-table-actions";
 import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { FileDown, FileText } from "lucide-react";
 
 export function UmkmTable({ data }: { data: UMKM[] }) {
   const searchParams = useSearchParams();
@@ -49,21 +54,58 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
     replace(`${pathname}?${params.toString()}`);
   };
 
+  const handleExportCSV = () => {
+    const csvData = Papa.unparse(data.map(d => ({
+        "Nama Usaha": d.businessName,
+        "Nama Pemilik": d.ownerName,
+        "Jenis Usaha": d.businessType,
+        "Alamat": d.address,
+        "RT/RW": d.rtRw,
+        "Kontak": d.contact,
+        "Status": d.status,
+        "NIB": d.nib,
+        "Tanggal Berdiri": d.startDate,
+        "Jumlah Karyawan": d.employeeCount,
+    })));
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "laporan-umkm.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Laporan Data UMKM", 14, 16);
+    autoTable(doc, {
+      head: [["Nama Usaha", "Pemilik", "Jenis", "RT/RW", "Status"]],
+      body: data.map(umkm => [umkm.businessName, umkm.ownerName, umkm.businessType, umkm.rtRw, umkm.status]),
+      startY: 20,
+      headStyles: { fillColor: [34, 47, 62] }, // hsl(215, 40%, 17%)
+    });
+    doc.save('laporan-umkm.pdf');
+  };
+
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <Input
-          placeholder="Cari nama usaha, pemilik, atau RT/RW..."
-          defaultValue={searchParams.get("q")?.toString()}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="max-w-sm"
-        />
-        <div className="flex gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 flex-1">
+          <Input
+            placeholder="Cari nama usaha, pemilik..."
+            defaultValue={searchParams.get("q")?.toString()}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="max-w-xs"
+          />
           <Select
             defaultValue={searchParams.get("type") || "all"}
             onValueChange={(value) => handleFilter("type", value)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Semua Jenis" />
             </SelectTrigger>
             <SelectContent>
@@ -79,7 +121,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
             defaultValue={searchParams.get("status") || "all"}
             onValueChange={(value) => handleFilter("status", value)}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Semua Status" />
             </SelectTrigger>
             <SelectContent>
@@ -89,8 +131,18 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
             </SelectContent>
           </Select>
         </div>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportCSV}>
+              <FileDown className="mr-2 h-4 w-4" />
+              Ekspor CSV
+            </Button>
+            <Button variant="outline" onClick={handleExportPDF}>
+              <FileText className="mr-2 h-4 w-4" />
+              Ekspor PDF
+            </Button>
+        </div>
       </div>
-       <ScrollArea className="rounded-md border whitespace-nowrap">
+       <ScrollArea className="rounded-lg border whitespace-nowrap shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -128,7 +180,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                   </TableCell>
                   <TableCell>{umkm.rtRw}</TableCell>
                   <TableCell>
-                    <Badge variant={umkm.status === "aktif" ? "default" : "secondary"}>
+                    <Badge variant={umkm.status === "aktif" ? "success" : "secondary"}>
                       {umkm.status}
                     </Badge>
                   </TableCell>
