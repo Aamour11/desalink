@@ -91,7 +91,7 @@ export function LandingPage() {
               <Link href="/dashboard">Masuk ke Dashboard</Link>
             </Button>
              <Button size="lg" variant="outline" asChild>
-              <Link href="#">Pelajari Fitur</Link>
+              <Link href="/features">Pelajari Fitur</Link>
             </Button>
           </div>
         </section>
@@ -100,7 +100,7 @@ export function LandingPage() {
           <div className="container">
             <div className="relative rounded-xl shadow-2xl shadow-primary/10 border">
               <Image
-                src="https://placehold.co/1200x675.png"
+                src="https://placehold.co/1200x675/png"
                 alt="Dashboard Preview"
                 width={1200}
                 height={675}
