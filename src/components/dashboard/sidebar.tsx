@@ -47,7 +47,7 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="justify-between">
+      <SidebarHeader className="justify-center group-data-[collapsed=icon]:justify-center">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <div className="bg-primary p-2 rounded-lg">
             <LogoIcon className="h-6 w-6 text-primary-foreground" />
@@ -56,7 +56,7 @@ export function DashboardSidebar() {
             DesaLink
           </span>
         </Link>
-        <SidebarTrigger className="hidden sm:flex" />
+        <SidebarTrigger className="hidden sm:flex absolute right-2 group-data-[collapsed=icon]:hidden" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -78,12 +78,15 @@ export function DashboardSidebar() {
          <div className="w-full border-t border-sidebar-border/50 group-data-[collapsed=icon]:w-2/3" />
          <SidebarMenu>
           <SidebarMenuItem>
-             <SidebarMenuButton asChild variant="ghost" className="w-full justify-start">
+             <SidebarMenuButton 
+                asChild
+                variant="ghost"
+                className="w-full justify-start"
+                tooltip={{ children: "Logout", side: "right" }}
+                icon={<LogOut />}
+              >
               <Link href="/login">
-                <>
-                  <LogOut />
-                  <span className="group-data-[collapsed=icon]:hidden">Logout</span>
-                </>
+                <span className="group-data-[collapsed=icon]:hidden">Logout</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
