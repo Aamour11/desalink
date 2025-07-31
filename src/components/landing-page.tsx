@@ -1,7 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import {
   Users,
   LayoutGrid,
@@ -55,6 +57,11 @@ export function LandingPage() {
     },
   ];
 
+  const fadeIn = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -77,28 +84,57 @@ export function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="container py-20 text-center sm:py-32">
-           <div className="mb-4 inline-flex items-center rounded-lg bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground">
-            Sistem Informasi UMKM Terpadu
-          </div>
-          <h1 className="font-headline text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-            Pemberdayaan Ekonomi Desa
-          </h1>
-          <p className="mx-auto mt-6 max-w-[700px] text-lg text-muted-foreground md:text-xl">
-            Kelola, analisis, dan kembangkan potensi UMKM di tingkat desa dan RT/RW dengan platform digital yang modern dan mudah digunakan.
-          </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Button size="lg" asChild>
-              <Link href="/dashboard">Masuk ke Dashboard</Link>
-            </Button>
-             <Button size="lg" variant="outline" asChild>
-              <Link href="/features">Pelajari Fitur</Link>
-            </Button>
-          </div>
+          <motion.div
+            initial="initial"
+            animate="animate"
+            transition={{ staggerChildren: 0.2 }}
+            className="space-y-6"
+          >
+            <motion.div
+              variants={fadeIn}
+              transition={{ duration: 0.5 }}
+              className="mb-4 inline-flex items-center rounded-lg bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
+            >
+              Sistem Informasi UMKM Terpadu
+            </motion.div>
+            <motion.h1
+              variants={fadeIn}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-headline text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl"
+            >
+              Pemberdayaan Ekonomi Desa
+            </motion.h1>
+            <motion.p
+              variants={fadeIn}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mx-auto mt-6 max-w-[700px] text-lg text-muted-foreground md:text-xl"
+            >
+              Kelola, analisis, dan kembangkan potensi UMKM di tingkat desa dan RT/RW dengan platform digital yang modern dan mudah digunakan.
+            </motion.p>
+            <motion.div
+              variants={fadeIn}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-8 flex justify-center gap-4"
+            >
+              <Button size="lg" asChild>
+                <Link href="/dashboard">Masuk ke Dashboard</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/features">Pelajari Fitur</Link>
+              </Button>
+            </motion.div>
+          </motion.div>
         </section>
 
         <section className="bg-muted/40 py-20 sm:py-32">
           <div className="container">
-            <div className="relative rounded-xl shadow-2xl shadow-primary/10 border">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="relative rounded-xl shadow-2xl shadow-primary/10 border"
+            >
               <Image
                 src="https://placehold.co/1200x675/png"
                 alt="Dashboard Preview"
@@ -108,7 +144,7 @@ export function LandingPage() {
                 data-ai-hint="dashboard community"
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-background/50 via-background/20 to-transparent"></div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -123,17 +159,25 @@ export function LandingPage() {
           </div>
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-              <Card key={index} className="flex flex-col transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl bg-background/50">
-                <CardHeader>
-                  <div className="bg-secondary p-3 rounded-full w-max mb-4">
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl bg-background/50">
+                  <CardHeader>
+                    <div className="bg-secondary p-3 rounded-full w-max mb-4">
+                      {feature.icon}
+                    </div>
+                    <CardTitle className="font-headline text-xl">{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </section>
