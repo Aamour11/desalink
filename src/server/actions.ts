@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { umkmSchema, signupSchema, loginSchema, userFormSchema } from "@/lib/schema";
+import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema } from "@/lib/schema";
 import pool from './db';
 import type { UMKM, User } from "@/lib/types";
 
@@ -128,6 +128,53 @@ export async function addNewUser(values: z.infer<typeof userFormSchema>) {
             throw new Error(error.message || 'Gagal menambahkan pengguna baru.');
         }
         throw new Error('Gagal menambahkan pengguna baru karena kesalahan tidak diketahui.');
+    }
+}
+
+export async function updateUser(id: string, values: z.infer<typeof editUserFormSchema>) {
+    const userId = id.replace('user-', '');
+    const validatedFields = editUserFormSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+        throw new Error("Data tidak valid.");
+    }
+
+    const { name, role, rtRw, password } = validatedFields.data;
+
+    try {
+        const connection = await pool.getConnection();
+
+        if (password) {
+            // Update with new password
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const query = 'UPDATE users SET name = ?, role = ?, rtRw = ?, password_hash = ? WHERE id = ?';
+            await connection.execute(query, [name, role, role === 'Admin Desa' ? '-' : rtRw, hashedPassword, userId]);
+        } else {
+            // Update without changing password
+            const query = 'UPDATE users SET name = ?, role = ?, rtRw = ? WHERE id = ?';
+            await connection.execute(query, [name, role, role === 'Admin Desa' ? '-' : rtRw, userId]);
+        }
+
+        connection.release();
+        revalidatePath("/dashboard/users");
+        revalidatePath(`/dashboard/users/${id}/edit`);
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal memperbarui data pengguna.');
+    }
+}
+
+export async function deleteUser(id: string) {
+    const userId = id.replace('user-', '');
+    try {
+        const connection = await pool.getConnection();
+        const query = 'DELETE FROM users WHERE id = ?';
+        await connection.execute(query, [userId]);
+        connection.release();
+        revalidatePath("/dashboard/users");
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal menghapus pengguna.');
     }
 }
 

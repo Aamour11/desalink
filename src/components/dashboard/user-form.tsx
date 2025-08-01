@@ -25,28 +25,36 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { userFormSchema } from "@/lib/schema";
-import { addNewUser } from "@/server/actions";
+import { userFormSchema, editUserFormSchema } from "@/lib/schema";
+import { addNewUser, updateUser } from "@/server/actions";
 import type { User } from "@/lib/types";
 
 type UserFormValues = z.infer<typeof userFormSchema>;
+type EditUserFormValues = z.infer<typeof editUserFormSchema>;
 
-export function UserForm({ defaultValues }: { defaultValues?: User }) {
+export function UserForm({ defaultValues }: { defaultValues?: User & { password?: string } }) {
   const router = useRouter();
   const { toast } = useToast();
+  const isEditMode = !!defaultValues?.id;
 
-  const form = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
+  const form = useForm<UserFormValues | EditUserFormValues>({
+    resolver: zodResolver(isEditMode ? editUserFormSchema : userFormSchema),
     defaultValues: {
         ...defaultValues,
         role: defaultValues?.role || "Petugas RT/RW",
+        password: "", // Selalu kosongkan password di form
     } || { role: "Petugas RT/RW" },
   });
 
-  const onSubmit = async (data: UserFormValues) => {
+  const onSubmit = async (data: UserFormValues | EditUserFormValues) => {
     try {
-        await addNewUser(data);
-        toast({ title: "Sukses", description: "Pengguna baru berhasil ditambahkan." });
+        if (isEditMode) {
+            await updateUser(defaultValues.id, data as EditUserFormValues);
+            toast({ title: "Sukses", description: "Data pengguna berhasil diperbarui." });
+        } else {
+            await addNewUser(data as UserFormValues);
+            toast({ title: "Sukses", description: "Pengguna baru berhasil ditambahkan." });
+        }
       
       router.push("/dashboard/users");
       router.refresh(); 
@@ -85,8 +93,10 @@ export function UserForm({ defaultValues }: { defaultValues?: User }) {
                     type="email"
                     placeholder="pengguna@desa.com"
                     {...field}
+                    readOnly={isEditMode}
                 />
                 </FormControl>
+                 {isEditMode && <FormDescription>Email tidak dapat diubah.</FormDescription>}
                 <FormMessage />
             </FormItem>
             )}
@@ -98,10 +108,10 @@ export function UserForm({ defaultValues }: { defaultValues?: User }) {
             <FormItem>
                 <FormLabel>Kata Sandi</FormLabel>
                 <FormControl>
-                    <Input type="password" {...field} placeholder="Minimal 6 karakter" />
+                    <Input type="password" {...field} placeholder={isEditMode ? "Kosongkan jika tidak ingin diubah" : "Minimal 6 karakter"} />
                 </FormControl>
                  <FormDescription>
-                    Kata sandi default untuk pengguna baru. Pengguna dapat mengubahnya nanti.
+                    {isEditMode ? "Isi untuk mengubah kata sandi pengguna." : "Kata sandi default untuk pengguna baru."}
                 </FormDescription>
                 <FormMessage />
             </FormItem>

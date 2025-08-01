@@ -40,10 +40,14 @@ export const userFormSchema = z.object({
   rtRw: z.string().optional(),
 }).refine(data => {
     if (data.role === 'Petugas RT/RW') {
-        return /^\d{3}\/\d{3}$/.test(data.rtRw || "");
+        return !!data.rtRw && /^\d{3}\/\d{3}$/.test(data.rtRw);
     }
     return true;
 }, {
     message: "Format RT/RW harus 001/001 untuk Petugas RT/RW.",
     path: ["rtRw"],
+});
+
+export const editUserFormSchema = userFormSchema.extend({
+    password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }).optional().or(z.literal('')),
 });

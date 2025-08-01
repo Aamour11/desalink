@@ -18,12 +18,45 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { User } from "@/lib/types";
 import { ScrollArea } from "../ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { deleteUser } from "@/server/actions";
 
 export function UsersTable({ data }: { data: User[] }) {
+  const { toast } = useToast();
+
+  const handleDelete = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+      toast({
+        title: "Sukses",
+        description: "Pengguna berhasil dihapus.",
+      });
+    } catch (error) {
+       const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
+       toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: errorMessage,
+      });
+    }
+  };
+
+
   return (
     <ScrollArea className="rounded-md border shadow-sm">
       <Table>
@@ -70,28 +103,48 @@ export function UsersTable({ data }: { data: User[] }) {
               </TableCell>
               <TableCell>{user.rtRw}</TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/users/${user.id}`}>
-                        <Eye className="mr-2 h-4 w-4" /> Lihat Profil
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive focus:text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" /> Hapus
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                 <AlertDialog>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/users/${user.id}`}>
+                            <Eye className="mr-2 h-4 w-4" /> Lihat Profil
+                        </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                           <Link href={`/dashboard/users/${user.id}/edit`}>
+                             <Pencil className="mr-2 h-4 w-4" /> Edit
+                           </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <AlertDialogTrigger asChild>
+                         <DropdownMenuItem className="text-destructive focus:text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" /> Hapus
+                        </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tindakan ini tidak dapat diurungkan. Ini akan menghapus data pengguna secara permanen.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(user.id)} className="bg-destructive hover:bg-destructive/90">
+                            Ya, Hapus
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
               </TableCell>
             </TableRow>
           ))}
