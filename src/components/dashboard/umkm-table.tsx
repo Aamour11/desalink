@@ -163,12 +163,13 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                 <TableRow key={umkm.id}>
                   <TableCell>
                     <Image
-                      alt="Product image"
+                      alt={umkm.businessName}
                       className="aspect-square rounded-md object-cover"
                       height="64"
                       src={umkm.imageUrl || "https://placehold.co/64x64.png"}
                       width="64"
                       data-ai-hint="business product"
+                      unoptimized // Required for local images in /public
                     />
                   </TableCell>
                   <TableCell className="font-medium">

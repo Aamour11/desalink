@@ -5,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
+import React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +39,9 @@ type UmkmFormValues = z.infer<typeof umkmSchema>;
 export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const router = useRouter();
   const { toast } = useToast();
+  const [isUploading, setIsUploading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const form = useForm<UmkmFormValues>({
     resolver: zodResolver(umkmSchema),
     defaultValues: {
@@ -45,6 +49,38 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
       employeeCount: defaultValues?.employeeCount || undefined,
     } || { status: "aktif" },
   });
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      form.setValue('imageUrl', result.imageUrl, { shouldValidate: true });
+      toast({ title: "Sukses", description: "Gambar berhasil diunggah." });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat mengunggah.";
+      toast({ variant: 'destructive', title: "Upload Gagal", description: errorMessage });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
 
   const onSubmit = async (data: UmkmFormValues) => {
     try {
@@ -56,6 +92,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
         toast({ title: "Sukses", description: "UMKM baru berhasil ditambahkan." });
       }
       router.push("/dashboard/umkm");
+      router.refresh(); // Refresh the page to show new data
     } catch (error) {
        toast({ variant: 'destructive', title: "Gagal", description: "Terjadi kesalahan saat menyimpan data." });
     }
@@ -154,20 +191,45 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                     <FormControl>
                       <Card>
                         <CardContent className="p-4">
-                           <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <div className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/40 bg-muted/40">
-                              {field.value ? (
-                                <Image src={field.value} alt="Preview" width={200} height={112} className="h-full w-full object-cover rounded-md" data-ai-hint="business product" />
-                              ) : (
-                                <div className="text-center text-muted-foreground">
-                                  <Upload className="mx-auto h-8 w-8" />
-                                  <p className="mt-2 text-sm">Upload gambar</p>
-                                </div>
-                              )}
-                            </div>
-                            <Input id="picture" type="file" className="mt-2" />
-                            <FormDescription>Gambar utama untuk usaha Anda. (Fitur upload sedang dalam pengembangan)</FormDescription>
+                          <div
+                            className="flex aspect-video w-full items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/40 bg-muted/40 relative"
+                          >
+                            {isUploading ? (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10 rounded-lg">
+                                <Loader2 className="h-8 w-8 animate-spin text-white" />
+                              </div>
+                            ) : null}
+
+                            {field.value ? (
+                              <Image src={field.value} alt="Preview" width={300} height={168} className="h-full w-full object-cover rounded-md" data-ai-hint="business product" />
+                            ) : (
+                              <div className="text-center text-muted-foreground p-4">
+                                <Upload className="mx-auto h-8 w-8" />
+                                <p className="mt-2 text-sm">Klik untuk mengunggah gambar</p>
+                              </div>
+                            )}
                           </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full mt-4"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                          >
+                            {isUploading ? "Mengunggah..." : "Pilih Gambar"}
+                          </Button>
+                          <Input
+                            ref={fileInputRef}
+                            id="picture"
+                            type="file"
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={handleImageUpload}
+                            disabled={isUploading}
+                          />
+                          <FormDescription className="mt-2 text-center">
+                            Ukuran file maksimal 2MB.
+                          </FormDescription>
                         </CardContent>
                       </Card>
                     </FormControl>
@@ -264,7 +326,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                     <FormItem>
                       <FormLabel>Tanggal Berdiri Usaha</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
                       </FormControl>
                        <FormDescription>Opsional</FormDescription>
                       <FormMessage />
@@ -278,7 +340,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                     <FormItem>
                       <FormLabel>Jumlah Karyawan</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} />
                       </FormControl>
                        <FormDescription>Opsional</FormDescription>
                       <FormMessage />
@@ -292,7 +354,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
            <Button type="button" variant="outline" onClick={() => router.back()}>
             Batal
           </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button type="submit" disabled={form.formState.isSubmitting || isUploading}>
             {form.formState.isSubmitting ? "Menyimpan..." : "Simpan Data"}
           </Button>
         </div>
