@@ -48,7 +48,7 @@ export function UserForm({ defaultValues }: { defaultValues?: User & { password?
 
   const onSubmit = async (data: UserFormValues | EditUserFormValues) => {
     try {
-        if (isEditMode) {
+        if (isEditMode && defaultValues) {
             await updateUser(defaultValues.id, data as EditUserFormValues);
             toast({ title: "Sukses", description: "Data pengguna berhasil diperbarui." });
         } else {

@@ -35,9 +35,11 @@ import type { User } from "@/lib/types";
 import { ScrollArea } from "../ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { deleteUser } from "@/server/actions";
+import { useRouter } from "next/navigation";
 
 export function UsersTable({ data }: { data: User[] }) {
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleDelete = async (userId: string) => {
     try {
@@ -46,6 +48,7 @@ export function UsersTable({ data }: { data: User[] }) {
         title: "Sukses",
         description: "Pengguna berhasil dihapus.",
       });
+       router.refresh();
     } catch (error) {
        const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
        toast({
@@ -124,7 +127,7 @@ export function UsersTable({ data }: { data: User[] }) {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <AlertDialogTrigger asChild>
-                         <DropdownMenuItem className="text-destructive focus:text-destructive">
+                         <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={user.id === 'user-1'}>
                             <Trash2 className="mr-2 h-4 w-4" /> Hapus
                         </DropdownMenuItem>
                         </AlertDialogTrigger>

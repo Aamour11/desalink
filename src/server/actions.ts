@@ -81,7 +81,6 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
     
     connection.release();
   } catch (error) {
-    console.error('Database Error:', error);
     if (error instanceof Error) {
         // Rethrow custom error messages or a generic one
         throw new Error(error.message || 'Gagal membuat akun pengguna.');
@@ -157,6 +156,7 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
 
         connection.release();
         revalidatePath("/dashboard/users");
+        revalidatePath(`/dashboard/users/${id}`);
         revalidatePath(`/dashboard/users/${id}/edit`);
     } catch (error) {
         console.error('Database Error:', error);
@@ -166,6 +166,9 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
 
 export async function deleteUser(id: string) {
     const userId = id.replace('user-', '');
+     if (userId === '1') {
+      throw new Error('Admin utama tidak dapat dihapus.');
+    }
     try {
         const connection = await pool.getConnection();
         const query = 'DELETE FROM users WHERE id = ?';
