@@ -31,3 +31,19 @@ export const loginSchema = z.object({
   email: z.string().email({ message: "Format email tidak valid." }),
   password: z.string().min(1, { message: "Kata sandi tidak boleh kosong." }),
 });
+
+export const userFormSchema = z.object({
+  name: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
+  email: z.string().email({ message: "Format email tidak valid." }),
+  password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
+  role: z.enum(["Admin Desa", "Petugas RT/RW"]),
+  rtRw: z.string().optional(),
+}).refine(data => {
+    if (data.role === 'Petugas RT/RW') {
+        return /^\d{3}\/\d{3}$/.test(data.rtRw || "");
+    }
+    return true;
+}, {
+    message: "Format RT/RW harus 001/001 untuk Petugas RT/RW.",
+    path: ["rtRw"],
+});

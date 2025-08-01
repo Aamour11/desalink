@@ -17,7 +17,7 @@ export default async function UsersPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="#">
+          <Link href="/dashboard/users/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             Tambah Pengguna
           </Link>

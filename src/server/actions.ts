@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
-import { umkmSchema, signupSchema, loginSchema } from "@/lib/schema";
+import { umkmSchema, signupSchema, loginSchema, userFormSchema } from "@/lib/schema";
 import pool from './db';
 import type { UMKM, User } from "@/lib/types";
 
@@ -88,6 +88,47 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
     }
     throw new Error('Gagal membuat akun pengguna karena kesalahan tidak diketahui.');
   }
+}
+
+
+export async function addNewUser(values: z.infer<typeof userFormSchema>) {
+    const validatedFields = userFormSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+        throw new Error("Data tidak valid.");
+    }
+
+    const { name, email, password, role, rtRw } = validatedFields.data;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+        const connection = await pool.getConnection();
+
+        const [existingUsers]: [any[], any] = await connection.execute('SELECT email FROM users WHERE email = ?', [email]);
+        if (existingUsers.length > 0) {
+            connection.release();
+            throw new Error("Email sudah terdaftar untuk pengguna lain.");
+        }
+
+        const query = 'INSERT INTO users (name, email, password_hash, role, rtRw, avatarUrl) VALUES (?, ?, ?, ?, ?, ?)';
+        await connection.execute(query, [
+            name,
+            email,
+            hashedPassword,
+            role,
+            role === "Admin Desa" ? "-" : rtRw,
+             `https://placehold.co/100x100.png?text=${name.charAt(0)}`
+        ]);
+
+        connection.release();
+        revalidatePath("/dashboard/users");
+    } catch (error) {
+        console.error('Database Error:', error);
+        if (error instanceof Error) {
+            throw new Error(error.message || 'Gagal menambahkan pengguna baru.');
+        }
+        throw new Error('Gagal menambahkan pengguna baru karena kesalahan tidak diketahui.');
+    }
 }
 
 
