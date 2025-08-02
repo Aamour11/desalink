@@ -1,6 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +28,7 @@ import { deleteUmkm } from "@/server/actions";
 
 export function UmkmTableActions({ umkmId }: { umkmId: string }) {
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleDelete = async () => {
     try {
@@ -34,11 +37,13 @@ export function UmkmTableActions({ umkmId }: { umkmId: string }) {
         title: "Sukses",
         description: "Data UMKM berhasil dihapus.",
       });
+      router.refresh();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
       toast({
         variant: "destructive",
-        title: "Gagal",
-        description: "Terjadi kesalahan saat menghapus data.",
+        title: "Gagal Menghapus",
+        description: errorMessage,
       });
     }
   };
@@ -60,7 +65,7 @@ export function UmkmTableActions({ umkmId }: { umkmId: string }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <AlertDialogTrigger asChild>
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
               <Trash2 className="mr-2 h-4 w-4" /> Hapus
             </DropdownMenuItem>
           </AlertDialogTrigger>
@@ -71,7 +76,7 @@ export function UmkmTableActions({ umkmId }: { umkmId: string }) {
           <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
           <AlertDialogDescription>
             Tindakan ini tidak dapat diurungkan. Ini akan menghapus data UMKM
-            secara permanen dari server.
+            secara permanen dari server, termasuk gambar yang terhubung.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
