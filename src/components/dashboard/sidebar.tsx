@@ -20,6 +20,7 @@ import {
   LogOut,
   Settings,
   Shield,
+  Contact,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut, getCurrentUser } from "@/server/actions";
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
   { href: "/dashboard/umkm", icon: Store, label: "UMKM" },
   { href: "/dashboard/users", icon: Users, label: "Pengguna", adminOnly: true },
+  { href: "/dashboard/management", icon: Contact, label: "Pengurus" },
   { href: "/dashboard/admin", icon: Shield, label: "Pusat Administrasi", adminOnly: true },
 ];
 
@@ -78,7 +80,7 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => {
-            if (item.adminOnly && !userIsAdmin) {
+            if (item.adminOnly && !userIsAmdin) {
               return null;
             }
             return (
