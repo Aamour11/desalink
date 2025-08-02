@@ -21,6 +21,7 @@ import {
   Shield,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
+import { signOut } from "@/server/actions";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -36,6 +37,11 @@ const bottomNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  }
 
   return (
     <Sidebar>
@@ -86,7 +92,7 @@ export function DashboardSidebar() {
                     className="w-full justify-start"
                     tooltip={{ children: "Logout" }}
                     icon={<LogOut />}
-                    onClick={() => router.push('/login')}
+                    onClick={handleLogout}
                 >
                 Logout
                 </SidebarMenuButton>

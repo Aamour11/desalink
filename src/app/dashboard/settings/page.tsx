@@ -10,16 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeSwitcher } from "@/components/dashboard/theme-switcher";
-import { getUserById } from "@/server/actions";
+import { getCurrentUser } from "@/server/actions";
+import { redirect } from "next/navigation";
 
 
 export default async function SettingsPage() {
-  // In a real app, you'd get the logged-in user's ID from the session.
-  // For now, we'll fetch the first user as a placeholder.
-  const currentUser = await getUserById("user-1");
+  const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    return <div>Pengguna tidak ditemukan.</div>
+    // This should not happen due to middleware, but as a safeguard
+    redirect('/login');
   }
 
   return (

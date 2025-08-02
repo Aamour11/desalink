@@ -4,11 +4,16 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema } from "@/lib/schema";
 import pool from './db';
 import type { UMKM, User } from "@/lib/types";
 
-// --- USER ACTIONS ---
+const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key";
+const JWT_EXPIRES_IN = "1d";
+
+// --- AUTH ACTIONS ---
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
   const validatedFields = loginSchema.safeParse(values);
@@ -34,19 +39,64 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     if (!passwordsMatch) {
       throw new Error("Email atau kata sandi salah.");
     }
+    
+    // Create JWT
+    const token = jwt.sign(
+      { 
+        id: `user-${user.id}`, 
+        name: user.name, 
+        email: user.email, 
+        role: user.role,
+        avatarUrl: user.avatarUrl,
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
 
-    // In a real app, you'd create a session here.
-    // For now, successfully returning means login is successful.
+    // Set cookie
+    cookies().set("session", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24, // 1 day
+      path: "/",
+    });
+
     return { success: true };
     
   } catch (error) {
      if (error instanceof Error) {
-        // Rethrow custom error messages or a generic one
         throw new Error(error.message || 'Terjadi kesalahan saat proses login.');
     }
     throw new Error('Terjadi kesalahan yang tidak diketahui.');
   }
 }
+
+export async function signOut() {
+  cookies().delete("session");
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const token = cookies().get("session")?.value;
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as User & { exp: number };
+    // You can add extra checks here, e.g., if the user still exists in the DB
+    return {
+      id: decoded.id,
+      name: decoded.name,
+      email: decoded.email,
+      role: decoded.role,
+      rtRw: decoded.rtRw,
+      avatarUrl: decoded.avatarUrl,
+    };
+  } catch (error) {
+    // Invalid token
+    return null;
+  }
+}
+
+// --- USER ACTIONS ---
 
 export async function createUser(values: z.infer<typeof signupSchema>) {
   const validatedFields = signupSchema.safeParse(values);
@@ -61,20 +111,18 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
   try {
     const connection = await pool.getConnection();
 
-    // Check if user already exists
     const [existingUsers]: [any[], any] = await connection.execute('SELECT email FROM users WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
       connection.release();
       throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
     }
     
-    // Insert new user
     const query = 'INSERT INTO users (name, email, password_hash, role, rtRw, avatarUrl) VALUES (?, ?, ?, ?, ?, ?)';
     await connection.execute(query, [
         name,
         email,
         hashedPassword,
-        "Admin Desa", // Default role for signup
+        "Admin Desa",
         "-",
         `https://placehold.co/100x100.png?text=${name.charAt(0)}`
     ]);
@@ -82,7 +130,6 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
     connection.release();
   } catch (error) {
     if (error instanceof Error) {
-        // Rethrow custom error messages or a generic one
         throw new Error(error.message || 'Gagal membuat akun pengguna.');
     }
     throw new Error('Gagal membuat akun pengguna karena kesalahan tidak diketahui.');
@@ -144,12 +191,10 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
         const connection = await pool.getConnection();
 
         if (password) {
-            // Update with new password
             const hashedPassword = await bcrypt.hash(password, 10);
             const query = 'UPDATE users SET name = ?, role = ?, rtRw = ?, password_hash = ? WHERE id = ?';
             await connection.execute(query, [name, role, role === 'Admin Desa' ? '-' : rtRw, hashedPassword, userId]);
         } else {
-            // Update without changing password
             const query = 'UPDATE users SET name = ?, role = ?, rtRw = ? WHERE id = ?';
             await connection.execute(query, [name, role, role === 'Admin Desa' ? '-' : rtRw, userId]);
         }

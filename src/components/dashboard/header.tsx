@@ -14,20 +14,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "../ui/input";
-import { Search, Settings, User } from "lucide-react";
-
-// NOTE: In a real app, user data should be fetched from a session or context after login.
-// For this demo, we'll use a static placeholder.
-const placeholderUser = {
-    id: "user-1",
-    name: "Admin Desa",
-    email: "admin@desa.com",
-    avatarUrl: "https://placehold.co/100x100.png",
-};
+import { LogOut, Search, Settings, User } from "lucide-react";
+import type { User as UserType } from "@/lib/types";
+import { signOut } from "@/server/actions";
+import { useRouter } from "next/navigation";
 
 
-export function DashboardHeader() {
-  const currentUser = placeholderUser; 
+export function DashboardHeader({ currentUser }: { currentUser: UserType }) {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
@@ -80,8 +79,9 @@ export function DashboardHeader() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/login">Logout</Link>
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Logout</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
