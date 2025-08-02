@@ -32,22 +32,33 @@ export const loginSchema = z.object({
   password: z.string().min(1, { message: "Kata sandi tidak boleh kosong." }),
 });
 
-export const userFormSchema = z.object({
+// Base schema for user data
+const baseUserSchema = z.object({
   name: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
   email: z.string().email({ message: "Format email tidak valid." }),
-  password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
   role: z.enum(["Admin Desa", "Petugas RT/RW"]),
   rtRw: z.string().optional(),
-}).refine(data => {
+});
+
+// Refinement logic to be applied to both schemas
+const userRefinement = (data: z.infer<typeof baseUserSchema>) => {
     if (data.role === 'Petugas RT/RW') {
         return !!data.rtRw && /^\d{3}\/\d{3}$/.test(data.rtRw);
     }
     return true;
-}, {
+};
+const refinementOptions = {
     message: "Format RT/RW harus 001/001 untuk Petugas RT/RW.",
     path: ["rtRw"],
-});
+};
 
-export const editUserFormSchema = userFormSchema.extend({
+// Schema for creating a new user, requires a password
+export const userFormSchema = baseUserSchema.extend({
+     password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
+}).refine(userRefinement, refinementOptions);
+
+
+// Schema for editing an existing user, password is optional
+export const editUserFormSchema = baseUserSchema.extend({
     password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }).optional().or(z.literal('')),
-});
+}).refine(userRefinement, refinementOptions);
