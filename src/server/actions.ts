@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema } from "@/lib/schema";
+import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema } from "@/lib/schema";
 import pool from './db';
 import type { UMKM, User } from "@/lib/types";
 import { unlink, stat } from "fs/promises";
@@ -53,7 +53,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     
     // Create JWT
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     // Set cookie
     cookieStore.set("session", token, {
       httpOnly: true,
@@ -73,7 +73,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
 }
 
 export async function signOut() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.delete("session");
 }
 
@@ -203,23 +203,84 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
     }
 }
 
-export async function deleteUser(id: string) {
-    const userId = id.replace('user-', '');
-     if (userId === '1') {
+export async function deleteUser(userId: string) {
+    const id = userId.replace('user-', '');
+     if (id === '1') {
       throw new Error('Admin utama tidak dapat dihapus.');
     }
     try {
         const connection = await pool.getConnection();
         const query = 'DELETE FROM users WHERE id = ?';
-        await connection.execute(query, [userId]);
+        await connection.execute(query, [id]);
         connection.release();
         revalidatePath("/dashboard/users");
+        return { success: true };
     } catch (error) {
         console.error('Database Error:', error);
         throw new Error('Gagal menghapus pengguna.');
     }
 }
 
+export async function updateProfile(userId: string, values: z.infer<typeof updateProfileSchema>) {
+    const id = userId.replace('user-', '');
+    const validatedFields = updateProfileSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+        throw new Error("Data tidak valid.");
+    }
+
+    const { name } = validatedFields.data;
+
+    try {
+        const connection = await pool.getConnection();
+        await connection.execute('UPDATE users SET name = ? WHERE id = ?', [name, id]);
+        connection.release();
+        revalidatePath('/dashboard/settings');
+    } catch (error) {
+        console.error('Database Error:', error);
+        throw new Error('Gagal memperbarui profil.');
+    }
+}
+
+export async function updatePassword(userId: string, values: z.infer<typeof updatePasswordSchema>) {
+    const id = userId.replace('user-', '');
+    const validatedFields = updatePasswordSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+        throw new Error("Data tidak valid.");
+    }
+    
+    const { currentPassword, newPassword } = validatedFields.data;
+
+    try {
+        const connection = await pool.getConnection();
+        const [users]: [any[], any] = await connection.execute('SELECT password_hash FROM users WHERE id = ?', [id]);
+        
+        if (users.length === 0) {
+            connection.release();
+            throw new Error("Pengguna tidak ditemukan.");
+        }
+
+        const user = users[0];
+        const passwordsMatch = await bcrypt.compare(currentPassword, user.password_hash);
+
+        if (!passwordsMatch) {
+            connection.release();
+            throw new Error("Kata sandi saat ini salah.");
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        await connection.execute('UPDATE users SET password_hash = ? WHERE id = ?', [hashedNewPassword, id]);
+        
+        connection.release();
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error;
+        }
+        console.error('Database Error:', error);
+        throw new Error('Gagal mengubah kata sandi.');
+    }
+}
 
 // --- UMKM ACTIONS ---
 
@@ -350,6 +411,7 @@ export async function deleteUmkm(id: string) {
         }
         
         revalidatePath("/dashboard/umkm");
+        return { success: true };
     } catch (error) {
         console.error('Database Error:', error);
         throw new Error('Gagal menghapus data UMKM.');

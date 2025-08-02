@@ -62,3 +62,18 @@ export const userFormSchema = baseUserSchema.extend({
 export const editUserFormSchema = baseUserSchema.extend({
     password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }).optional().or(z.literal('')),
 }).refine(userRefinement, refinementOptions);
+
+// Schema for updating user profile from settings page
+export const updateProfileSchema = z.object({
+    name: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
+});
+
+// Schema for updating password from settings page
+export const updatePasswordSchema = z.object({
+    currentPassword: z.string().min(1, { message: "Kata sandi saat ini harus diisi." }),
+    newPassword: z.string().min(6, { message: "Kata sandi baru minimal 6 karakter." }),
+    confirmPassword: z.string().min(6, { message: "Konfirmasi kata sandi minimal 6 karakter." })
+}).refine(data => data.newPassword === data.confirmPassword, {
+    message: "Kata sandi baru dan konfirmasi tidak cocok.",
+    path: ["confirmPassword"],
+});
