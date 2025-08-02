@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -150,7 +151,7 @@ export function UserForm({ defaultValues }: { defaultValues?: User & { password?
                             placeholder="Contoh: 001/001" 
                             {...field} 
                             disabled={role === 'Admin Desa'}
-                            value={role === 'Admin Desa' ? '-' : field.value || ''}
+                            value={role === 'Admin Desa' ? '-' : (field.value === '-' ? '' : field.value || '')}
                             onChange={(e) => {
                                 if (role !== 'Admin Desa') {
                                     field.onChange(e.target.value);
