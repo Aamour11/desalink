@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -95,7 +96,7 @@ export default function LoginPage() {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="admin@desa.com"
+                          placeholder="pengguna@desa.com"
                           {...field}
                         />
                       </FormControl>
@@ -129,12 +130,12 @@ export default function LoginPage() {
           </CardContent>
         </Card>
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Belum punya akun admin?{" "}
+          Belum punya akun?{" "}
           <Link
             href="/signup"
             className="font-semibold text-primary hover:underline"
           >
-            Buat Akun Admin
+            Daftar di sini
           </Link>
         </p>
       </div>

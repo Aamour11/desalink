@@ -75,9 +75,9 @@ export default function SignupPage() {
         </Link>
         <Card className="shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="font-headline text-2xl">Buat Akun Admin</CardTitle>
+            <CardTitle className="font-headline text-2xl">Buat Akun Admin Desa</CardTitle>
             <CardDescription>
-              Isi formulir untuk mendaftar sebagai Admin Desa.
+              Halaman ini khusus untuk mendaftarkan Admin Desa utama. Akun untuk Petugas RT/RW dibuat oleh Admin dari dalam dasbor.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -127,7 +127,7 @@ export default function SignupPage() {
                     )}
                 />
                 <Button type="submit" className="w-full !mt-8" size="lg" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "Mendaftar..." : "Daftar"}
+                    {form.formState.isSubmitting ? "Mendaftar..." : "Daftar Sebagai Admin"}
                 </Button>
                 </form>
             </Form>
