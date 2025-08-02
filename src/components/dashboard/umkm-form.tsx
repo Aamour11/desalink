@@ -34,6 +34,8 @@ import { umkmSchema } from "@/lib/schema";
 import { createUmkm, updateUmkm } from "@/server/actions";
 import type { UMKM } from "@/lib/types";
 
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
 type UmkmFormValues = z.infer<typeof umkmSchema>;
 
 export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
@@ -53,6 +55,15 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+        toast({
+            variant: 'destructive',
+            title: "Upload Gagal",
+            description: "Ukuran file tidak boleh melebihi 2MB.",
+        });
+        return;
+    }
 
     setIsUploading(true);
 
@@ -78,6 +89,10 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
       toast({ variant: 'destructive', title: "Upload Gagal", description: errorMessage });
     } finally {
       setIsUploading(false);
+      // Reset the file input value
+      if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 

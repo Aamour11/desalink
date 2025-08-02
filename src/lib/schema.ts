@@ -18,7 +18,7 @@ export const umkmSchema = z.object({
   startDate: z.string().optional(),
   employeeCount: z.coerce.number().int().positive().optional(),
   description: z.string().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().optional(),
 });
 
 export const signupSchema = z.object({
