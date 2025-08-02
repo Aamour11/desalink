@@ -34,7 +34,7 @@ import { umkmSchema } from "@/lib/schema";
 import { createUmkm, updateUmkm } from "@/server/actions";
 import type { UMKM } from "@/lib/types";
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 type UmkmFormValues = z.infer<typeof umkmSchema>;
 
@@ -60,7 +60,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
         toast({
             variant: 'destructive',
             title: "Upload Gagal",
-            description: "Ukuran file tidak boleh melebihi 2MB.",
+            description: "Ukuran file tidak boleh melebihi 10MB.",
         });
         return;
     }
@@ -243,7 +243,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                             disabled={isUploading}
                           />
                           <FormDescription className="mt-2 text-center">
-                            Ukuran file maksimal 2MB.
+                            Ukuran file maksimal 10MB.
                           </FormDescription>
                         </CardContent>
                       </Card>
