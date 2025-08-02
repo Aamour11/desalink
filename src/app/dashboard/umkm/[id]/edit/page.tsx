@@ -10,7 +10,8 @@ import { getUmkmById } from "@/server/actions";
 import { notFound } from "next/navigation";
 
 export default async function EditUmkmPage({ params }: { params: { id: string } }) {
-  const umkm = await getUmkmById(params.id);
+  const { id } = params;
+  const umkm = await getUmkmById(id);
 
   if (!umkm) {
     notFound();
