@@ -17,28 +17,28 @@ import { id as indonesiaLocale } from 'date-fns/locale';
 
 export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
-  // Fetch data based on user role
-  const allUmkm = await getUmkmData();
+  // Fetch data based on user role - getUmkmData already filters by role internally
+  const umkmData = await getUmkmData();
 
-  const totalUmkm = allUmkm.length;
-  const activeUmkm = allUmkm.filter((u) => u.status === "aktif").length;
-  const umkmWithNib = allUmkm.filter((u) => u.nib).length;
+  const totalUmkm = umkmData.length;
+  const activeUmkm = umkmData.filter((u) => u.status === "aktif").length;
+  const umkmWithNib = umkmData.filter((u) => u.nib).length;
   
-  const totalEmployees = allUmkm.reduce((sum, u) => sum + u.employeeCount, 0);
+  const totalEmployees = umkmData.reduce((sum, u) => sum + u.employeeCount, 0);
   const averageEmployees = totalUmkm > 0 ? (totalEmployees / totalUmkm).toFixed(1) : 0;
 
-  const umkmPerType = allUmkm.reduce((acc, umkm) => {
+  const umkmPerType = umkmData.reduce((acc, umkm) => {
     acc[umkm.businessType] = (acc[umkm.businessType] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  const umkmPerRtRw = allUmkm.reduce((acc, umkm) => {
+  const umkmPerRtRw = umkmData.reduce((acc, umkm) => {
     const key = umkm.rtRw;
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
-  const umkmPerYear = allUmkm
+  const umkmPerYear = umkmData
     .filter(u => u.startDate)
     .reduce((acc, umkm) => {
       const year = new Date(umkm.startDate).getFullYear().toString();
@@ -46,17 +46,22 @@ export default async function DashboardPage() {
       return acc;
     }, {} as Record<string, number>);
 
-  const newestUmkm = allUmkm.length > 0 ? allUmkm.reduce((latest, current) => {
-    return new Date(latest.startDate) > new Date(current.startDate) ? latest : current;
+  const newestUmkm = umkmData.length > 0 ? umkmData.reduce((latest, current) => {
+    // Handle cases where startDate might be invalid
+    const latestDate = latest.startDate ? new Date(latest.startDate) : new Date(0);
+    const currentDate = current.startDate ? new Date(current.startDate) : new Date(0);
+    return latestDate > currentDate ? latest : current;
   }) : null;
 
   const chartDataPerType = Object.entries(umkmPerType).map(([name, value]) => ({
     name,
     value,
   }));
+
   const chartDataPerRtRw = Object.entries(umkmPerRtRw).map(
     ([name, value]) => ({ name, value })
   );
+  
   const chartDataPerYear = Object.entries(umkmPerYear).map(([name, value]) => ({
     name,
     value,
@@ -126,7 +131,7 @@ export default async function DashboardPage() {
                         </p>
                         <p className="text-sm text-muted-foreground">
                             Tanggal Berdiri: <span className="font-medium text-foreground">
-                                {format(new Date(newestUmkm.startDate), "d MMMM yyyy", { locale: indonesiaLocale })}
+                                {newestUmkm.startDate ? format(new Date(newestUmkm.startDate), "d MMMM yyyy", { locale: indonesiaLocale }) : 'Tidak diketahui'}
                             </span>
                         </p>
                     </div>

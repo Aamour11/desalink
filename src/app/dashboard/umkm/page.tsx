@@ -20,6 +20,7 @@ export default async function UmkmPage({
   const typeFilter = searchParams?.type || "all";
   const statusFilter = searchParams?.status || "all";
 
+  // getUmkmData already filters based on the current user's role
   const allUmkm = await getUmkmData();
   const currentUser = await getCurrentUser();
 
@@ -31,9 +32,8 @@ export default async function UmkmPage({
     const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
     const matchesStatus =
       statusFilter === "all" || umkm.status === statusFilter;
-    const matchesRole = currentUser?.role === 'Admin Desa' || (currentUser?.role === 'Petugas RT/RW' && umkm.rtRw === currentUser?.rtRw)
 
-    return matchesQuery && matchesType && matchesStatus && matchesRole;
+    return matchesQuery && matchesType && matchesStatus;
   });
 
   const canAddUmkm = currentUser?.role === 'Admin Desa' || !!currentUser?.rtRw;
