@@ -109,10 +109,10 @@ export function UserForm({ defaultValues }: { defaultValues?: User & { password?
             <FormItem>
                 <FormLabel>Kata Sandi</FormLabel>
                 <FormControl>
-                    <Input type="password" {...field} placeholder={isEditMode ? "Kosongkan jika tidak ingin diubah" : "Minimal 6 karakter"} />
+                    <Input type="password" {...field} placeholder={isEditMode ? "Kosongkan jika tidak ingin mengubah" : "Minimal 6 karakter"} />
                 </FormControl>
                  <FormDescription>
-                    {isEditMode ? "Isi untuk mengubah kata sandi pengguna." : "Kata sandi default untuk pengguna baru."}
+                    {isEditMode ? "Isi kolom ini untuk memperbarui kata sandi pengguna." : "Kata sandi default untuk pengguna baru."}
                 </FormDescription>
                 <FormMessage />
             </FormItem>
@@ -151,7 +151,7 @@ export function UserForm({ defaultValues }: { defaultValues?: User & { password?
                             placeholder="Contoh: 001/001" 
                             {...field} 
                             disabled={role === 'Admin Desa'}
-                            value={role === 'Admin Desa' ? '-' : (field.value === '-' ? '' : field.value || '')}
+                            value={role === 'Admin Desa' ? '-' : (field.value || '')}
                             onChange={(e) => {
                                 if (role !== 'Admin Desa') {
                                     field.onChange(e.target.value);
@@ -160,7 +160,7 @@ export function UserForm({ defaultValues }: { defaultValues?: User & { password?
                         />
                     </FormControl>
                      <FormDescription>
-                        Diisi jika peran adalah "Petugas RT/RW".
+                        Wajib diisi jika peran adalah "Petugas RT/RW".
                     </FormDescription>
                     <FormMessage />
                     </FormItem>

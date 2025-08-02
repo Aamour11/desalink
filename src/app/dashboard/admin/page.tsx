@@ -153,7 +153,7 @@ export default function AdminCenterPage() {
             </div>
             <CardTitle>Cadangkan Data</CardTitle>
             <CardDescription>
-              Unduh salinan data UMKM dan pengguna dalam format CSV.
+              Unduh salinan data Pengguna dan UMKM dalam format CSV.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -14,7 +14,8 @@ export default function NewUserPage() {
         <CardHeader>
           <CardTitle className="font-headline">Tambah Pengguna Baru</CardTitle>
           <CardDescription>
-            Isi formulir untuk membuat akun baru. Kata sandi akan dikirim via email (simulasi).
+            Isi formulir untuk membuat akun baru. Kata sandi default akan
+            ditetapkan untuk pengguna.
           </CardDescription>
         </CardHeader>
         <CardContent>
