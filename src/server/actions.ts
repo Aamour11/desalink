@@ -51,9 +51,9 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     
     // Create JWT
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-
+    const cookieStore = cookies();
     // Set cookie
-    cookies().set("session", token, {
+    cookieStore.set("session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24, // 1 day
@@ -71,11 +71,13 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
 }
 
 export async function signOut() {
-  cookies().delete("session");
+  const cookieStore = cookies();
+  cookieStore.delete("session");
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const token = cookies().get("session")?.value;
+  const cookieStore = cookies();
+  const token = cookieStore.get("session")?.value;
   if (!token) return null;
 
   try {
