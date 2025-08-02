@@ -18,8 +18,6 @@ import {
   ChartConfig,
 } from "@/components/ui/chart";
 
-const COLORS = ["#48bfe3", "#90e0ef", "#a2d2ff", "#bde0fe", "#caf0f8"];
-
 const chartConfig = {
   value: {
     label: "UMKM",
@@ -49,10 +47,20 @@ const chartConfig = {
 type ChartData = {
   name: string;
   value: number;
+  fill: string;
 }[];
 
-export function UmkmPerTypeChart({ data }: { data: ChartData }) {
-    const totalValue = data.reduce((acc, item) => acc + item.value, 0);
+export function UmkmPerTypeChart({ data: rawData }: { data: {name: string, value: number}[] }) {
+    const totalValue = rawData.reduce((acc, item) => acc + item.value, 0);
+
+    const chartData = React.useMemo(() => {
+        const colors = Object.values(chartConfig).map(c => c.color).filter(Boolean) as string[];
+        return rawData.map((item, index) => ({
+            ...item,
+            fill: colors[index % colors.length]
+        }))
+    }, [rawData]);
+
   return (
     <Card className="flex h-full flex-col">
       <CardHeader>
@@ -69,17 +77,17 @@ export function UmkmPerTypeChart({ data }: { data: ChartData }) {
           <PieChart>
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel nameKey="name" />}
+              content={<ChartTooltipContent hideLabel />}
             />
             <Pie
-              data={data}
+              data={chartData}
               dataKey="value"
               nameKey="name"
               innerRadius={60}
               strokeWidth={5}
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              {chartData.map((entry) => (
+                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
               ))}
             </Pie>
           </PieChart>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
 import {
   Card,
   CardContent,
@@ -17,10 +17,10 @@ import {
 const chartConfig = {
   value: {
     label: "Jumlah UMKM Baru",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
 
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
 type ChartData = {
     name: string; // Year
@@ -55,11 +55,7 @@ export function UmkmPerYearChart({ data }: { data: ChartData }) {
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="value" radius={8}>
-                {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-            </Bar>
+            <Bar dataKey="value" fill="var(--color-value)" radius={8} />
           </BarChart>
         </ChartContainer>
       </CardContent>
