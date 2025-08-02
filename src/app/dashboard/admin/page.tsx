@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -10,11 +11,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DatabaseBackup, BellRing, UserCog } from "lucide-react";
+import { DatabaseBackup, BellRing, UserCog, Ban } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export default function AdminCenterPage() {
     const { toast } = useToast();
+    const currentUser = useCurrentUser();
+    
+    if (currentUser?.role !== "Admin Desa") {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+                <Ban className="h-20 w-20 text-destructive mb-4" />
+                <h1 className="font-headline text-3xl font-bold">Akses Ditolak</h1>
+                <p className="text-muted-foreground mt-2">
+                    Anda tidak memiliki izin untuk mengakses halaman ini.
+                </p>
+                 <Button asChild className="mt-6">
+                    <Link href="/dashboard">Kembali ke Dashboard</Link>
+                </Button>
+            </div>
+        )
+    }
 
     const handleBackup = () => {
         toast({

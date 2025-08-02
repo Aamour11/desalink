@@ -40,18 +40,17 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
       throw new Error("Email atau kata sandi salah.");
     }
     
+    const tokenPayload: User = {
+      id: `user-${user.id}`, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role,
+      rtRw: user.rtRw,
+      avatarUrl: user.avatarUrl,
+    };
+    
     // Create JWT
-    const token = jwt.sign(
-      { 
-        id: `user-${user.id}`, 
-        name: user.name, 
-        email: user.email, 
-        role: user.role,
-        avatarUrl: user.avatarUrl,
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
     // Set cookie
     cookies().set("session", token, {
@@ -80,18 +79,9 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as User & { exp: number };
-    // You can add extra checks here, e.g., if the user still exists in the DB
-    return {
-      id: decoded.id,
-      name: decoded.name,
-      email: decoded.email,
-      role: decoded.role,
-      rtRw: decoded.rtRw,
-      avatarUrl: decoded.avatarUrl,
-    };
+    const decoded = jwt.verify(token, JWT_SECRET) as User;
+    return decoded;
   } catch (error) {
-    // Invalid token
     return null;
   }
 }
@@ -321,15 +311,25 @@ export async function deleteUmkm(id: string) {
 
 // --- DATA FETCHING ---
 export async function getUmkmData(): Promise<UMKM[]> {
+    const user = await getCurrentUser();
+    
     try {
         const connection = await pool.getConnection();
-        const [rows]: [any[], any] = await connection.execute('SELECT * FROM umkm ORDER BY createdAt DESC');
+        let query = 'SELECT * FROM umkm ORDER BY createdAt DESC';
+        let params: string[] = [];
+
+        if (user?.role === 'Petugas RT/RW' && user.rtRw) {
+            query = 'SELECT * FROM umkm WHERE rtRw = ? ORDER BY createdAt DESC';
+            params.push(user.rtRw);
+        }
+        
+        const [rows]: [any[], any] = await connection.execute(query, params);
         connection.release();
         
         return rows.map(row => ({
             ...row,
             id: `umkm-${row.id}`,
-            startDate: new Date(row.startDate).toISOString().split('T')[0]
+            startDate: row.startDate ? new Date(row.startDate).toISOString().split('T')[0] : null
         }));
     } catch (error) {
         console.error('Database Error:', error);
@@ -338,6 +338,11 @@ export async function getUmkmData(): Promise<UMKM[]> {
 }
 
 export async function getUsersData(): Promise<User[]> {
+    const user = await getCurrentUser();
+    if (user?.role !== 'Admin Desa') {
+        return [];
+    }
+    
     try {
         const connection = await pool.getConnection();
         const [rows]: [any[], any] = await connection.execute('SELECT id, name, email, role, rtRw, avatarUrl FROM users ORDER BY name');
@@ -403,7 +408,7 @@ export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
     return rows.map(row => ({
       ...row,
       id: `umkm-${row.id}`,
-      startDate: new Date(row.startDate).toISOString().split('T')[0],
+      startDate: row.startDate ? new Date(row.startDate).toISOString().split('T')[0] : null,
     }));
   } catch (error) {
     console.error('Database Error:', error);

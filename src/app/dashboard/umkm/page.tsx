@@ -1,8 +1,9 @@
+
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UmkmTable } from "@/components/dashboard/umkm-table";
-import { getUmkmData } from "@/server/actions";
+import { getUmkmData, getCurrentUser } from "@/server/actions";
 import type { UMKM } from "@/lib/types";
 
 export default async function UmkmPage({
@@ -19,6 +20,7 @@ export default async function UmkmPage({
   const statusFilter = searchParams?.status || "all";
 
   const allUmkm = await getUmkmData();
+  const currentUser = await getCurrentUser();
 
   const filteredUmkm: UMKM[] = allUmkm.filter((umkm) => {
     const matchesQuery =
@@ -31,6 +33,8 @@ export default async function UmkmPage({
     return matchesQuery && matchesType && matchesStatus;
   });
 
+  const canAddUmkm = currentUser?.role === 'Admin Desa' || !!currentUser?.rtRw;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -40,12 +44,14 @@ export default async function UmkmPage({
             Kelola, cari, dan filter data UMKM di Desa Anda.
           </p>
         </div>
-        <Button asChild className="w-full sm:w-auto">
-          <Link href="/dashboard/umkm/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Tambah UMKM
-          </Link>
-        </Button>
+        {canAddUmkm && (
+            <Button asChild className="w-full sm:w-auto">
+                <Link href="/dashboard/umkm/new">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Tambah UMKM
+                </Link>
+            </Button>
+        )}
       </div>
 
       <UmkmTable data={filteredUmkm} />

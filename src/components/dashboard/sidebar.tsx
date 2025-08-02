@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
@@ -22,11 +23,12 @@ import {
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut } from "@/server/actions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
   { href: "/dashboard/umkm", icon: Store, label: "UMKM" },
-  { href: "/dashboard/users", icon: Users, label: "Pengguna" },
+  { href: "/dashboard/users", icon: Users, label: "Pengguna", adminOnly: true },
   { href: "/dashboard/admin", icon: Shield, label: "Pusat Administrasi", adminOnly: true },
 ];
 
@@ -37,11 +39,20 @@ const bottomNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const currentUser = useCurrentUser();
+  const { setOpenMobile } = useSidebar();
+
+  const handleNavigate = (href: string) => {
+    router.push(href);
+    setOpenMobile(false); // Close mobile sidebar on navigation
+  }
 
   const handleLogout = async () => {
     await signOut();
     router.push('/login');
   }
+  
+  const userIsAdmin = currentUser?.role === "Admin Desa";
 
   return (
     <Sidebar>
@@ -57,18 +68,23 @@ export function DashboardSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                isActive={pathname === item.href}
-                icon={<item.icon />}
-                tooltip={{ children: item.label }}
-                onClick={() => router.push(item.href)}
-              >
-                {item.label}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {navItems.map((item) => {
+            if (item.adminOnly && !userIsAdmin) {
+              return null;
+            }
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  isActive={pathname === item.href}
+                  icon={<item.icon />}
+                  tooltip={{ children: item.label }}
+                  onClick={() => handleNavigate(item.href)}
+                >
+                  {item.label}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
@@ -80,7 +96,7 @@ export function DashboardSidebar() {
                     isActive={pathname === item.href}
                     icon={<item.icon />}
                     tooltip={{ children: item.label }}
-                    onClick={() => router.push(item.href)}
+                    onClick={() => handleNavigate(item.href)}
                 >
                     {item.label}
                 </SidebarMenuButton>

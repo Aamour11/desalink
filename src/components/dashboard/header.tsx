@@ -15,17 +15,26 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "../ui/input";
 import { LogOut, Search, Settings, User } from "lucide-react";
-import type { User as UserType } from "@/lib/types";
 import { signOut } from "@/server/actions";
 import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 
-export function DashboardHeader({ currentUser }: { currentUser: UserType }) {
+export function DashboardHeader() {
   const router = useRouter();
+  const currentUser = useCurrentUser();
 
   const handleLogout = async () => {
     await signOut();
     router.push('/login');
+  }
+
+  if (!currentUser) {
+    return (
+       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+         <SidebarTrigger />
+       </header>
+    );
   }
 
   return (

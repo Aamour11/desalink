@@ -1,4 +1,5 @@
-import { getUmkmData } from "@/server/actions";
+
+import { getUmkmData, getCurrentUser } from "@/server/actions";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Store, Users, FileText, CheckCircle, Award } from "lucide-react";
 import { UmkmPerTypeChart } from "@/components/dashboard/umkm-per-type-chart";
@@ -15,6 +16,8 @@ import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
 
 export default async function DashboardPage() {
+  const currentUser = await getCurrentUser();
+  // Fetch data based on user role
   const allUmkm = await getUmkmData();
 
   const totalUmkm = allUmkm.length;
@@ -63,7 +66,11 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-headline text-3xl font-bold tracking-tight">Dasbor Utama</h1>
-        <p className="text-muted-foreground">Ringkasan statistik dan agregasi data UMKM Desa Anda.</p>
+        <p className="text-muted-foreground">
+          {currentUser?.role === 'Admin Desa' 
+            ? 'Ringkasan statistik dan agregasi data UMKM seluruh desa.' 
+            : `Ringkasan statistik UMKM untuk wilayah ${currentUser?.rtRw}.`}
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
