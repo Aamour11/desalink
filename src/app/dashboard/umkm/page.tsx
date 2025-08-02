@@ -1,4 +1,5 @@
 
+
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,9 @@ export default async function UmkmPage({
     const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
     const matchesStatus =
       statusFilter === "all" || umkm.status === statusFilter;
-    return matchesQuery && matchesType && matchesStatus;
+    const matchesRole = currentUser?.role === 'Admin Desa' || (currentUser?.role === 'Petugas RT/RW' && umkm.rtRw === currentUser?.rtRw)
+
+    return matchesQuery && matchesType && matchesStatus && matchesRole;
   });
 
   const canAddUmkm = currentUser?.role === 'Admin Desa' || !!currentUser?.rtRw;

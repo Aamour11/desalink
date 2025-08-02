@@ -13,11 +13,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { DatabaseBackup, BellRing, UserCog, Ban } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { useEffect, useState } from "react";
+import type { User } from "@/lib/types";
+import { getCurrentUser } from "@/server/actions";
+import Loading from "@/app/loading";
 
 export default function AdminCenterPage() {
     const { toast } = useToast();
-    const currentUser = useCurrentUser();
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+      async function fetchUser() {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+        setLoading(false);
+      }
+      fetchUser();
+    }, []);
+
+    if (loading) {
+      return <Loading />;
+    }
     
     if (currentUser?.role !== "Admin Desa") {
         return (

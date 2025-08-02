@@ -22,8 +22,9 @@ import {
   Shield,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
-import { signOut } from "@/server/actions";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { signOut, getCurrentUser } from "@/server/actions";
+import type { User } from "@/lib/types";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -39,8 +40,16 @@ const bottomNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const currentUser = useCurrentUser();
   const { setOpenMobile } = useSidebar();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    }
+    fetchUser();
+  }, []);
 
   const handleNavigate = (href: string) => {
     router.push(href);
