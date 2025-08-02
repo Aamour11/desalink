@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -47,9 +48,19 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const form = useForm<UmkmFormValues>({
     resolver: zodResolver(umkmSchema),
     defaultValues: {
-      ...defaultValues,
+      businessName: defaultValues?.businessName || "",
+      ownerName: defaultValues?.ownerName || "",
+      nib: defaultValues?.nib || "",
+      businessType: defaultValues?.businessType,
+      address: defaultValues?.address || "",
+      rtRw: defaultValues?.rtRw || "",
+      contact: defaultValues?.contact || "",
+      status: defaultValues?.status || "aktif",
+      startDate: defaultValues?.startDate || "",
       employeeCount: defaultValues?.employeeCount || undefined,
-    } || { status: "aktif" },
+      description: defaultValues?.description || "",
+      imageUrl: defaultValues?.imageUrl || "",
+    },
   });
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -378,3 +389,5 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
     </Form>
   );
 }
+
+    
