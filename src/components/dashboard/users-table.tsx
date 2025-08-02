@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -53,7 +54,7 @@ export function UsersTable({ data }: { data: User[] }) {
        const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
        toast({
         variant: "destructive",
-        title: "Gagal",
+        title: "Gagal Menghapus",
         description: errorMessage,
       });
     }
