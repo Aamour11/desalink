@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { TrendingUp } from "lucide-react";
 import { Pie, PieChart, Cell } from "recharts";
 
@@ -44,21 +45,17 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-type ChartData = {
-  name: string;
-  value: number;
-  fill: string;
-}[];
-
 export function UmkmPerTypeChart({ data: rawData }: { data: {name: string, value: number}[] }) {
-    const totalValue = rawData.reduce((acc, item) => acc + item.value, 0);
+    const totalValue = React.useMemo(() => {
+        return rawData.reduce((acc, item) => acc + item.value, 0);
+    }, [rawData]);
 
     const chartData = React.useMemo(() => {
-        const colors = Object.values(chartConfig).map(c => c.color).filter(Boolean) as string[];
-        return rawData.map((item, index) => ({
+        const typeColors = chartConfig as Record<string, { color?: string }>;
+        return rawData.map((item) => ({
             ...item,
-            fill: colors[index % colors.length]
-        }))
+            fill: typeColors[item.name]?.color || "hsl(var(--chart-5))"
+        }));
     }, [rawData]);
 
   return (
