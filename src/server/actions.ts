@@ -9,6 +9,8 @@ import { cookies } from "next/headers";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema } from "@/lib/schema";
 import pool from './db';
 import type { UMKM, User } from "@/lib/types";
+import { unlink, stat } from "fs/promises";
+import { join } from "path";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key";
 const JWT_EXPIRES_IN = "1d";
@@ -76,7 +78,7 @@ export async function signOut() {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value;
   if (!token) return null;
 
@@ -258,7 +260,8 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
 
 export async function updateUmkm(
   id: string,
-  values: z.infer<typeof umkmSchema>
+  values: z.infer<typeof umkmSchema>,
+  oldImageUrl?: string | null
 ) {
   const validatedFields = umkmSchema.safeParse(values);
 
@@ -268,6 +271,29 @@ export async function updateUmkm(
   
   const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl } = validatedFields.data;
   const umkmId = id.replace('umkm-','');
+
+  // Logic to delete old image if a new one is uploaded
+  if (oldImageUrl && imageUrl && oldImageUrl !== imageUrl) {
+    // Avoid deleting placeholder images
+    if (!oldImageUrl.includes("placehold.co")) {
+      try {
+        const oldImagePath = join(process.cwd(), "public", oldImageUrl);
+        // Check if file exists before trying to delete
+        await stat(oldImagePath);
+        await unlink(oldImagePath);
+        console.log(`Successfully deleted old image: ${oldImagePath}`);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          // File doesn't exist, which is fine.
+          console.log(`Old image not found, skipping deletion: ${oldImageUrl}`);
+        } else {
+          // Other error (e.g., permissions)
+          console.error("Error deleting old image:", error);
+        }
+      }
+    }
+  }
+
 
   try {
     const connection = await pool.getConnection();
@@ -300,10 +326,29 @@ export async function updateUmkm(
 export async function deleteUmkm(id: string) {
     const umkmId = id.replace('umkm-','');
     try {
+        const umkmData = await getUmkmById(id);
+        
         const connection = await pool.getConnection();
         const query = 'DELETE FROM umkm WHERE id = ?';
         await connection.execute(query, [umkmId]);
         connection.release();
+
+        // Delete the associated image after successful DB deletion
+        if (umkmData?.imageUrl && !umkmData.imageUrl.includes("placehold.co")) {
+             try {
+                const imagePath = join(process.cwd(), "public", umkmData.imageUrl);
+                await stat(imagePath);
+                await unlink(imagePath);
+                console.log(`Successfully deleted image for UMKM ID ${id}: ${imagePath}`);
+            } catch (error: any) {
+                 if (error.code === 'ENOENT') {
+                    console.log(`Image not found, skipping deletion: ${umkmData.imageUrl}`);
+                } else {
+                    console.error("Error deleting image file:", error);
+                }
+            }
+        }
+        
         revalidatePath("/dashboard/umkm");
     } catch (error) {
         console.error('Database Error:', error);

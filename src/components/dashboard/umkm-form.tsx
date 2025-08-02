@@ -100,7 +100,8 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const onSubmit = async (data: UmkmFormValues) => {
     try {
       if (defaultValues) {
-        await updateUmkm(defaultValues.id, data);
+        // Pass the old image URL to the update action
+        await updateUmkm(defaultValues.id, data, defaultValues.imageUrl);
         toast({ title: "Sukses", description: "Data UMKM berhasil diperbarui." });
       } else {
         await createUmkm(data);
