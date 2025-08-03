@@ -32,17 +32,10 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     throw new Error("Email atau kata sandi salah.");
   }
   
-  // In mock mode, we can accept a default password or skip check
-  // For simplicity, we'll assume the password is correct if user is found.
-  // In a real scenario with a database, you'd use bcrypt.compare
-  const passwordsMatch = password === 'password123'; // Assuming a generic password for all mock users
+  const passwordsMatch = await bcrypt.compare(password, user.password_hash);
 
   if (!passwordsMatch) {
-      // Let's find the user in DB and compare password
-       const userWithPassword = mockUsers.find(u => u.email === email);
-       if(!userWithPassword || !(await bcrypt.compare(password, userWithPassword.password_hash))) {
-            throw new Error("Email atau kata sandi salah.");
-       }
+    throw new Error("Email atau kata sandi salah.");
   }
 
   const tokenPayload = {
@@ -76,6 +69,7 @@ export async function getCurrentUser(): Promise<User | null> {
   const token = cookieStore.get("session")?.value;
 
   if (!token) {
+    // Return mock admin user if no session for easier development
     return mockUsers.find(u => u.role === 'Admin Desa') || null;
   }
 
@@ -85,6 +79,7 @@ export async function getCurrentUser(): Promise<User | null> {
     const userFromDb = mockUsers.find(u => u.id === decoded.id);
     return userFromDb || null;
   } catch (error) {
+     // Return mock admin user if token is invalid for easier development
     return mockUsers.find(u => u.role === 'Admin Desa') || null;
   }
 }
@@ -233,12 +228,21 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
 // --- UMKM ACTIONS ---
 
 export async function createUmkm(values: z.infer<typeof umkmSchema>) {
+  const currentUser = await getCurrentUser();
+  if (currentUser?.role !== "Petugas RT/RW") {
+    throw new Error("Hanya Petugas RT/RW yang dapat menambah data UMKM.");
+  }
+
   const validatedFields = umkmSchema.safeParse(values);
 
   if (!validatedFields.success) {
     throw new Error("Data tidak valid.");
   }
   
+  if (validatedFields.data.rtRw !== currentUser.rtRw) {
+      throw new Error("Anda hanya dapat menambah data untuk wilayah Anda sendiri.");
+  }
+
   const newUmkm: UMKM = {
     id: `umkm-${mockUmkm.length + 1}`,
     createdAt: new Date().toISOString(),
@@ -256,6 +260,21 @@ export async function updateUmkm(
   values: z.infer<typeof umkmSchema>,
   oldImageUrl?: string | null
 ) {
+  const currentUser = await getCurrentUser();
+  const umkmToUpdate = mockUmkm.find(u => u.id === id);
+
+  if (!umkmToUpdate) {
+    throw new Error("UMKM tidak ditemukan.");
+  }
+
+  if (currentUser?.role === 'Petugas RT/RW' && currentUser.rtRw !== umkmToUpdate.rtRw) {
+      throw new Error("Anda tidak memiliki izin untuk mengedit UMKM ini.");
+  }
+
+  if (currentUser?.role === 'Admin Desa') {
+       throw new Error("Admin tidak dapat mengedit data UMKM.");
+  }
+
   const validatedFields = umkmSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -299,12 +318,20 @@ export async function updateUmkm(
 }
 
 export async function deleteUmkm(id: string) {
+    const currentUser = await getCurrentUser();
     const umkmIndex = mockUmkm.findIndex(u => u.id === id);
     if (umkmIndex === -1) {
       throw new Error("UMKM tidak ditemukan.");
     }
-
     const umkmData = mockUmkm[umkmIndex];
+
+    if (currentUser?.role === 'Petugas RT/RW' && currentUser.rtRw !== umkmData.rtRw) {
+        throw new Error("Anda tidak memiliki izin untuk menghapus UMKM ini.");
+    }
+     if (currentUser?.role === 'Admin Desa') {
+       throw new Error("Admin tidak dapat menghapus data UMKM.");
+    }
+
 
     mockUmkm.splice(umkmIndex, 1);
 
@@ -324,6 +351,24 @@ export async function deleteUmkm(id: string) {
     }
     
     revalidatePath("/dashboard/umkm");
+    return { success: true };
+}
+
+export async function deactivateUmkm(id: string) {
+    const currentUser = await getCurrentUser();
+    if (currentUser?.role !== 'Admin Desa') {
+        throw new Error("Hanya Admin Desa yang dapat menonaktifkan UMKM.");
+    }
+
+    const umkmIndex = mockUmkm.findIndex(u => u.id === id);
+    if (umkmIndex === -1) {
+        throw new Error("UMKM tidak ditemukan.");
+    }
+
+    mockUmkm[umkmIndex].status = "tidak aktif";
+
+    revalidatePath("/dashboard/umkm");
+    revalidatePath(`/dashboard/structure`);
     return { success: true };
 }
 
@@ -364,5 +409,3 @@ export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
   if (!rtRw || rtRw === '-') return [];
   return mockUmkm.filter(u => u.rtRw === rtRw);
 }
-
-    

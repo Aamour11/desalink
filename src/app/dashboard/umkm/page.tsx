@@ -20,7 +20,6 @@ export default async function UmkmPage({
   const typeFilter = searchParams?.type || "all";
   const statusFilter = searchParams?.status || "all";
 
-  // getUmkmData already filters based on the current user's role
   const allUmkm = await getUmkmData();
   const currentUser = await getCurrentUser();
 
@@ -36,7 +35,7 @@ export default async function UmkmPage({
     return matchesQuery && matchesType && matchesStatus;
   });
 
-  const canAddUmkm = currentUser?.role === 'Admin Desa' || !!currentUser?.rtRw;
+  const canAddUmkm = currentUser?.role === 'Petugas RT/RW';
 
   return (
     <div className="space-y-6">

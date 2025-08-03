@@ -32,8 +32,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { umkmSchema } from "@/lib/schema";
-import { createUmkm, updateUmkm } from "@/server/actions";
-import type { UMKM } from "@/lib/types";
+import { createUmkm, updateUmkm, getCurrentUser } from "@/server/actions";
+import type { UMKM, User } from "@/lib/types";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -43,7 +43,12 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    getCurrentUser().then(setCurrentUser);
+  }, []);
 
   const form = useForm<UmkmFormValues>({
     resolver: zodResolver(umkmSchema),
@@ -53,15 +58,23 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
       nib: defaultValues?.nib || "",
       businessType: defaultValues?.businessType,
       address: defaultValues?.address || "",
-      rtRw: defaultValues?.rtRw || "",
+      rtRw: defaultValues?.rtRw || currentUser?.rtRw || "",
       contact: defaultValues?.contact || "",
       status: defaultValues?.status || "aktif",
+      legality: defaultValues?.legality || "Sedang Diproses",
       startDate: defaultValues?.startDate || "",
       employeeCount: defaultValues?.employeeCount || undefined,
       description: defaultValues?.description || "",
       imageUrl: defaultValues?.imageUrl || "",
     },
   });
+
+  React.useEffect(() => {
+      if (currentUser?.role === 'Petugas RT/RW' && !defaultValues) {
+          form.setValue('rtRw', currentUser.rtRw);
+      }
+  }, [currentUser, defaultValues, form]);
+
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -121,7 +134,8 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
       router.push("/dashboard/umkm");
       router.refresh(); // Refresh the page to show new data
     } catch (error) {
-       toast({ variant: 'destructive', title: "Gagal", description: "Terjadi kesalahan saat menyimpan data." });
+       const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan data.";
+       toast({ variant: 'destructive', title: "Gagal", description: errorMessage });
     }
   };
 
@@ -271,8 +285,13 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                 <FormItem>
                   <FormLabel>RT/RW</FormLabel>
                   <FormControl>
-                    <Input placeholder="Contoh: 001/001" {...field} />
+                    <Input 
+                        placeholder="Contoh: 001/001" 
+                        {...field} 
+                        readOnly={currentUser?.role === 'Petugas RT/RW'}
+                        />
                   </FormControl>
+                   {currentUser?.role === 'Petugas RT/RW' && <FormDescription>Wilayah RT/RW diatur sesuai dengan akun Anda.</FormDescription>}
                   <FormMessage />
                 </FormItem>
               )}
@@ -315,13 +334,13 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                 </FormItem>
               )}
             />
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <FormField
                   control={form.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Status UMKM</FormLabel>
+                      <FormLabel>Status Operasional</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -342,6 +361,28 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="legality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status Legalitas</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih status legalitas" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Lengkap">Lengkap</SelectItem>
+                          <SelectItem value="Tidak Lengkap">Tidak Lengkap</SelectItem>
+                          <SelectItem value="Sedang Diproses">Sedang Diproses</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -389,5 +430,3 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
     </Form>
   );
 }
-
-    

@@ -1,8 +1,8 @@
 
 "use client";
 
-import { getUmkmData, getCurrentUser } from "@/server/actions";
-import type { UMKM } from "@/lib/types";
+import { getUmkmData, getCurrentUser, deactivateUmkm } from "@/server/actions";
+import type { UMKM, User } from "@/lib/types";
 import {
   Accordion,
   AccordionContent,
@@ -15,6 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -23,12 +24,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
-import { Briefcase, Calendar, MapPin, Phone, User, Hash, CheckCircle, XCircle, Users } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Phone, User as UserIcon, Hash, CheckCircle, XCircle, Users, FileCheck2, AlertTriangle, Clock, PowerOff } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 
 type UmkmByRw = {
@@ -38,26 +50,30 @@ type UmkmByRw = {
 };
 
 export default function StructurePage() {
-  const [currentUser, setCurrentUser] = useState<Awaited<ReturnType<typeof getCurrentUser>>>(null);
+  const { toast } = useToast();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [allUmkm, setAllUmkm] = useState<UMKM[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUmkm, setSelectedUmkm] = useState<UMKM | null>(null);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+
+  const fetchData = async () => {
+      setLoading(true);
+      const [user, umkmData] = await Promise.all([
+          getCurrentUser(),
+          getUmkmData()
+      ]);
+      setCurrentUser(user);
+      setAllUmkm(umkmData);
+      setLoading(false);
+  };
 
   useEffect(() => {
-    async function fetchData() {
-        const [user, umkmData] = await Promise.all([
-            getCurrentUser(),
-            getUmkmData()
-        ]);
-        setCurrentUser(user);
-        setAllUmkm(umkmData);
-        setLoading(false);
-    }
     fetchData();
   }, []);
 
-
-  const umkmByRw: UmkmByRw = allUmkm.reduce((acc, umkm) => {
+  const umkmByRw: UmkmByRw = useMemo(() => allUmkm.reduce((acc, umkm) => {
     const [rt, rw] = umkm.rtRw.split("/");
     if (!acc[rw]) {
       acc[rw] = {};
@@ -67,7 +83,39 @@ export default function StructurePage() {
     }
     acc[rw][rt].push(umkm);
     return acc;
-  }, {} as UmkmByRw);
+  }, {} as UmkmByRw), [allUmkm]);
+  
+  const handleDeactivate = async () => {
+    if (!selectedUmkm) return;
+    setIsDeactivating(true);
+    try {
+      await deactivateUmkm(selectedUmkm.id);
+      toast({
+        title: "Sukses",
+        description: `${selectedUmkm.businessName} telah dinonaktifkan.`,
+      });
+      // Close dialog and refresh data
+      setSelectedUmkm(null);
+      await fetchData();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
+      toast({
+        variant: "destructive",
+        title: "Gagal Menonaktifkan",
+        description: errorMessage,
+      });
+    } finally {
+      setIsDeactivating(false);
+      setIsAlertOpen(false);
+    }
+  };
+
+  const legalityInfo = {
+    'Lengkap': { icon: <FileCheck2 className="h-5 w-5 text-green-600" />, text: "Lengkap", color: "success" },
+    'Tidak Lengkap': { icon: <AlertTriangle className="h-5 w-5 text-red-600" />, text: "Tidak Lengkap", color: "destructive" },
+    'Sedang Diproses': { icon: <Clock className="h-5 w-5 text-yellow-600" />, text: "Sedang Diproses", color: "secondary" }
+  } as const;
+
 
   const isPetugas = currentUser?.role === "Petugas RT/RW";
   const petugasRw = isPetugas ? currentUser?.rtRw.split("/")[1] : null;
@@ -193,8 +241,8 @@ export default function StructurePage() {
                         <DialogHeader>
                             <DialogTitle className="font-headline text-2xl">{selectedUmkm.businessName}</DialogTitle>
                         </DialogHeader>
-                        <div className="flex-1 overflow-y-auto -mr-6 pr-6">
-                             <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-4 border">
+                        <div className="flex-1 overflow-y-auto -mr-4 pr-4 space-y-4">
+                             <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
                                 <Image 
                                     src={selectedUmkm.imageUrl} 
                                     alt={selectedUmkm.businessName} 
@@ -203,76 +251,109 @@ export default function StructurePage() {
                                     data-ai-hint="business product" 
                                 />
                             </div>
-                            <div className="space-y-4">
-                                <div className="text-left">
-                                    <p className="text-muted-foreground">{selectedUmkm.description}</p>
+                            
+                            <div className="text-left">
+                                <p className="text-muted-foreground">{selectedUmkm.description}</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm py-4 border-t border-b">
+                                <div className="flex items-start gap-3">
+                                    <UserIcon className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Pemilik</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.ownerName}</p>
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm py-4">
-                                    <div className="flex items-start gap-3">
-                                        <User className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">Pemilik</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.ownerName}</p>
-                                        </div>
+                                <div className="flex items-start gap-3">
+                                    <Briefcase className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Jenis Usaha</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.businessType}</p>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <Briefcase className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">Jenis Usaha</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.businessType}</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Phone className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Kontak</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.contact}</p>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <Phone className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">Kontak</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.contact}</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <MapPin className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Alamat</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.address}, RT/RW {selectedUmkm.rtRw}</p>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <MapPin className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">Alamat</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.address}, RT/RW {selectedUmkm.rtRw}</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Calendar className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Tanggal Berdiri</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.startDate ? format(new Date(selectedUmkm.startDate), "d MMMM yyyy", { locale: indonesiaLocale }) : '-'}</p>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <Calendar className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">Tanggal Berdiri</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.startDate ? format(new Date(selectedUmkm.startDate), "d MMMM yyyy", { locale: indonesiaLocale }) : '-'}</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Hash className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">NIB</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.nib || '-'}</p>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <Hash className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">NIB</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.nib || '-'}</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-1 flex-shrink-0">
+                                    {selectedUmkm.status === 'aktif' ? <CheckCircle className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-red-600" />}
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-1 flex-shrink-0">
-                                        {selectedUmkm.status === 'aktif' ? <CheckCircle className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-red-600" />}
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold">Status</p>
-                                            <p className="text-muted-foreground capitalize">{selectedUmkm.status}</p>
-                                        </div>
+                                    <div>
+                                        <p className="font-semibold">Status Operasional</p>
+                                        <p className="text-muted-foreground capitalize">{selectedUmkm.status}</p>
                                     </div>
-                                    <div className="flex items-start gap-3">
-                                        <Users className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                                        <div>
-                                            <p className="font-semibold">Jumlah Karyawan</p>
-                                            <p className="text-muted-foreground">{selectedUmkm.employeeCount} orang</p>
-                                        </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Users className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Jumlah Karyawan</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.employeeCount} orang</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 md:col-span-2">
+                                     <div className="mt-1 flex-shrink-0">
+                                        {legalityInfo[selectedUmkm.legality].icon}
+                                     </div>
+                                     <div>
+                                        <p className="font-semibold">Status Legalitas</p>
+                                        <p className="text-muted-foreground capitalize">{selectedUmkm.legality}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {currentUser?.role === 'Admin Desa' && selectedUmkm.status === 'aktif' && (
+                             <div className="flex justify-end pt-4">
+                                <Button variant="destructive" onClick={() => setIsAlertOpen(true)} disabled={isDeactivating}>
+                                    <PowerOff className="mr-2 h-4 w-4" />
+                                    {isDeactivating ? "Menonaktifkan..." : "Nonaktifkan UMKM"}
+                                </Button>
+                             </div>
+                        )}
                     </>
                 )}
             </DialogContent>
         </Dialog>
+        <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+             <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Nonaktifkan UMKM?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Anda yakin ingin menonaktifkan <span className="font-bold">{selectedUmkm?.businessName}</span>? Tindakan ini dapat diubah nanti oleh Petugas RT/RW terkait.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeactivate} className="bg-destructive hover:bg-destructive/90">
+                    Ya, Nonaktifkan
+                </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </>
   );
 }

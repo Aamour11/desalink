@@ -8,6 +8,7 @@ export type UMKM = {
   rtRw: string;
   contact: string;
   status: "aktif" | "tidak aktif";
+  legality: "Lengkap" | "Tidak Lengkap" | "Sedang Diproses";
   startDate: string;
   employeeCount: number;
   description: string;

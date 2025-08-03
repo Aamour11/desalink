@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { UMKM } from "@/lib/types";
+import type { UMKM, User } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -29,11 +29,17 @@ import { UmkmTableActions } from "./umkm-table-actions";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { FileDown, FileText } from "lucide-react";
+import { getCurrentUser } from "@/server/actions";
 
 export function UmkmTable({ data }: { data: UMKM[] }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+
+  React.useEffect(() => {
+    getCurrentUser().then(setCurrentUser);
+  }, []);
 
   const handleSearch = (term: string) => {
     const params = new URLSearchParams(searchParams);
@@ -64,6 +70,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
         "RT/RW": d.rtRw,
         "Kontak": d.contact,
         "Status": d.status,
+        "Legalitas": d.legality,
         "NIB": d.nib,
         "Tanggal Berdiri": d.startDate,
         "Jumlah Karyawan": d.employeeCount,
@@ -83,14 +90,15 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
     const doc = new jsPDF();
     doc.text("Laporan Data UMKM", 14, 16);
     autoTable(doc, {
-      head: [["Nama Usaha", "Pemilik", "Jenis", "RT/RW", "Status"]],
-      body: data.map(umkm => [umkm.businessName, umkm.ownerName, umkm.businessType, umkm.rtRw, umkm.status]),
+      head: [["Nama Usaha", "Pemilik", "Jenis", "RT/RW", "Status", "Legalitas"]],
+      body: data.map(umkm => [umkm.businessName, umkm.ownerName, umkm.businessType, umkm.rtRw, umkm.status, umkm.legality]),
       startY: 20,
       headStyles: { fillColor: [34, 47, 62] }, // hsl(215, 40%, 17%)
     });
     doc.save('laporan-umkm.pdf');
   };
 
+  const isPetugas = currentUser?.role === 'Petugas RT/RW';
 
   return (
     <div className="space-y-4">
@@ -187,7 +195,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <UmkmTableActions umkmId={umkm.id} />
+                    {isPetugas && <UmkmTableActions umkmId={umkm.id} />}
                   </TableCell>
                 </TableRow>
               ))

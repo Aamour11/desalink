@@ -15,6 +15,9 @@ export const umkmSchema = z.object({
   rtRw: z.string().regex(/^\d{3}\/\d{3}$/, "Format RT/RW harus 001/001."),
   contact: z.string().min(10, "Nomor kontak minimal 10 digit.").max(15),
   status: z.enum(["aktif", "tidak aktif"]),
+  legality: z.enum(["Lengkap", "Tidak Lengkap", "Sedang Diproses"], {
+    required_error: "Status legalitas harus dipilih.",
+  }),
   startDate: z.string().optional(),
   employeeCount: z.coerce.number().int().positive().optional(),
   description: z.string().optional(),
