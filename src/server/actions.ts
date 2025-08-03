@@ -286,7 +286,8 @@ export async function updateUmkm(
     throw new Error("UMKM tidak ditemukan.");
   }
   
-  const { imageUrl } = validatedFields.data;
+  const { imageUrl, legalityDocumentUrl } = validatedFields.data;
+  const oldUmkmData = mockUmkm[umkmIndex];
 
   // Logic to delete old image if a new one is uploaded
   if (oldImageUrl && imageUrl && oldImageUrl !== imageUrl) {
@@ -301,6 +302,23 @@ export async function updateUmkm(
           console.log(`Old image not found, skipping deletion: ${oldImageUrl}`);
         } else {
           console.error("Error deleting old image:", error);
+        }
+      }
+    }
+  }
+
+  if (oldUmkmData.legalityDocumentUrl && legalityDocumentUrl && oldUmkmData.legalityDocumentUrl !== legalityDocumentUrl) {
+    if (!oldUmkmData.legalityDocumentUrl.includes("placehold.co")) {
+      try {
+        const oldDocPath = join(process.cwd(), "public", oldUmkmData.legalityDocumentUrl);
+        await stat(oldDocPath);
+        await unlink(oldDocPath);
+        console.log(`Successfully deleted old document: ${oldDocPath}`);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          console.log(`Old document not found, skipping deletion: ${oldUmkmData.legalityDocumentUrl}`);
+        } else {
+          console.error("Error deleting old document:", error);
         }
       }
     }
@@ -335,6 +353,7 @@ export async function deleteUmkm(id: string) {
 
     mockUmkm.splice(umkmIndex, 1);
 
+    // Delete image file
     if (umkmData?.imageUrl && !umkmData.imageUrl.includes("placehold.co")) {
          try {
             const imagePath = join(process.cwd(), "public", umkmData.imageUrl);
@@ -346,6 +365,21 @@ export async function deleteUmkm(id: string) {
                 console.log(`Image not found, skipping deletion: ${umkmData.imageUrl}`);
             } else {
                 console.error("Error deleting image file:", error);
+            }
+        }
+    }
+    // Delete document file
+    if (umkmData?.legalityDocumentUrl && !umkmData.legalityDocumentUrl.includes("placehold.co")) {
+         try {
+            const docPath = join(process.cwd(), "public", umkmData.legalityDocumentUrl);
+            await stat(docPath);
+            await unlink(docPath);
+            console.log(`Successfully deleted document for UMKM ID ${id}: ${docPath}`);
+        } catch (error: any) {
+             if (error.code === 'ENOENT') {
+                console.log(`Document not found, skipping deletion: ${umkmData.legalityDocumentUrl}`);
+            } else {
+                console.error("Error deleting document file:", error);
             }
         }
     }

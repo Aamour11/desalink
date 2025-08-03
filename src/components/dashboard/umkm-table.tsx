@@ -4,6 +4,7 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Papa from "papaparse";
@@ -36,7 +37,7 @@ import {
 import { UmkmTableActions } from "./umkm-table-actions";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { Briefcase, Calendar, MapPin, Phone, User as UserIcon, Hash, CheckCircle, XCircle, Users, FileCheck2, AlertTriangle, Clock, PowerOff, FileDown, FileText } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Phone, User as UserIcon, Hash, CheckCircle, XCircle, Users, FileCheck2, AlertTriangle, Clock, PowerOff, FileDown, FileText, Download } from "lucide-react";
 import { getCurrentUser } from "@/server/actions";
 
 export function UmkmTable({ data }: { data: UMKM[] }) {
@@ -251,7 +252,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                         <DialogHeader>
                             <DialogTitle className="font-headline text-2xl">{selectedUmkm.businessName}</DialogTitle>
                         </DialogHeader>
-                        <div className="flex-1 overflow-y-auto -mr-4 pr-4 space-y-4">
+                        <div className="flex-1 overflow-y-auto -mr-6 pr-6 space-y-4">
                              <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
                                 <Image 
                                     src={selectedUmkm.imageUrl} 
@@ -325,13 +326,31 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                                         <p className="text-muted-foreground">{selectedUmkm.employeeCount} orang</p>
                                     </div>
                                 </div>
-                                <div className="flex items-start gap-3 md:col-span-2">
+                                <div className="flex items-start gap-3">
                                      <div className="mt-1 flex-shrink-0">
                                         {legalityInfo[selectedUmkm.legality].icon}
                                      </div>
                                      <div>
                                         <p className="font-semibold">Status Legalitas</p>
                                         <p className="text-muted-foreground capitalize">{selectedUmkm.legality}</p>
+                                    </div>
+                                </div>
+                                 <div className="flex items-start gap-3">
+                                     <div className="mt-1 flex-shrink-0">
+                                        <FileText className="h-5 w-5 text-primary" />
+                                     </div>
+                                     <div>
+                                        <p className="font-semibold">Dokumen Legalitas</p>
+                                        {selectedUmkm.legalityDocumentUrl ? (
+                                             <Button variant="link" asChild className="p-0 h-auto">
+                                                <Link href={selectedUmkm.legalityDocumentUrl} target="_blank" rel="noopener noreferrer">
+                                                    Lihat Dokumen
+                                                    <Download className="h-4 w-4 ml-2" />
+                                                </Link>
+                                             </Button>
+                                        ) : (
+                                            <p className="text-muted-foreground">Tidak diunggah</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -13,6 +13,7 @@ export type UMKM = {
   employeeCount: number;
   description: string;
   imageUrl: string;
+  legalityDocumentUrl?: string;
   createdAt: string;
 };
 

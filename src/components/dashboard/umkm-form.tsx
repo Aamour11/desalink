@@ -5,8 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { z } from "zod";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, File, FileCheck } from "lucide-react";
 import React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -43,8 +44,10 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = React.useState(false);
+  const [isDocUploading, setIsDocUploading] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const imageInputRef = React.useRef<HTMLInputElement>(null);
+  const docInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     getCurrentUser().then(setCurrentUser);
@@ -66,6 +69,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
       employeeCount: defaultValues?.employeeCount || undefined,
       description: defaultValues?.description || "",
       imageUrl: defaultValues?.imageUrl || "",
+      legalityDocumentUrl: defaultValues?.legalityDocumentUrl || "",
     },
   });
 
@@ -76,7 +80,10 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   }, [currentUser, defaultValues, form]);
 
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    fileType: 'image' | 'document'
+    ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -89,7 +96,9 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
         return;
     }
 
-    setIsUploading(true);
+    if(fileType === 'image') setIsUploading(true);
+    else setIsDocUploading(true);
+    
 
     const formData = new FormData();
     formData.append("file", file);
@@ -106,16 +115,24 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
         throw new Error(result.error || 'Upload failed');
       }
 
-      form.setValue('imageUrl', result.imageUrl, { shouldValidate: true });
-      toast({ title: "Sukses", description: "Gambar berhasil diunggah." });
+      if (fileType === 'image') {
+        form.setValue('imageUrl', result.imageUrl, { shouldValidate: true });
+        toast({ title: "Sukses", description: "Gambar berhasil diunggah." });
+      } else {
+        form.setValue('legalityDocumentUrl', result.imageUrl, { shouldValidate: true });
+        toast({ title: "Sukses", description: "Dokumen berhasil diunggah." });
+      }
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat mengunggah.";
       toast({ variant: 'destructive', title: "Upload Gagal", description: errorMessage });
     } finally {
-      setIsUploading(false);
-      // Reset the file input value
-      if(fileInputRef.current) {
-        fileInputRef.current.value = "";
+      if(fileType === 'image') {
+        setIsUploading(false);
+        if(imageInputRef.current) imageInputRef.current.value = "";
+      } else {
+        setIsDocUploading(false);
+        if(docInputRef.current) docInputRef.current.value = "";
       }
     }
   };
@@ -138,6 +155,8 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
        toast({ variant: 'destructive', title: "Gagal", description: errorMessage });
     }
   };
+
+  const isSubmitting = form.formState.isSubmitting || isUploading || isDocUploading;
 
   return (
     <Form {...form}>
@@ -254,18 +273,17 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                             type="button"
                             variant="outline"
                             className="w-full mt-4"
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => imageInputRef.current?.click()}
                             disabled={isUploading}
                           >
                             {isUploading ? "Mengunggah..." : "Pilih Gambar"}
                           </Button>
                           <Input
-                            ref={fileInputRef}
-                            id="picture"
+                            ref={imageInputRef}
                             type="file"
                             className="hidden"
                             accept="image/png, image/jpeg, image/gif"
-                            onChange={handleImageUpload}
+                            onChange={(e) => handleFileUpload(e, 'image')}
                             disabled={isUploading}
                           />
                           <FormDescription className="mt-2 text-center">
@@ -278,41 +296,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                 </FormItem>
               )}
             />
-             <FormField
-              control={form.control}
-              name="rtRw"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>RT/RW</FormLabel>
-                  <FormControl>
-                    <Input 
-                        placeholder="Contoh: 001/001" 
-                        {...field} 
-                        readOnly={currentUser?.role === 'Petugas RT/RW'}
-                        />
-                  </FormControl>
-                   {currentUser?.role === 'Petugas RT/RW' && <FormDescription>Wilayah RT/RW diatur sesuai dengan akun Anda.</FormDescription>}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Alamat Lengkap</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Jl. Merdeka No. 10, Dusun Bahagia"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             
           </div>
         </div>
         
@@ -416,14 +400,104 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
                   )}
                 />
             </div>
+             <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                control={form.control}
+                name="rtRw"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>RT/RW</FormLabel>
+                    <FormControl>
+                        <Input 
+                            placeholder="Contoh: 001/001" 
+                            {...field} 
+                            readOnly={currentUser?.role === 'Petugas RT/RW'}
+                            />
+                    </FormControl>
+                    {currentUser?.role === 'Petugas RT/RW' && <FormDescription>Wilayah RT/RW diatur sesuai dengan akun Anda.</FormDescription>}
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Alamat Lengkap</FormLabel>
+                    <FormControl>
+                        <Textarea
+                        placeholder="Jl. Merdeka No. 10, Dusun Bahagia"
+                        className="resize-none"
+                        {...field}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
+             <FormField
+              control={form.control}
+              name="legalityDocumentUrl"
+              render={({ field }) => (
+                <FormItem>
+                   <FormLabel>Dokumen Legalitas</FormLabel>
+                    <FormControl>
+                      <Card>
+                        <CardContent className="p-4 space-y-4">
+                           {field.value ? (
+                               <div className="flex items-center justify-between rounded-lg border p-3">
+                                   <div className="flex items-center gap-3">
+                                    <FileCheck className="h-6 w-6 text-green-600" />
+                                    <div className="flex flex-col">
+                                       <span className="font-semibold">Dokumen Terunggah</span>
+                                       <Link href={field.value} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                                            Lihat Dokumen
+                                       </Link>
+                                    </div>
+                                   </div>
+                               </div>
+                           ) : (
+                                <div className="text-center text-muted-foreground p-4 border border-dashed rounded-lg">
+                                    <File className="mx-auto h-8 w-8" />
+                                    <p className="mt-2 text-sm">Belum ada dokumen yang diunggah.</p>
+                                </div>
+                           )}
+                           <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => docInputRef.current?.click()}
+                            disabled={isDocUploading}
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            {isDocUploading ? "Mengunggah..." : (field.value ? "Unggah Dokumen Baru" : "Unggah Dokumen")}
+                          </Button>
+                          <Input
+                            ref={docInputRef}
+                            type="file"
+                            className="hidden"
+                            accept="image/png, image/jpeg, application/pdf"
+                            onChange={(e) => handleFileUpload(e, 'document')}
+                            disabled={isDocUploading}
+                          />
+                        </CardContent>
+                      </Card>
+                    </FormControl>
+                    <FormDescription>Unggah NIB, IUMK, atau dokumen lain dalam format PDF/JPG/PNG (Maks 10MB).</FormDescription>
+                   <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
 
         <div className="flex justify-end gap-2">
            <Button type="button" variant="outline" onClick={() => router.back()}>
             Batal
           </Button>
-          <Button type="submit" disabled={form.formState.isSubmitting || isUploading}>
-            {form.formState.isSubmitting ? "Menyimpan..." : "Simpan Data"}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Menyimpan..." : "Simpan Data"}
           </Button>
         </div>
       </form>
