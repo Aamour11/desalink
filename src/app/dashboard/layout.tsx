@@ -8,9 +8,9 @@ import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({ children }: PropsWithChildren) {
   const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    redirect("/login");
-  }
+  // if (!currentUser) {
+  //   redirect("/login");
+  // }
 
   return (
     <SidebarProvider>
