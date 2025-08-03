@@ -86,6 +86,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 5,
     description: "Menyediakan berbagai model hijab modern dan berkualitas.",
     imageUrl: "/uploads/placeholder-fashion.png",
+     legalityDocumentUrl: undefined,
      createdAt: "2024-01-16T11:00:00Z"
   },
   {
@@ -103,6 +104,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 10,
     description: "Produk kerajinan tangan dari rotan untuk dekorasi rumah.",
     imageUrl: "/uploads/placeholder-kerajinan.png",
+     legalityDocumentUrl: undefined,
      createdAt: "2024-01-17T12:00:00Z"
   },
   {
@@ -138,6 +140,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 8,
     description: "Menjual sayuran segar langsung dari kebun tanpa pestisida.",
     imageUrl: "/uploads/placeholder-pertanian.png",
+    legalityDocumentUrl: undefined,
      createdAt: "2024-01-19T14:00:00Z"
   },
   {
@@ -155,6 +158,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 2,
     description: "Menyediakan kebutuhan pokok sehari-hari.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-02-01T09:00:00Z"
   },
    {
@@ -172,6 +176,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 4,
     description: "Servis dan suku cadang motor segala merek.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-02-02T10:00:00Z"
   },
   {
@@ -189,6 +194,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 7,
     description: "Menerima pesanan nasi kotak dan tumpeng untuk berbagai acara.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-02-03T11:00:00Z"
   },
   {
@@ -206,6 +212,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 15,
     description: "Koleksi batik tulis premium dengan motif khas daerah.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-02-04T12:00:00Z"
   },
   {
@@ -223,6 +230,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 6,
     description: "Wisata petik buah naga dan penjualan bibit unggul.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-02-05T13:00:00Z"
   },
   {
@@ -240,6 +248,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 3,
     description: "Jasa cuci dan setrika pakaian, karpet, dan boneka.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-03-10T08:00:00Z"
   },
   {
@@ -257,6 +266,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 4,
     description: "Budidaya dan penjualan lele segar organik.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-03-11T09:00:00Z"
   },
    {
@@ -274,6 +284,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 5,
     description: "Tahu bakso rasa original dan pedas, menerima pesanan.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-03-12T10:00:00Z"
   },
    {
@@ -291,6 +302,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 2,
     description: "Jasa jahit pakaian, potong celana, dan permak segala jenis.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-03-13T11:00:00Z"
   },
    {
@@ -308,6 +320,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 6,
     description: "Produksi keripik singkong aneka rasa, gurih dan renyah.",
     imageUrl: "https://placehold.co/600x400.png",
+    legalityDocumentUrl: undefined,
     createdAt: "2024-03-14T12:00:00Z"
   }
 ];
