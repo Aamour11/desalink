@@ -80,13 +80,33 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value;
-  if (!token) return null;
+  if (!token) {
+    // Return a mock admin user if no session is found for development purposes
+    console.log("No session found, returning mock user.");
+    return {
+        id: "user-1",
+        name: "Admin Desa (Dev)",
+        email: "admin@desa.com",
+        role: "Admin Desa",
+        rtRw: "-",
+        avatarUrl: "https://placehold.co/100x100.png?text=A",
+    };
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as User;
     return decoded;
   } catch (error) {
-    return null;
+     // If token is invalid, fall back to mock user for development
+    console.log("Invalid token, returning mock user.");
+     return {
+        id: "user-1",
+        name: "Admin Desa (Dev)",
+        email: "admin@desa.com",
+        role: "Admin Desa",
+        rtRw: "-",
+        avatarUrl: "https://placehold.co/100x100.png?text=A",
+    };
   }
 }
 
