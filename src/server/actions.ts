@@ -7,8 +7,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema } from "@/lib/schema";
-import { mockUsers, mockUmkm } from "@/lib/data";
-import type { UMKM, User } from "@/lib/types";
+import { mockUsers, mockUmkm, mockAnnouncements } from "@/lib/data";
+import type { UMKM, User, Announcement } from "@/lib/types";
 import { unlink, stat } from "fs/promises";
 import { join } from "path";
 
@@ -406,6 +406,33 @@ export async function deactivateUmkm(id: string) {
     return { success: true };
 }
 
+
+// --- ANNOUNCEMENT ACTIONS ---
+
+export async function sendAnnouncement(message: string) {
+    const currentUser = await getCurrentUser();
+    if (currentUser?.role !== 'Admin Desa') {
+        throw new Error("Hanya Admin Desa yang dapat mengirim pengumuman.");
+    }
+
+    if (!message || message.trim().length === 0) {
+        throw new Error("Pesan tidak boleh kosong.");
+    }
+
+    const newAnnouncement: Announcement = {
+        id: `ann-${mockAnnouncements.length + 1}`,
+        message: message.trim(),
+        createdAt: new Date().toISOString(),
+    };
+
+    // Replace old announcement with the new one
+    mockAnnouncements[0] = newAnnouncement;
+
+    revalidatePath("/dashboard");
+    return { success: true };
+}
+
+
 // --- DATA FETCHING ---
 export async function getUmkmData(): Promise<UMKM[]> {
     const user = await getCurrentUser();
@@ -442,4 +469,12 @@ export async function getUserById(id: string): Promise<User | null> {
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
   if (!rtRw || rtRw === '-') return [];
   return mockUmkm.filter(u => u.rtRw === rtRw);
+}
+
+export async function getLatestAnnouncement(): Promise<Announcement | null> {
+    if (mockAnnouncements.length === 0) {
+        return null;
+    }
+    // Return the latest announcement
+    return mockAnnouncements[0];
 }

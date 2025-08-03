@@ -9,12 +9,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { DatabaseBackup, BellRing, UserCog, Ban, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import type { User, UMKM } from "@/lib/types";
-import { getCurrentUser, getUsersData, getUmkmData } from "@/server/actions";
+import { getCurrentUser, getUsersData, getUmkmData, sendAnnouncement } from "@/server/actions";
 import Loading from "@/app/loading";
 import Papa from "papaparse";
 
@@ -24,6 +34,9 @@ export default function AdminCenterPage() {
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [allUmkm, setAllUmkm] = useState<UMKM[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isNotifyDialogOpen, setIsNotifyDialogOpen] = useState(false);
+    const [notificationMessage, setNotificationMessage] = useState("");
+    const [isSending, setIsSending] = useState(false);
     
     useEffect(() => {
       async function fetchData() {
@@ -85,17 +98,23 @@ export default function AdminCenterPage() {
         document.body.removeChild(link);
     }
 
-    const handleNotify = () => {
-        toast({
-            title: "Mengirim Notifikasi",
-            description: "Pengumuman sedang dikirim ke semua petugas...",
-        });
-        setTimeout(() => {
-            toast({
-                title: "Terkirim!",
-                description: "Notifikasi berhasil dikirim ke semua petugas RT/RW.",
-            });
-        }, 1500);
+    const handleSendNotification = async () => {
+        if (notificationMessage.trim().length === 0) {
+            toast({ variant: "destructive", title: "Gagal", description: "Pesan tidak boleh kosong." });
+            return;
+        }
+        setIsSending(true);
+        try {
+            await sendAnnouncement(notificationMessage);
+            toast({ title: "Terkirim!", description: "Notifikasi berhasil dikirim ke semua pengguna." });
+            setNotificationMessage("");
+            setIsNotifyDialogOpen(false);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
+            toast({ variant: "destructive", title: "Gagal Mengirim", description: errorMessage });
+        } finally {
+            setIsSending(false);
+        }
     }
 
     if (loading) {
@@ -118,6 +137,7 @@ export default function AdminCenterPage() {
     }
 
   return (
+    <>
     <div className="space-y-8">
       <div>
         <h1 className="font-headline text-3xl font-bold tracking-tight">
@@ -171,11 +191,11 @@ export default function AdminCenterPage() {
             </div>
             <CardTitle>Kirim Notifikasi</CardTitle>
             <CardDescription>
-              Kirim pengumuman penting ke semua Petugas RT/RW.
+              Kirim pengumuman atau catatan penting ke semua pengguna.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleNotify}>Buat Notifikasi</Button>
+            <Button onClick={() => setIsNotifyDialogOpen(true)}>Buat Notifikasi</Button>
           </CardContent>
         </Card>
       </div>
@@ -190,5 +210,32 @@ export default function AdminCenterPage() {
           </Card>
       </div>
     </div>
+    <Dialog open={isNotifyDialogOpen} onOpenChange={setIsNotifyDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Buat Notifikasi atau Catatan</DialogTitle>
+                <DialogDescription>
+                    Tulis pesan yang akan ditampilkan di dasbor semua pengguna.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <Textarea 
+                    placeholder="Ketik pesan Anda di sini..." 
+                    rows={5}
+                    value={notificationMessage}
+                    onChange={(e) => setNotificationMessage(e.target.value)}
+                />
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Batal</Button>
+                </DialogClose>
+                <Button onClick={handleSendNotification} disabled={isSending}>
+                    {isSending ? "Mengirim..." : "Kirim Notifikasi"}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }

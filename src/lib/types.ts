@@ -26,3 +26,9 @@ export type User = {
   avatarUrl: string;
   password_hash: string;
 };
+
+export type Announcement = {
+    id: string;
+    message: string;
+    createdAt: string;
+}

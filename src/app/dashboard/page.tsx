@@ -1,7 +1,7 @@
 
-import { getUmkmData, getCurrentUser } from "@/server/actions";
+import { getUmkmData, getCurrentUser, getLatestAnnouncement } from "@/server/actions";
 import { StatsCard } from "@/components/dashboard/stats-card";
-import { Store, Users, FileText, CheckCircle, Award } from "lucide-react";
+import { Store, Users, FileText, CheckCircle, Award, Annoyed } from "lucide-react";
 import { UmkmPerTypeChart } from "@/components/dashboard/umkm-per-type-chart";
 import { UmkmPerRtRwChart } from "@/components/dashboard/umkm-per-rtrw-chart";
 import { UmkmPerYearChart } from "@/components/dashboard/umkm-per-year-chart";
@@ -12,11 +12,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
+import { AnnouncementCard } from "@/components/dashboard/announcement-card";
 
 export default async function DashboardPage() {
   const currentUser = await getCurrentUser();
+  const latestAnnouncement = await getLatestAnnouncement();
   // Fetch data based on user role - getUmkmData already filters by role internally
   const umkmData = await getUmkmData();
 
@@ -77,6 +79,10 @@ export default async function DashboardPage() {
             : `Ringkasan statistik UMKM untuk wilayah ${currentUser?.rtRw}.`}
         </p>
       </div>
+      
+      {latestAnnouncement && (
+          <AnnouncementCard announcement={latestAnnouncement} />
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard

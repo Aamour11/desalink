@@ -1,4 +1,4 @@
-import type { UMKM, User } from "@/lib/types";
+import type { UMKM, User, Announcement } from "@/lib/types";
 import bcrypt from "bcryptjs";
 
 // Helper to create hashed passwords for mock users
@@ -325,4 +325,12 @@ let mockUmkm: UMKM[] = [
   }
 ];
 
-export { mockUsers, mockUmkm };
+let mockAnnouncements: Announcement[] = [
+    {
+        id: "ann-1",
+        message: "Selamat datang di sistem informasi DesaLink UMKM! Mohon kepada semua petugas RT/RW untuk segera melengkapi dan memverifikasi data UMKM di wilayah masing-masing. Terima kasih.",
+        createdAt: new Date().toISOString()
+    }
+];
+
+export { mockUsers, mockUmkm, mockAnnouncements };
