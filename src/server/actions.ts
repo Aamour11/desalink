@@ -69,8 +69,7 @@ export async function getCurrentUser(): Promise<User | null> {
   const token = cookieStore.get("session")?.value;
 
   if (!token) {
-    // Return mock admin user if no session for easier development
-    return mockUsers.find(u => u.role === 'Admin Desa') || null;
+    return null;
   }
 
   try {
@@ -79,8 +78,8 @@ export async function getCurrentUser(): Promise<User | null> {
     const userFromDb = mockUsers.find(u => u.id === decoded.id);
     return userFromDb || null;
   } catch (error) {
-     // Return mock admin user if token is invalid for easier development
-    return mockUsers.find(u => u.role === 'Admin Desa') || null;
+    // Token is invalid or expired
+    return null;
   }
 }
 
