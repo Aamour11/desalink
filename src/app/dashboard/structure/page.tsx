@@ -30,7 +30,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
-import { Briefcase, Calendar, MapPin, Phone, User, Hash, CheckCircle, XCircle } from "lucide-react";
+import { Briefcase, Calendar, MapPin, Phone, User, Hash, CheckCircle, XCircle, Users } from "lucide-react";
 
 
 type UmkmByRw = {
