@@ -6,11 +6,10 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { getCurrentUser } from "@/server/actions";
 import { redirect } from "next/navigation";
 
-export default async function DashboardLayout({ children }: PropsWithChildren) {
-  const currentUser = await getCurrentUser();
-  // if (!currentUser) {
-  //   redirect("/login");
-  // }
+export default function DashboardLayout({ children }: PropsWithChildren) {
+  // We remove the server-side check here.
+  // The middleware.ts already protects the route, and client components
+  // will fetch their own user data. This avoids caching issues on login/logout.
 
   return (
     <SidebarProvider>
