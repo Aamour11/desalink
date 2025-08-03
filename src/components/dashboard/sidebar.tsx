@@ -21,6 +21,7 @@ import {
   Settings,
   Shield,
   Contact,
+  Sitemap,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut, getCurrentUser } from "@/server/actions";
@@ -30,14 +31,20 @@ import { useEffect, useState } from "react";
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
   { href: "/dashboard/umkm", icon: Store, label: "UMKM" },
+  { href: "/dashboard/structure", icon: Sitemap, label: "Struktur Wilayah" },
   { href: "/dashboard/users", icon: Users, label: "Pengguna", adminOnly: true },
   { href: "/dashboard/management", icon: Contact, label: "Pengurus" },
-  { href: "/dashboard/admin", icon: Shield, label: "Pusat Administrasi", adminOnly: true },
+  {
+    href: "/dashboard/admin",
+    icon: Shield,
+    label: "Pusat Administrasi",
+    adminOnly: true,
+  },
 ];
 
 const bottomNavItems = [
-    { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
-]
+  { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
+];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -56,13 +63,13 @@ export function DashboardSidebar() {
   const handleNavigate = (href: string) => {
     router.push(href);
     setOpenMobile(false); // Close mobile sidebar on navigation
-  }
+  };
 
   const handleLogout = async () => {
     await signOut();
-    router.push('/login');
-  }
-  
+    router.push("/login");
+  };
+
   const userIsAdmin = currentUser?.role === "Admin Desa";
 
   return (
@@ -80,7 +87,7 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => {
-            if (item.adminOnly && !userIsAmdin) {
+            if (item.adminOnly && !userIsAdmin) {
               return null;
             }
             return (
@@ -99,32 +106,32 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
-         <SidebarMenu>
-            {bottomNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    icon={<item.icon />}
-                    tooltip={{ children: item.label }}
-                    onClick={() => handleNavigate(item.href)}
-                >
-                    {item.label}
-                </SidebarMenuButton>
-                </SidebarMenuItem>
-            ))}
-            <SidebarMenuItem>
-                <SidebarMenuButton 
-                    variant="ghost"
-                    className="w-full justify-start"
-                    tooltip={{ children: "Logout" }}
-                    icon={<LogOut />}
-                    onClick={handleLogout}
-                >
-                Logout
-                </SidebarMenuButton>
+        <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
+        <SidebarMenu>
+          {bottomNavItems.map((item) => (
+            <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                isActive={pathname === item.href}
+                icon={<item.icon />}
+                tooltip={{ children: item.label }}
+                onClick={() => handleNavigate(item.href)}
+              >
+                {item.label}
+              </SidebarMenuButton>
             </SidebarMenuItem>
-         </SidebarMenu>
+          ))}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              variant="ghost"
+              className="w-full justify-start"
+              tooltip={{ children: "Logout" }}
+              icon={<LogOut />}
+              onClick={handleLogout}
+            >
+              Logout
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
