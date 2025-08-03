@@ -21,7 +21,7 @@ import {
   Settings,
   Shield,
   Contact,
-  Sitemap,
+  Network,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut, getCurrentUser } from "@/server/actions";
@@ -31,7 +31,7 @@ import { useEffect, useState } from "react";
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
   { href: "/dashboard/umkm", icon: Store, label: "UMKM" },
-  { href: "/dashboard/structure", icon: Sitemap, label: "Struktur Wilayah" },
+  { href: "/dashboard/structure", icon: Network, label: "Struktur Wilayah" },
   { href: "/dashboard/users", icon: Users, label: "Pengguna", adminOnly: true },
   { href: "/dashboard/management", icon: Contact, label: "Pengurus" },
   {
