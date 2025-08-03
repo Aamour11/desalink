@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const umkmSchema = z.object({
@@ -29,6 +30,13 @@ export const signupSchema = z.object({
   name: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
   email: z.string().email({ message: "Format email tidak valid." }),
   password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
+});
+
+export const signupPetugasSchema = z.object({
+  name: z.string().min(3, { message: "Nama lengkap minimal 3 karakter." }),
+  email: z.string().email({ message: "Format email tidak valid." }),
+  password: z.string().min(6, { message: "Kata sandi minimal 6 karakter." }),
+  rtRw: z.string().regex(/^\d{3}\/\d{3}$/, "Format RT/RW harus 001/001."),
 });
 
 export const loginSchema = z.object({

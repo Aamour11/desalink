@@ -26,28 +26,29 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogoIcon } from "@/components/icons";
 import { useToast } from "@/hooks/use-toast";
-import { signupSchema } from "@/lib/schema";
-import { createUser } from "@/server/actions";
+import { signupPetugasSchema } from "@/lib/schema";
+import { createPetugasUser } from "@/server/actions";
 
 
-export default function SignupPage() {
+export default function SignupPetugasPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const form = useForm<z.infer<typeof signupSchema>>({
-        resolver: zodResolver(signupSchema),
+    const form = useForm<z.infer<typeof signupPetugasSchema>>({
+        resolver: zodResolver(signupPetugasSchema),
         defaultValues: {
             name: "",
             email: "",
             password: "",
+            rtRw: "",
         },
     });
 
-    const onSubmit = async (values: z.infer<typeof signupSchema>) => {
+    const onSubmit = async (values: z.infer<typeof signupPetugasSchema>) => {
         try {
-            await createUser(values);
+            await createPetugasUser(values);
             toast({
                 title: "Pendaftaran Berhasil",
-                description: "Akun admin Anda telah dibuat. Silakan login.",
+                description: "Akun petugas Anda telah dibuat. Silakan login.",
             });
             router.push("/login");
         } catch (error) {
@@ -75,9 +76,9 @@ export default function SignupPage() {
         </Link>
         <Card className="shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="font-headline text-2xl">Buat Akun Admin Desa</CardTitle>
+            <CardTitle className="font-headline text-2xl">Buat Akun Petugas</CardTitle>
             <CardDescription>
-              Halaman ini khusus untuk mendaftarkan Admin Desa utama.
+              Halaman ini khusus untuk mendaftarkan akun Petugas RT/RW.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -105,7 +106,7 @@ export default function SignupPage() {
                         <FormControl>
                             <Input
                             type="email"
-                            placeholder="admin@desa.com"
+                            placeholder="petugas@desa.com"
                             {...field}
                             />
                         </FormControl>
@@ -126,8 +127,21 @@ export default function SignupPage() {
                         </FormItem>
                     )}
                 />
+                <FormField
+                    control={form.control}
+                    name="rtRw"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Wilayah (RT/RW)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Contoh: 001/001" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <Button type="submit" className="w-full !mt-8" size="lg" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? "Mendaftar..." : "Daftar Sebagai Admin"}
+                    {form.formState.isSubmitting ? "Mendaftar..." : "Daftar Sebagai Petugas"}
                 </Button>
                 </form>
             </Form>
@@ -143,3 +157,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

@@ -130,15 +130,26 @@ export default function LoginPage() {
             </Form>
           </CardContent>
         </Card>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Belum punya akun?{" "}
-          <Link
-            href="/signup"
-            className="font-semibold text-primary hover:underline"
-          >
-            Daftar di sini
-          </Link>
-        </p>
+        <div className="mt-6 text-center text-sm text-muted-foreground flex justify-center gap-4">
+          <p>
+            Daftar sebagai{" "}
+            <Link
+              href="/signup"
+              className="font-semibold text-primary hover:underline"
+            >
+              Admin
+            </Link>
+          </p>
+          <p>
+            Daftar sebagai{" "}
+            <Link
+              href="/signup-petugas"
+              className="font-semibold text-primary hover:underline"
+            >
+              Petugas
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

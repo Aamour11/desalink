@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema } from "@/lib/schema";
+import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
 import { mockUsers, mockUmkm, mockAnnouncements } from "@/lib/data";
 import type { UMKM, User, Announcement } from "@/lib/types";
 import { unlink, stat } from "fs/promises";
@@ -106,6 +106,33 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
     password_hash: hashedPassword,
     role: "Admin Desa",
     rtRw: "-",
+    avatarUrl: `https://placehold.co/100x100.png?text=${name.charAt(0)}`
+  };
+
+  mockUsers.push(newUser);
+}
+
+export async function createPetugasUser(values: z.infer<typeof signupPetugasSchema>) {
+  const validatedFields = signupPetugasSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    throw new Error("Data tidak valid.");
+  }
+
+  const { name, email, password, rtRw } = validatedFields.data;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  if (mockUsers.find(u => u.email === email)) {
+      throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
+  }
+  
+  const newUser: User = {
+    id: `user-${mockUsers.length + 1}`,
+    name,
+    email,
+    password_hash: hashedPassword,
+    role: "Petugas RT/RW",
+    rtRw: rtRw,
     avatarUrl: `https://placehold.co/100x100.png?text=${name.charAt(0)}`
   };
 
