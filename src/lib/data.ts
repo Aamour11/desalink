@@ -1,7 +1,129 @@
 import type { UMKM, User } from "@/lib/types";
+import bcrypt from "bcryptjs";
 
-// Mock data is no longer used, data is fetched from the database.
-// The arrays are kept to prevent breaking imports in components that are not yet refactored.
-export const mockUsers: User[] = [];
+// Helper to create hashed passwords for mock users
+const hashPassword = async (password: string) => {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+};
 
-export let mockUmkm: UMKM[] = [];
+// We need an async IIFE to create users with hashed passwords
+let mockUsers: User[] = [];
+
+(async () => {
+    mockUsers.push(
+      {
+        id: "user-1",
+        name: "Admin Desa",
+        email: "admin@desa.com",
+        password_hash: await hashPassword("password123"),
+        role: "Admin Desa",
+        rtRw: "-",
+        avatarUrl: "https://placehold.co/100x100.png?text=A",
+      },
+      {
+        id: "user-2",
+        name: "Budi Santoso",
+        email: "budi@desa.com",
+        password_hash: await hashPassword("password123"),
+        role: "Petugas RT/RW",
+        rtRw: "001/001",
+        avatarUrl: "https://placehold.co/100x100.png?text=B",
+      },
+      {
+        id: "user-3",
+        name: "Citra Lestari",
+        email: "citra@desa.com",
+        password_hash: await hashPassword("password123"),
+        role: "Petugas RT/RW",
+        rtRw: "002/001",
+        avatarUrl: "https://placehold.co/100x100.png?text=C",
+      }
+    );
+})();
+
+
+let mockUmkm: UMKM[] = [
+  {
+    id: "umkm-1",
+    businessName: "Warung Makan Barokah",
+    ownerName: "Ibu Siti",
+    nib: "1234567890123",
+    businessType: "Kuliner",
+    address: "Jl. Mawar No. 1, Dusun Damai",
+    rtRw: "001/001",
+    contact: "081234567890",
+    status: "aktif",
+    startDate: "2020-05-10",
+    employeeCount: 3,
+    description: "Menjual aneka masakan rumahan lezat dan higienis.",
+    imageUrl: "/uploads/placeholder-kuliner.png",
+    createdAt: "2024-01-15T10:00:00Z"
+  },
+  {
+    id: "umkm-2",
+    businessName: "Fashionable Hijab",
+    ownerName: "Rina Melati",
+    nib: "2345678901234",
+    businessType: "Fashion",
+    address: "Jl. Kenanga No. 5, Dusun Sejahtera",
+    rtRw: "002/001",
+    contact: "082345678901",
+    status: "aktif",
+    startDate: "2021-02-20",
+    employeeCount: 5,
+    description: "Menyediakan berbagai model hijab modern dan berkualitas.",
+    imageUrl: "/uploads/placeholder-fashion.png",
+     createdAt: "2024-01-16T11:00:00Z"
+  },
+  {
+    id: "umkm-3",
+    businessName: "Kerajinan Rotan Estetik",
+    ownerName: "Bapak Joko",
+    nib: "3456789012345",
+    businessType: "Kerajinan",
+    address: "Jl. Anggrek No. 12, Dusun Kreatif",
+    rtRw: "001/001",
+    contact: "083456789012",
+    status: "tidak aktif",
+    startDate: "2019-11-01",
+    employeeCount: 10,
+    description: "Produk kerajinan tangan dari rotan untuk dekorasi rumah.",
+    imageUrl: "/uploads/placeholder-kerajinan.png",
+     createdAt: "2024-01-17T12:00:00Z"
+  },
+  {
+    id: "umkm-4",
+    businessName: "Jasa Servis Elektronik Cepat",
+    ownerName: "Agus Setiawan",
+    nib: "4567890123456",
+    businessType: "Jasa",
+    address: "Jl. Melati No. 8, Dusun Maju",
+    rtRw: "003/002",
+    contact: "084567890123",
+    status: "aktif",
+    startDate: "2022-08-15",
+    employeeCount: 2,
+    description: "Melayani perbaikan TV, kulkas, mesin cuci, dan lainnya.",
+    imageUrl: "/uploads/placeholder-jasa.png",
+     createdAt: "2024-01-18T13:00:00Z"
+  },
+  {
+    id: "umkm-5",
+    businessName: "Sayur Organik Pak Tani",
+    ownerName: "Bapak Sutrisno",
+    nib: "5678901234567",
+    businessType: "Pertanian",
+    address: "Kavling Pertanian, Dusun Subur",
+    rtRw: "001/001",
+    contact: "085678901234",
+    status: "aktif",
+    startDate: "2023-01-30",
+    employeeCount: 8,
+    description: "Menjual sayuran segar langsung dari kebun tanpa pestisida.",
+    imageUrl: "/uploads/placeholder-pertanian.png",
+     createdAt: "2024-01-19T14:00:00Z"
+  },
+];
+
+export { mockUsers, mockUmkm };

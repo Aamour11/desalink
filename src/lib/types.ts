@@ -12,6 +12,7 @@ export type UMKM = {
   employeeCount: number;
   description: string;
   imageUrl: string;
+  createdAt: string;
 };
 
 export type User = {
@@ -21,4 +22,5 @@ export type User = {
   role: "Admin Desa" | "Petugas RT/RW";
   rtRw: string;
   avatarUrl: string;
+  password_hash: string;
 };
