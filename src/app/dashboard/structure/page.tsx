@@ -21,8 +21,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,7 +101,7 @@ export default function StructurePage() {
   }
 
   return (
-    <Dialog open={!!selectedUmkm} onOpenChange={(isOpen) => !isOpen && setSelectedUmkm(null)}>
+    <>
         <div className="space-y-6">
             <div>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">
@@ -188,77 +186,79 @@ export default function StructurePage() {
                 </CardContent>
             </Card>
         </div>
-         {selectedUmkm && (
-            <DialogContent className="max-w-2xl">
-                 <DialogHeader>
-                    <DialogTitle className="font-headline text-2xl mb-4">{selectedUmkm.businessName}</DialogTitle>
-                     <Image src={selectedUmkm.imageUrl} alt={selectedUmkm.businessName} width={800} height={400} className="rounded-lg aspect-video object-cover border" data-ai-hint="business product" />
-                     <div className="pt-4 text-left">
-                        <p className="text-muted-foreground">{selectedUmkm.description}</p>
-                     </div>
-                 </DialogHeader>
-                 <div className="grid grid-cols-2 gap-4 text-sm py-4">
-                    <div className="flex items-start gap-3">
-                        <User className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">Pemilik</p>
-                            <p className="text-muted-foreground">{selectedUmkm.ownerName}</p>
+        <Dialog open={!!selectedUmkm} onOpenChange={(isOpen) => !isOpen && setSelectedUmkm(null)}>
+            {selectedUmkm && (
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-headline text-2xl mb-4">{selectedUmkm.businessName}</DialogTitle>
+                        <Image src={selectedUmkm.imageUrl} alt={selectedUmkm.businessName} width={800} height={400} className="rounded-lg aspect-video object-cover border" data-ai-hint="business product" />
+                        <div className="pt-4 text-left">
+                            <p className="text-muted-foreground">{selectedUmkm.description}</p>
+                        </div>
+                    </DialogHeader>
+                    <div className="grid grid-cols-2 gap-4 text-sm py-4">
+                        <div className="flex items-start gap-3">
+                            <User className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">Pemilik</p>
+                                <p className="text-muted-foreground">{selectedUmkm.ownerName}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Briefcase className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">Jenis Usaha</p>
+                                <p className="text-muted-foreground">{selectedUmkm.businessType}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Phone className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">Kontak</p>
+                                <p className="text-muted-foreground">{selectedUmkm.contact}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <MapPin className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">Alamat</p>
+                                <p className="text-muted-foreground">{selectedUmkm.address}, RT/RW {selectedUmkm.rtRw}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Calendar className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">Tanggal Berdiri</p>
+                                <p className="text-muted-foreground">{selectedUmkm.startDate ? format(new Date(selectedUmkm.startDate), "d MMMM yyyy", { locale: indonesiaLocale }) : '-'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Hash className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">NIB</p>
+                                <p className="text-muted-foreground">{selectedUmkm.nib || '-'}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <div className="mt-1">
+                            {selectedUmkm.status === 'aktif' ? <CheckCircle className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-red-600" />}
+                            </div>
+                            <div>
+                                <p className="font-semibold">Status</p>
+                                <p className="text-muted-foreground capitalize">{selectedUmkm.status}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                            <Users className="h-5 w-5 text-primary mt-1" />
+                            <div>
+                                <p className="font-semibold">Jumlah Karyawan</p>
+                                <p className="text-muted-foreground">{selectedUmkm.employeeCount} orang</p>
+                            </div>
                         </div>
                     </div>
-                     <div className="flex items-start gap-3">
-                        <Briefcase className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">Jenis Usaha</p>
-                            <p className="text-muted-foreground">{selectedUmkm.businessType}</p>
-                        </div>
-                    </div>
-                     <div className="flex items-start gap-3">
-                        <Phone className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">Kontak</p>
-                            <p className="text-muted-foreground">{selectedUmkm.contact}</p>
-                        </div>
-                    </div>
-                      <div className="flex items-start gap-3">
-                        <MapPin className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">Alamat</p>
-                            <p className="text-muted-foreground">{selectedUmkm.address}, RT/RW {selectedUmkm.rtRw}</p>
-                        </div>
-                    </div>
-                     <div className="flex items-start gap-3">
-                        <Calendar className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">Tanggal Berdiri</p>
-                            <p className="text-muted-foreground">{selectedUmkm.startDate ? format(new Date(selectedUmkm.startDate), "d MMMM yyyy", { locale: indonesiaLocale }) : '-'}</p>
-                        </div>
-                    </div>
-                     <div className="flex items-start gap-3">
-                        <Hash className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">NIB</p>
-                            <p className="text-muted-foreground">{selectedUmkm.nib || '-'}</p>
-                        </div>
-                    </div>
-                     <div className="flex items-start gap-3">
-                        <div className="mt-1">
-                          {selectedUmkm.status === 'aktif' ? <CheckCircle className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-red-600" />}
-                        </div>
-                        <div>
-                            <p className="font-semibold">Status</p>
-                            <p className="text-muted-foreground capitalize">{selectedUmkm.status}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                        <Users className="h-5 w-5 text-primary mt-1" />
-                        <div>
-                            <p className="font-semibold">Jumlah Karyawan</p>
-                            <p className="text-muted-foreground">{selectedUmkm.employeeCount} orang</p>
-                        </div>
-                    </div>
-                 </div>
-            </DialogContent>
-        )}
-    </Dialog>
+                </DialogContent>
+            )}
+        </Dialog>
+    </>
   );
 }
