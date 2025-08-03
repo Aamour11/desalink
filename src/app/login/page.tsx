@@ -47,7 +47,8 @@ export default function LoginPage() {
         title: "Login Berhasil",
         description: "Selamat datang kembali!",
       });
-      router.push("/dashboard");
+      // This forces a server-side refresh, ensuring the new session cookie is read.
+      router.refresh(); 
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Terjadi kesalahan";

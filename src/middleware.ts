@@ -5,14 +5,14 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session');
  
-  // Jika pengguna mencoba mengakses halaman login atau signup tetapi sudah memiliki sesi,
-  // arahkan mereka ke dasbor.
-  if ((request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup')) && sessionCookie) {
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup');
+
+  // If the user is on an auth page but already has a session, redirect to the dashboard.
+  if (isAuthPage && sessionCookie) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Jika pengguna mencoba mengakses rute di dalam /dashboard tetapi tidak memiliki sesi,
-  // arahkan mereka ke halaman login.
+  // If the user is trying to access a protected route without a session, redirect to the login page.
   if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
