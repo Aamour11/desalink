@@ -249,6 +249,7 @@ export default function StructurePage() {
                                     fill
                                     className="object-cover" 
                                     data-ai-hint="business product" 
+                                    unoptimized
                                 />
                             </div>
                             

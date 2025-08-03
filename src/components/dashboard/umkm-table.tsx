@@ -260,6 +260,7 @@ export function UmkmTable({ data }: { data: UMKM[] }) {
                                     fill
                                     className="object-cover" 
                                     data-ai-hint="business product" 
+                                    unoptimized
                                 />
                             </div>
                             

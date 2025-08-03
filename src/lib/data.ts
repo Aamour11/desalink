@@ -68,7 +68,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 3,
     description: "Menjual aneka masakan rumahan lezat dan higienis.",
     imageUrl: "/uploads/placeholder-kuliner.png",
-    legalityDocumentUrl: "/uploads/placeholder-document.pdf",
+    legalityDocumentUrl: "/uploads/placeholder-kuliner.png", // Using existing image as placeholder document
     createdAt: "2024-01-15T10:00:00Z"
   },
   {
@@ -120,6 +120,7 @@ let mockUmkm: UMKM[] = [
     employeeCount: 2,
     description: "Melayani perbaikan TV, kulkas, mesin cuci, dan lainnya.",
     imageUrl: "/uploads/placeholder-jasa.png",
+    legalityDocumentUrl: "/uploads/placeholder-jasa.png",
      createdAt: "2024-01-18T13:00:00Z"
   },
   {
@@ -154,7 +155,6 @@ let mockUmkm: UMKM[] = [
     employeeCount: 2,
     description: "Menyediakan kebutuhan pokok sehari-hari.",
     imageUrl: "https://placehold.co/600x400.png",
-    legalityDocumentUrl: "/uploads/placeholder-document.pdf",
     createdAt: "2024-02-01T09:00:00Z"
   },
    {
@@ -206,7 +206,6 @@ let mockUmkm: UMKM[] = [
     employeeCount: 15,
     description: "Koleksi batik tulis premium dengan motif khas daerah.",
     imageUrl: "https://placehold.co/600x400.png",
-    legalityDocumentUrl: "/uploads/placeholder-document.pdf",
     createdAt: "2024-02-04T12:00:00Z"
   },
   {
