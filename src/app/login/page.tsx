@@ -47,8 +47,8 @@ export default function LoginPage() {
         title: "Login Berhasil",
         description: "Selamat datang kembali!",
       });
-      // This forces a server-side refresh, ensuring the new session cookie is read.
-      router.refresh(); 
+      // Force a full page reload to ensure the new session cookie is read by the server.
+      window.location.href = '/dashboard';
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Terjadi kesalahan";
