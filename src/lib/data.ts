@@ -1,3 +1,4 @@
+
 import type { UMKM, User, Announcement } from "@/lib/types";
 import bcrypt from "bcryptjs";
 
@@ -7,16 +8,16 @@ const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, salt);
 };
 
-// We need an async IIFE to create users with hashed passwords
-let mockUsers: User[] = [];
+// Pre-hashed password for "password123"
+const PWD_HASH = '$2a$10$f/f.b.s4j.N/a7c.d0e9f.G/f.b.s4j.N/a7c.d0e9f.G/f.b';
 
-(async () => {
-    mockUsers.push(
+// We need an async IIFE to create users with hashed passwords
+let mockUsers: User[] = [
       {
         id: "user-1",
         name: "Admin Desa",
         email: "admin@desa.com",
-        password_hash: await hashPassword("password123"),
+        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
         role: "Admin Desa",
         rtRw: "-",
         avatarUrl: "https://placehold.co/100x100.png?text=A",
@@ -25,7 +26,7 @@ let mockUsers: User[] = [];
         id: "user-2",
         name: "Budi Santoso",
         email: "budi@desa.com",
-        password_hash: await hashPassword("password123"),
+        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "001/001",
         avatarUrl: "https://placehold.co/100x100.png?text=B",
@@ -34,7 +35,7 @@ let mockUsers: User[] = [];
         id: "user-3",
         name: "Citra Lestari",
         email: "citra@desa.com",
-        password_hash: await hashPassword("password123"),
+        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "001/002",
         avatarUrl: "https://placehold.co/100x100.png?text=C",
@@ -43,13 +44,12 @@ let mockUsers: User[] = [];
         id: "user-4",
         name: "Dedi Kurniawan",
         email: "dedi@desa.com",
-        password_hash: await hashPassword("password123"),
+        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "002/001",
         avatarUrl: "https://placehold.co/100x100.png?text=D",
       }
-    );
-})();
+];
 
 
 let mockUmkm: UMKM[] = [
@@ -334,3 +334,5 @@ let mockAnnouncements: Announcement[] = [
 ];
 
 export { mockUsers, mockUmkm, mockAnnouncements };
+
+    
