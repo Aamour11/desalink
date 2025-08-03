@@ -5,7 +5,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/cookies";
+import { cookies } from "next/headers";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema } from "@/lib/schema";
 import { mockUsers, mockUmkm } from "@/lib/data";
 import type { UMKM, User } from "@/lib/types";
@@ -45,7 +45,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
        }
   }
 
-  const tokenPayload: User = {
+  const tokenPayload = {
     id: user.id, 
     name: user.name, 
     email: user.email, 
@@ -55,7 +55,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
   };
   
   const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   cookieStore.set("session", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -67,12 +67,12 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
 }
 
 export async function signOut() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   cookieStore.delete("session");
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const token = cookieStore.get("session")?.value;
 
   if (!token) {
@@ -81,7 +81,9 @@ export async function getCurrentUser(): Promise<User | null> {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as User;
-    return decoded;
+    // We need to return the full user object including password hash for other functions to work
+    const userFromDb = mockUsers.find(u => u.id === decoded.id);
+    return userFromDb || null;
   } catch (error) {
     return mockUsers.find(u => u.role === 'Admin Desa') || null;
   }
@@ -103,7 +105,7 @@ export async function createUser(values: z.infer<typeof signupSchema>) {
       throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
   }
   
-  const newUser: User & { password_hash: string } = {
+  const newUser: User = {
     id: `user-${mockUsers.length + 1}`,
     name,
     email,
@@ -131,7 +133,7 @@ export async function addNewUser(values: z.infer<typeof userFormSchema>) {
         throw new Error("Email sudah terdaftar untuk pengguna lain.");
     }
     
-    const newUser: User & { password_hash: string } = {
+    const newUser: User = {
         id: `user-${mockUsers.length + 1}`,
         name,
         email,
@@ -163,7 +165,7 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
 
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        (updatedUser as any).password_hash = hashedPassword;
+        updatedUser.password_hash = hashedPassword;
     }
     
     mockUsers[userIndex] = updatedUser;
@@ -217,7 +219,7 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
     if (userIndex === -1) {
         throw new Error("Pengguna tidak ditemukan.");
     }
-    const user = (mockUsers[userIndex] as any);
+    const user = mockUsers[userIndex];
 
     const passwordsMatch = await bcrypt.compare(currentPassword, user.password_hash);
     if (!passwordsMatch) {
@@ -241,6 +243,7 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
     id: `umkm-${mockUmkm.length + 1}`,
     createdAt: new Date().toISOString(),
     ...validatedFields.data,
+    employeeCount: validatedFields.data.employeeCount || 0,
     imageUrl: validatedFields.data.imageUrl || 'https://placehold.co/600x400.png'
   };
 
@@ -287,6 +290,7 @@ export async function updateUmkm(
   mockUmkm[umkmIndex] = {
     ...mockUmkm[umkmIndex],
     ...validatedFields.data,
+    employeeCount: validatedFields.data.employeeCount || 0,
     imageUrl: imageUrl || 'https://placehold.co/600x400.png'
   };
 
@@ -331,7 +335,8 @@ export async function getUmkmData(): Promise<UMKM[]> {
         return mockUmkm.filter(u => u.rtRw === user.rtRw);
     }
     
-    return [...mockUmkm];
+    // Sort by most recently created
+    return [...mockUmkm].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getUsersData(): Promise<User[]> {
@@ -348,10 +353,16 @@ export async function getUmkmById(id: string): Promise<UMKM | null> {
 
 
 export async function getUserById(id: string): Promise<User | null> {
-    return mockUsers.find(u => u.id === id) || null;
+    const user = mockUsers.find(u => u.id === id);
+    if (!user) return null;
+    // Return a copy without the password hash
+    const { password_hash, ...userWithoutPassword } = user;
+    return userWithoutPassword as User;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
   if (!rtRw || rtRw === '-') return [];
   return mockUmkm.filter(u => u.rtRw === rtRw);
 }
+
+    
