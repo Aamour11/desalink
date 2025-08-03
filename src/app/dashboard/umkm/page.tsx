@@ -1,5 +1,4 @@
 
-
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,24 +15,9 @@ export default async function UmkmPage({
     status?: string;
   };
 }) {
-  const query = searchParams?.q || "";
-  const typeFilter = searchParams?.type || "all";
-  const statusFilter = searchParams?.status || "all";
-
+  // Data fetching remains on the server component
   const allUmkm = await getUmkmData();
   const currentUser = await getCurrentUser();
-
-  const filteredUmkm: UMKM[] = allUmkm.filter((umkm) => {
-    const matchesQuery =
-      umkm.businessName.toLowerCase().includes(query.toLowerCase()) ||
-      umkm.ownerName.toLowerCase().includes(query.toLowerCase()) ||
-      umkm.rtRw.includes(query);
-    const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
-    const matchesStatus =
-      statusFilter === "all" || umkm.status === statusFilter;
-
-    return matchesQuery && matchesType && matchesStatus;
-  });
 
   const canAddUmkm = currentUser?.role === 'Petugas RT/RW';
 
@@ -56,7 +40,7 @@ export default async function UmkmPage({
         )}
       </div>
 
-      <UmkmTable data={filteredUmkm} />
+      <UmkmTable data={allUmkm} />
     </div>
   );
 }
