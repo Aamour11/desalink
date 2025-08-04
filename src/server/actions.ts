@@ -4,10 +4,9 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { RowDataPacket } from "mysql2";
 import cookie from "cookie";
+import { executeQuery } from "@/lib/db";
 
-import pool from "@/lib/db";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
 import type { UMKM, User, Announcement, Management } from "@/lib/types";
 import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
@@ -42,23 +41,6 @@ function deleteSessionCookie(resHeaders: Headers) {
     resHeaders.append('Set-Cookie', expiredCookie);
 }
 
-
-// Helper function to execute queries
-async function executeQuery<T>(query: string, values: any[] = []): Promise<T> {
-  let connection;
-  try {
-    console.log(`Executing query: ${query.split('?').join('\'%s\'')}`, values);
-    connection = await pool.getConnection();
-    const [results] = await connection.execute(query, values);
-    return results as T;
-  } catch (error) {
-    console.error("Database Query Error:", error);
-    throw new Error("Terjadi kesalahan pada server database.");
-  } finally {
-    if (connection) connection.release();
-  }
-}
-
 // --- AUTH ACTIONS ---
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
@@ -67,7 +49,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
   
   const { email, password } = validatedFields.data;
 
-  const users = await executeQuery<User[] & RowDataPacket[]>("SELECT * FROM users WHERE email = ?", [email]);
+  const users = await executeQuery<User[]>("SELECT * FROM users WHERE email = ?", [email]);
   const user = users[0];
 
   if (!user) {
@@ -75,21 +57,14 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     throw new Error("Email atau kata sandi salah.");
   }
   
-  // WARNING: Storing and comparing passwords in plain text is not secure.
-  // This is for demonstration purposes to bypass JWT/bcrypt issues.
   if (password !== user.password_hash) {
     console.log(`Login failed: Password mismatch for email ${email}`);
     throw new Error("Email atau kata sandi salah.");
   }
 
-  // Set a simple session cookie with the user's ID
   const responseHeaders = new Headers();
   setSessionCookie(responseHeaders, user.id);
   
-  // Since we can't return headers from server actions directly,
-  // we rely on the client to reload, which will pick up the cookie on the next request.
-  // A more robust solution might involve an API route for login.
-  // For now, this is a workaround. The revalidation is important.
   revalidatePath('/', 'layout');
 
   return { success: true };
@@ -106,12 +81,11 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
   if (!userId) return null;
 
   try {
-    const users = await executeQuery<Omit<User, 'password_hash'>[] & RowDataPacket[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [userId]);
+    const users = await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [userId]);
     const user = users[0];
     return user || null;
   } catch (error) {
     console.error("Failed to fetch current user:", error);
-    // If there's an error, try to clear the potentially invalid cookie
     const responseHeaders = new Headers();
     deleteSessionCookie(responseHeaders);
     revalidatePath('/', 'layout');
@@ -129,7 +103,6 @@ async function createUserAction(values: z.infer<typeof signupSchema | typeof sig
         throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
     }
 
-    // WARNING: Storing password in plain text. Not for production use.
     const plainPassword = password;
     const userId = `user-${Date.now()}`;
     const avatarUrl = `https://placehold.co/100x100.png?text=${name.charAt(0)}`;
@@ -172,7 +145,6 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
     const finalRtRw = role === 'Admin Desa' ? '-' : rtRw || '';
     
     if (password) {
-        // Storing plain text password
         await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ?, password_hash = ? WHERE id = ?", [name, role, finalRtRw, password, id]);
     } else {
         await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ? WHERE id = ?", [name, role, finalRtRw, id]);
@@ -206,7 +178,7 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
     
     const { currentPassword, newPassword } = validatedFields.data;
     
-    const users = await executeQuery<User[] & RowDataPacket[]>("SELECT password_hash FROM users WHERE id = ?", [userId]);
+    const users = await executeQuery<User[]>("SELECT password_hash FROM users WHERE id = ?", [userId]);
     const user = users[0];
     if (!user) throw new Error("Pengguna tidak ditemukan.");
 
@@ -247,7 +219,7 @@ export async function updateUmkm(id: string, values: z.infer<typeof umkmSchema>)
   if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
   if (currentUser.role !== 'Petugas RT/RW') throw new Error("Anda tidak memiliki izin untuk mengedit data UMKM.");
 
-  const umkms = await executeQuery<UMKM[] & RowDataPacket[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
+  const umkms = await executeQuery<UMKM[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
   const umkmToUpdate = umkms[0];
   if (!umkmToUpdate) throw new Error("UMKM tidak ditemukan.");
   if (currentUser.rtRw !== umkmToUpdate.rtRw) throw new Error("Anda tidak memiliki izin untuk mengedit UMKM ini.");
@@ -274,7 +246,7 @@ export async function deleteUmkm(id: string) {
     if (!currentUser) throw new Error("Anda harus login.");
     if (currentUser.role !== 'Petugas RT/RW') throw new Error("Hanya Petugas RT/RW yang berwenang yang dapat menghapus data.");
 
-    const umkms = await executeQuery<UMKM[] & RowDataPacket[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
+    const umkms = await executeQuery<UMKM[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
     const umkmData = umkms[0];
     if (!umkmData) throw new Error("UMKM tidak ditemukan.");
     if (currentUser.rtRw !== umkmData.rtRw) throw new Error("Anda tidak memiliki izin untuk menghapus UMKM ini.");
@@ -315,10 +287,10 @@ export async function getUmkmData(): Promise<UMKM[]> {
     if (!user) return [];
 
     if (user.role === 'Petugas RT/RW' && user.rtRw) {
-        return await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm WHERE rtRw = ? ORDER BY createdAt DESC", [user.rtRw]);
+        return await executeQuery<UMKM[]>("SELECT * FROM umkm WHERE rtRw = ? ORDER BY createdAt DESC", [user.rtRw]);
     }
     if (user.role === 'Admin Desa') {
-      return await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm ORDER BY createdAt DESC");
+      return await executeQuery<UMKM[]>("SELECT * FROM umkm ORDER BY createdAt DESC");
     }
     return [];
 }
@@ -327,11 +299,11 @@ export async function getUsersData(): Promise<Omit<User, 'password_hash'>[]> {
     const user = await getCurrentUser();
     if (user?.role !== 'Admin Desa') return [];
     
-    return await executeQuery<Omit<User, 'password_hash'>[] & RowDataPacket[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users");
+    return await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users");
 }
 
 export async function getUmkmById(id: string): Promise<UMKM | null> {
-    const umkms = await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm WHERE id = ?", [id]);
+    const umkms = await executeQuery<UMKM[]>("SELECT * FROM umkm WHERE id = ?", [id]);
     const umkm = umkms[0];
     if (!umkm) return null;
 
@@ -347,7 +319,7 @@ export async function getUserById(id: string): Promise<Omit<User, 'password_hash
     if (!currentUser) return null;
     if (currentUser.id !== id && currentUser.role !== 'Admin Desa') return null;
     
-    const users = await executeQuery<Omit<User, 'password_hash'>[] & RowDataPacket[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [id]);
+    const users = await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [id]);
     return users[0] || null;
 }
 
@@ -355,7 +327,7 @@ export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
   const user = await getCurrentUser();
   if (user?.role !== 'Admin Desa') return [];
   if (!rtRw || rtRw === '-') return [];
-  return await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm WHERE rtRw = ?", [rtRw]);
+  return await executeQuery<UMKM[]>("SELECT * FROM umkm WHERE rtRw = ?", [rtRw]);
 }
 
 export async function getLatestAnnouncement(): Promise<Announcement | null> {
@@ -365,5 +337,5 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 }
 
 export async function getManagementData(): Promise<Management[]> {
-    return await executeQuery<Management[] & RowDataPacket[]>("SELECT * FROM management ORDER BY id");
+    return await executeQuery<Management[]>("SELECT * FROM management ORDER BY id");
 }

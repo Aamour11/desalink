@@ -1,28 +1,51 @@
 
-import mysql from 'mysql2/promise';
+import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
+import path from 'path';
 
-// Membuat koneksi pool ke database
-// Detail koneksi diambil dari variabel lingkungan
-const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+// This is a singleton to ensure we only have one database connection.
+let dbInstance: Awaited<ReturnType<typeof open>> | null = null;
 
-// Middleware untuk memastikan koneksi dapat dibuat
-// Ini akan menampilkan error di console jika koneksi gagal
-pool.getConnection()
-  .then(conn => {
-    console.log("Successfully connected to the database.");
-    conn.release();
-  })
-  .catch(err => {
-    console.error("Failed to connect to the database. Please check your .env variables.", err);
-  });
+export async function getDbConnection() {
+  if (dbInstance) {
+    return dbInstance;
+  }
+  
+  try {
+    const dbPath = path.join(process.cwd(), 'desalink.sqlite');
+    
+    const db = await open({
+      filename: dbPath,
+      driver: sqlite3.Database,
+    });
+    
+    console.log("Successfully connected to the SQLite database.");
+    dbInstance = db;
+    return db;
+  } catch (error) {
+    console.error("Failed to connect to the SQLite database.", error);
+    throw new Error("Failed to connect to the database.");
+  }
+}
 
-
-export default pool;
+// Helper function to execute queries
+export async function executeQuery<T>(query: string, params: any[] = []): Promise<T> {
+    const db = await getDbConnection();
+    try {
+        console.log(`Executing query: ${query}`, params);
+        // For SELECT queries
+        if (query.trim().toUpperCase().startsWith('SELECT')) {
+            const results = await db.all<T>(query, params);
+            return results;
+        }
+        // For INSERT, UPDATE, DELETE queries
+        else {
+            const result = await db.run(query, params);
+            // For INSERT, return the last inserted ID. For others, the number of changes.
+            return { lastID: result.lastID, changes: result.changes } as T;
+        }
+    } catch (err: any) {
+        console.error('Database query error:', err.message);
+        throw new Error('Terjadi kesalahan pada server database.');
+    }
+}

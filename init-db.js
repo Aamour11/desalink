@@ -1,57 +1,48 @@
-
-// Use require for Node.js environment
-const mysql = require('mysql2/promise');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
 require('dotenv').config();
 
-// Database configuration from .env file
-const dbConfig = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-};
-
-// SQL statements to create tables
+// SQL statements to create tables for SQLite
 const createUsersTableQuery = `
 CREATE TABLE IF NOT EXISTS users (
-  id VARCHAR(255) PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  role ENUM('Admin Desa', 'Petugas RT/RW') NOT NULL,
-  rtRw VARCHAR(7) NOT NULL,
-  avatarUrl VARCHAR(255)
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role TEXT CHECK(role IN ('Admin Desa', 'Petugas RT/RW')) NOT NULL,
+  rtRw TEXT NOT NULL,
+  avatarUrl TEXT
 );`;
 
 const createUmkmTableQuery = `
 CREATE TABLE IF NOT EXISTS umkm (
-  id VARCHAR(255) PRIMARY KEY,
-  businessName VARCHAR(255) NOT NULL,
-  ownerName VARCHAR(255) NOT NULL,
-  nib VARCHAR(255),
-  businessType ENUM('Kuliner', 'Fashion', 'Kerajinan', 'Jasa', 'Pertanian') NOT NULL,
+  id TEXT PRIMARY KEY,
+  businessName TEXT NOT NULL,
+  ownerName TEXT NOT NULL,
+  nib TEXT,
+  businessType TEXT CHECK(businessType IN ('Kuliner', 'Fashion', 'Kerajinan', 'Jasa', 'Pertanian')) NOT NULL,
   address TEXT NOT NULL,
-  rtRw VARCHAR(7) NOT NULL,
-  contact VARCHAR(20) NOT NULL,
-  status ENUM('aktif', 'tidak aktif') NOT NULL,
-  legality ENUM('Lengkap', 'Tidak Lengkap', 'Sedang Diproses') NOT NULL,
-  startDate DATE,
-  employeeCount INT DEFAULT 0,
+  rtRw TEXT NOT NULL,
+  contact TEXT NOT NULL,
+  status TEXT CHECK(status IN ('aktif', 'tidak aktif')) NOT NULL,
+  legality TEXT CHECK(legality IN ('Lengkap', 'Tidak Lengkap', 'Sedang Diproses')) NOT NULL,
+  startDate TEXT,
+  employeeCount INTEGER DEFAULT 0,
   description TEXT,
-  imageUrl VARCHAR(255),
-  legalityDocumentUrl VARCHAR(255),
-  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  imageUrl TEXT,
+  legalityDocumentUrl TEXT,
+  createdAt TEXT DEFAULT CURRENT_TIMESTAMP
 );`;
 
 const createManagementTableQuery = `
 CREATE TABLE IF NOT EXISTS management (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  position VARCHAR(255) NOT NULL,
-  phone VARCHAR(20),
-  email VARCHAR(255),
-  avatarUrl VARCHAR(255),
-  aiHint VARCHAR(255)
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  position TEXT NOT NULL,
+  phone TEXT,
+  email TEXT,
+  avatarUrl TEXT,
+  aiHint TEXT
 );`;
 
 const insertManagementDataQuery = `
@@ -62,63 +53,46 @@ INSERT INTO management (name, position, phone, email, avatarUrl, aiHint) VALUES
 ('Bapak Prabowo', 'Ketua RW 04', '0812-3456-7890', 'prabowo@example.com', 'https://placehold.co/100x100.png?text=P', 'man portrait'),
 ('Bapak Gibran', 'Ketua RW 05', '0823-4567-8901', 'gibran@example.com', 'https://placehold.co/100x100.png?text=G', 'man portrait'),
 ('Ibu Puan', 'Ketua RW 06', '0834-5678-9012', 'puan@example.com', 'https://placehold.co/100x100.png?text=P', 'woman portrait')
-ON DUPLICATE KEY UPDATE name=name;
+ON CONFLICT(name) DO NOTHING;
 `;
-
 
 // Main function to connect and create tables
 async function initializeDatabase() {
-  let connection;
+  let db;
   try {
-    // Create a connection without specifying the database first
-    connection = await mysql.createConnection({
-      host: dbConfig.host,
-      user: dbConfig.user,
-      password: dbConfig.password,
+    // Open the database file
+    db = await open({
+      filename: './desalink.sqlite',
+      driver: sqlite3.Database
     });
-    console.log('Successfully connected to MySQL server.');
+    console.log('Successfully connected to the SQLite database.');
 
-    // Create the database if it doesn't exist
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\`;`);
-    console.log(`Database "${dbConfig.database}" is ready.`);
-    
-    // Close initial connection and reconnect to the specific database
-    await connection.end();
-
-    // Reconnect with the database selected
-    connection = await mysql.createConnection(dbConfig);
-    console.log(`Successfully re-connected to "${dbConfig.database}" database.`);
+    // Enable foreign key support
+    await db.exec('PRAGMA foreign_keys = ON;');
 
     // Create the users table
-    await connection.execute(createUsersTableQuery);
+    await db.exec(createUsersTableQuery);
     console.log('Table "users" created or already exists.');
 
     // Create the umkm table
-    await connection.execute(createUmkmTableQuery);
+    await db.exec(createUmkmTableQuery);
     console.log('Table "umkm" created or already exists.');
     
     // Create the management table
-    await connection.execute(createManagementTableQuery);
+    await db.exec(createManagementTableQuery);
     console.log('Table "management" created or already exists.');
 
     // Insert initial management data
-    await connection.execute(insertManagementDataQuery);
+    await db.exec(insertManagementDataQuery);
     console.log('Initial management data inserted or already exists.');
-
 
     console.log('\nDatabase initialization complete! You can now run the application.');
 
   } catch (error) {
     console.error('Error during database initialization:', error.message);
-    if (error.code === 'ECONNREFUSED') {
-        console.error('Connection refused. Is the MySQL server running and accessible?');
-    }
-    if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-        console.error('Access denied. Please check your MYSQL_USER and MYSQL_PASSWORD in the .env file.');
-    }
   } finally {
-    if (connection) {
-      await connection.end();
+    if (db) {
+      await db.close();
       console.log('Connection closed.');
     }
   }
