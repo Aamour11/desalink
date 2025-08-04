@@ -6,13 +6,22 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { getCurrentUser } from "@/server/actions";
 import { redirect } from "next/navigation";
 
+// Mock user data for bypass
+const mockUser = {
+  id: 'user-bypass',
+  name: 'Developer',
+  email: 'dev@example.com',
+  role: 'Admin Desa' as const,
+  rtRw: '-',
+  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+};
+
 export default async function DashboardLayout({ children }: PropsWithChildren) {
-  // Middleware handles redirection for unauthenticated users.
-  // We can safely assume a user exists here.
-  // This server-side check adds an extra layer of security.
-  const user = await getCurrentUser();
+  let user = await getCurrentUser();
+  
+  // If no user is logged in, use the mock user. This bypasses the login requirement.
   if (!user) {
-    redirect('/login');
+    user = mockUser;
   }
 
   return (

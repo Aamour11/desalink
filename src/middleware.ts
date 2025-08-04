@@ -14,11 +14,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // If the user is trying to access a protected route without a session, redirect to the login page.
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionCookie) {
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
-  }
+  // --- BYPASS: Temporarily disabled to allow direct dashboard access ---
+  // if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionCookie) {
+  //   const loginUrl = new URL('/login', request.url)
+  //   return NextResponse.redirect(loginUrl)
+  // }
  
   return NextResponse.next();
 }
