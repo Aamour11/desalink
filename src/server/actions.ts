@@ -49,23 +49,26 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     
     // Fallback for demo mode (no one logged in)
     if (!sessionUserId) {
-        const mockUser = mockUsers.find(u => u.role === 'Admin Desa');
-        return mockUser || null;
+        // Default to admin view for demo purposes if no one is logged in.
+        const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
+        return mockAdmin || null;
     }
 
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
      if (!originalUser) {
-        return null; 
+        // If the cookie is invalid, treat as logged out.
+        return mockUsers.find(u => u.role === 'Admin Desa') || null; 
     }
     
-    // If the user wants to simulate a petugas
+    // If Admin wants to simulate a Petugas
     if (originalUser.role === 'Admin Desa' && activeRole === 'petugas') {
+      // Find a mock petugas to impersonate. Using the first one for consistency.
       const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
       if (mockPetugas) {
+         // Return the full mock Petugas profile, but keep the original Admin's ID for session purposes.
          return {
             ...mockPetugas, 
             id: originalUser.id, 
-            role: 'Petugas RT/RW'
         };
       }
     }
@@ -199,5 +202,3 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 export async function getManagementData(): Promise<Management[]> {
     return mockManagement;
 }
-
-    
