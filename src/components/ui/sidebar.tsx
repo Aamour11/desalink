@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft, Replace } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -26,8 +26,7 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
-  activeUser: Omit<User, "password_hash"> | null,
-  setActiveUser: (user: Omit<User, "password_hash"> | null) => void,
+  user: Omit<User, "password_hash"> | null,
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -41,16 +40,18 @@ function useSidebar() {
   return context
 }
 
-const SidebarProvider = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
+type SidebarProviderProps = React.ComponentProps<"div"> & {
+    user: Omit<User, "password_hash"> | null
     defaultOpen?: boolean
     open?: boolean
     onOpenChange?: (open: boolean) => void
-  }
->(
+  };
+
+
+const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>(
   (
     {
+      user,
       defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
@@ -63,8 +64,6 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
-    const [activeUser, setActiveUser] = React.useState<Omit<User, "password_hash"> | null>(null);
-
 
     // This is the internal state of the sidebar.
     const [_open, _setOpen] = React.useState(defaultOpen)
@@ -115,10 +114,9 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
-        activeUser,
-        setActiveUser,
+        user,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeUser, setActiveUser]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, user]
     )
 
     return (

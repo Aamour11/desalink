@@ -25,9 +25,7 @@ import {
   Replace,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
-import type { User } from "@/lib/types";
-import { useEffect, useState } from "react";
-import { getCurrentUser, signOut as serverSignOut } from "@/server/actions";
+import { signOut } from "@/server/actions";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -50,24 +48,7 @@ const bottomNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { setOpenMobile, activeUser, setActiveUser } = useSidebar();
-  
-  useEffect(() => {
-    // This effect now primarily fetches user data to populate the sidebar context
-    // It is no longer responsible for redirection, simplifying its role.
-    const fetchAndSetUser = async () => {
-        try {
-            const user = await getCurrentUser();
-            if (user) {
-                setActiveUser(user);
-            }
-        } catch (e) {
-            console.error("Failed to fetch current user for sidebar.", e);
-        }
-    }
-    fetchAndSetUser();
-  }, [setActiveUser]);
-
+  const { setOpenMobile, user } = useSidebar();
 
   const handleNavigate = (href: string) => {
     router.push(href);
@@ -75,8 +56,8 @@ export function DashboardSidebar() {
   };
 
   const handleLogout = async () => {
-    await serverSignOut();
-    window.location.href = "/login";
+    await signOut();
+    router.push("/login");
   };
   
   const handleRoleSwitch = () => {
@@ -90,7 +71,7 @@ export function DashboardSidebar() {
     window.location.reload();
   };
 
-  const userIsAdmin = activeUser?.role === "Admin Desa";
+  const userIsAdmin = user?.role === "Admin Desa";
 
   return (
     <Sidebar>

@@ -16,16 +16,16 @@ import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Input } from "../ui/input";
 import { LogOut, Search, Settings, User } from "lucide-react";
 import { signOut } from "@/server/actions";
-import type { User as UserType } from "@/lib/types";
 import { Skeleton } from "../ui/skeleton";
+import { useRouter } from "next/navigation";
 
-// The header now gets the active user from the sidebar context
 export function DashboardHeader() {
-  const { activeUser: user } = useSidebar();
+  const { user } = useSidebar();
+  const router = useRouter();
   
   const handleLogout = async () => {
-    // Since we are bypassing login, logout just redirects to login page.
-    window.location.href = '/login';
+    await signOut();
+    router.push('/login');
   }
 
   if (!user) {
