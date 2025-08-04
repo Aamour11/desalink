@@ -3,6 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { cookies } from 'next/headers';
 import { executeQuery } from "@/lib/db";
 
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
@@ -31,12 +32,17 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     console.log(`Login failed: Password mismatch for email ${email}`);
     throw new Error("Email atau kata sandi salah.");
   }
-
-  // This part is now bypassed at the layout level
+  
+  cookies().set(SESSION_COOKIE_NAME, user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7, // One week
+      path: '/',
+    });
 }
 
 export async function signOut() {
-  // This part is now bypassed at the layout level
+  cookies().delete(SESSION_COOKIE_NAME);
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {

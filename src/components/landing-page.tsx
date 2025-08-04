@@ -3,7 +3,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useMotionValue, useTransform } from "framer-motion";
 import React from "react";
 import {
   Users,
@@ -33,15 +32,9 @@ function AnimatedBarChart() {
   return (
     <div className="flex h-full w-full items-end gap-1.5">
       {[0.4, 0.7, 0.5, 0.9, 0.6].map((height, i) => (
-        <motion.div
+        <div
           key={i}
-          initial={{ height: "0%" }}
-          animate={{ height: `${height * 100}%` }}
-          transition={{
-            duration: 0.8,
-            delay: 0.5 + i * 0.1,
-            ease: "easeOut",
-          }}
+          style={{ height: `${height * 100}%` }}
           className="w-full rounded-t-sm bg-primary/80"
         />
       ))}
@@ -51,38 +44,8 @@ function AnimatedBarChart() {
 
 
 function ThreeDCardAnimation() {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const rotateX = useTransform(y, [-100, 100], [10, -10]);
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct * 50);
-    y.set(yPct * 50);
-  };
-  
-   const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
-     <motion.div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: "preserve-3d",
-      }}
+     <div
       className="relative flex h-96 w-full max-w-4xl items-center justify-center rounded-xl bg-muted/40 p-8"
     >
       <div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }} className="absolute w-[450px] h-64 rounded-xl border bg-card p-4 shadow-lg shadow-primary/10">
@@ -102,7 +65,7 @@ function ThreeDCardAnimation() {
         </div>
       </div>
 
-       <motion.div
+       <div
         style={{
             transform: "translateZ(120px) translateX(-250px) translateY(-80px) rotateZ(-10deg)",
             transformStyle: "preserve-3d",
@@ -118,9 +81,9 @@ function ThreeDCardAnimation() {
                 <p className="text-sm text-muted-foreground">6 Terdata</p>
             </div>
         </div>
-      </motion.div>
+      </div>
       
-       <motion.div
+       <div
         style={{
             transform: "translateZ(90px) translateX(240px) translateY(-40px) rotateZ(8deg)",
             transformStyle: "preserve-3d",
@@ -136,9 +99,9 @@ function ThreeDCardAnimation() {
                 <p className="text-sm text-muted-foreground">5 Aktif</p>
             </div>
         </div>
-      </motion.div>
+      </div>
 
-       <motion.div
+       <div
          style={{
             transform: "translateZ(100px) translateX(180px) translateY(120px) rotateZ(-12deg)",
             transformStyle: "preserve-3d",
@@ -152,8 +115,8 @@ function ThreeDCardAnimation() {
             <h4 className="font-semibold">Laporan</h4>
             <p className="text-sm text-muted-foreground">PDF & CSV</p>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -198,11 +161,6 @@ export function LandingPage() {
     },
   ];
 
-  const fadeIn = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-  };
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -227,37 +185,26 @@ export function LandingPage() {
       </header>
       <main className="flex-1">
         <section className="container py-20 text-center sm:py-32">
-          <motion.div
-            initial="initial"
-            animate="animate"
-            transition={{ staggerChildren: 0.2 }}
+          <div
             className="space-y-6"
           >
-            <motion.div
-              variants={fadeIn}
-              transition={{ duration: 0.5 }}
+            <div
               className="mb-4 inline-flex items-center rounded-lg bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
             >
               Sistem Informasi UMKM Terpadu
-            </motion.div>
-            <motion.h1
-              variants={fadeIn}
-              transition={{ duration: 0.5, delay: 0.1 }}
+            </div>
+            <h1
               className="font-headline text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl"
             >
               Pemberdayaan Ekonomi Desa
-            </motion.h1>
-            <motion.p
-              variants={fadeIn}
-              transition={{ duration: 0.5, delay: 0.2 }}
+            </h1>
+            <p
               className="mx-auto mt-6 max-w-[700px] text-lg text-muted-foreground md:text-xl"
             >
               Kelola, analisis, dan kembangkan potensi UMKM di tingkat desa dan
               RT/RW dengan platform digital yang modern dan mudah digunakan.
-            </motion.p>
-            <motion.div
-              variants={fadeIn}
-              transition={{ duration: 0.5, delay: 0.3 }}
+            </p>
+            <div
               className="mt-8 flex justify-center gap-4"
             >
               <Button size="lg" asChild>
@@ -266,8 +213,8 @@ export function LandingPage() {
               <Button size="lg" variant="outline" asChild>
                 <Link href="/features">Pelajari Fitur</Link>
               </Button>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </section>
 
         <section className="bg-muted/40 py-20 sm:py-32">
@@ -288,12 +235,8 @@ export function LandingPage() {
           </div>
           <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <Card className="flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl bg-background/50">
                   <CardHeader>
@@ -310,7 +253,7 @@ export function LandingPage() {
                     </p>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </section>
