@@ -120,7 +120,8 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Profile and Password Cards */}
         <div className="lg:col-span-2 space-y-8">
           <Card>
             <Form {...profileForm}>
@@ -222,6 +223,7 @@ export default function SettingsPage() {
           </Card>
         </div>
 
+        {/* Preferences Card */}
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
@@ -245,5 +247,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
