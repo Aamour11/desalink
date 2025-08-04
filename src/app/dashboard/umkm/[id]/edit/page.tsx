@@ -12,22 +12,14 @@ import { notFound, redirect } from "next/navigation";
 import { Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { mockUsers } from "@/lib/data";
 
 
 export default async function EditUmkmPage({ params }: { params: { id: string } }) {
   const { id } = params;
   
-  let currentUser = await getCurrentUser();
+  const currentUser = await getCurrentUser();
   if (!currentUser) {
-    // Fallback to mock admin if no user is found in session
-    // This allows access in demo mode without login.
-    const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
-    if (!mockAdmin) {
-        // If even the mock admin isn't found, something is very wrong.
-        return redirect("/login");
-    }
-    currentUser = mockAdmin;
+     return redirect("/login");
   }
 
   const umkm = await getUmkmById(id);

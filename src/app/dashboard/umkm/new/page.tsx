@@ -8,22 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCurrentUser } from "@/server/actions";
-
-// Mock user for bypass
-const mockUser = {
-  id: 'user-bypass',
-  name: 'Developer',
-  email: 'dev@example.com',
-  role: 'Admin Desa' as const,
-  rtRw: '-',
-  avatarUrl: 'https://placehold.co/100x100.png?text=D'
-};
+import { redirect } from "next/navigation";
 
 
 export default async function NewUmkmPage() {
-  let currentUser = await getCurrentUser();
+  const currentUser = await getCurrentUser();
   if (!currentUser) {
-    currentUser = mockUser;
+    return redirect("/login");
   }
 
   return (

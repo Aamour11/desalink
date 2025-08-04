@@ -8,13 +8,14 @@ import { redirect } from "next/navigation";
 
 
 export default async function UsersPage() {
-  const users = await getUsersData();
-  let currentUser = await getCurrentUser();
+  const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     // This case should ideally be handled by middleware, but as a safeguard:
     redirect('/login');
   }
+  
+  const users = await getUsersData();
 
   return (
     <div className="space-y-8">
