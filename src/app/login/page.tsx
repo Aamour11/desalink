@@ -45,12 +45,10 @@ export default function LoginPage() {
       await signIn(values);
       toast({
         title: "Login Berhasil",
-        description: "Selamat datang kembali!",
+        description: "Mengalihkan ke dasbor...",
       });
-      // Use router.push for client-side navigation which is more reliable for session handling.
+      // This is the most reliable way to navigate and refresh the session state across the app.
       router.push('/dashboard');
-      // We also trigger a refresh to ensure server components re-render with the new session.
-      router.refresh(); 
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Terjadi kesalahan";

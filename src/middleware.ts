@@ -48,7 +48,5 @@ export const config = {
     '/login', 
     '/signup', 
     '/signup-petugas',
-    // Exclude API routes and static files from middleware
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'
   ],
 }
