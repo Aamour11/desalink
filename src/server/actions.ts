@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { executeQuery } from "@/lib/db";
 
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
@@ -15,9 +15,13 @@ const SESSION_COOKIE_NAME = "session_id";
 // --- AUTH ACTIONS ---
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
-  // Mock success without db
   console.log("Mock sign in for:", values.email);
-  cookies().set(SESSION_COOKIE_NAME, "mock-session-id", {
+  // This is a mock implementation. A real implementation would validate credentials.
+  const user = mockUsers.find(u => u.email === values.email);
+  if (!user) throw new Error("Kombinasi email dan kata sandi salah.");
+
+  // Store role in cookie to be read by middleware or server components
+  cookies().set(SESSION_COOKIE_NAME, user.role, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // One week
@@ -30,8 +34,13 @@ export async function signOut() {
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
-  // Return null to activate the mock user bypass in the layout
-  return null;
+    const roleFromStorage = headers().get('x-active-role');
+
+    if (roleFromStorage === 'admin') {
+      return mockUsers.find(u => u.role === 'Admin Desa') || null;
+    }
+    // Default to petugas if not admin or not set
+    return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;
 }
 
 // --- USER ACTIONS ---
@@ -51,7 +60,7 @@ export async function createPetugasUser(values: z.infer<typeof signupPetugasSche
 
 export async function addNewUser(values: z.infer<typeof userFormSchema>) {
     console.log("Mock add new user:", values.name);
-    return;
+    revalidatePath("/dashboard/users");
 }
 
 export async function updateUser(id: string, values: z.infer<typeof editUserFormSchema>) {

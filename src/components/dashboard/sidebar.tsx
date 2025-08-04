@@ -22,13 +22,11 @@ import {
   Shield,
   Contact,
   Network,
+  Replace,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
-import { signOut, getCurrentUser } from "@/server/actions";
 import type { User } from "@/lib/types";
 import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -48,43 +46,58 @@ const bottomNavItems = [
   { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
 ];
 
-// Mock user for bypass - Now simulating a Petugas RT/RW
-const mockUser: Omit<User, "password_hash"> = {
-  id: 'user-1',
-  name: 'Ahmad Fauzi',
-  email: 'ahmad.f@example.com',
-  role: 'Petugas RT/RW' as const,
-  rtRw: '001/001',
-  avatarUrl: 'https://placehold.co/100x100.png?text=AF'
+const adminUser: Omit<User, "password_hash"> = {
+  id: "user-admin",
+  name: "Admin Desa",
+  email: "admin@desa.com",
+  role: "Admin Desa",
+  rtRw: "-",
+  avatarUrl: "https://placehold.co/100x100.png?text=AD",
+};
+
+const petugasUser: Omit<User, "password_hash"> = {
+  id: "user-1",
+  name: "Ahmad Fauzi",
+  email: "ahmad.f@example.com",
+  role: "Petugas RT/RW",
+  rtRw: "001/001",
+  avatarUrl: "https://placehold.co/100x100.png?text=AF",
 };
 
 
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { toast } = useToast();
-  const { setOpenMobile } = useSidebar();
-  const [currentUser, setCurrentUser] = useState<Omit<User, "password_hash"> | null>(null);
-
+  const { setOpenMobile, activeUser, setActiveUser } = useSidebar();
+  
   useEffect(() => {
-      async function fetchUser() {
-        const user = await getCurrentUser();
-        // Use mockUser if no user is found (login bypass)
-        setCurrentUser(user || mockUser);
-      }
-      fetchUser();
-  }, [])
+    // On initial load, determine the user from localStorage or default to petugas
+    const storedRole = localStorage.getItem("activeRole");
+    const initialUser = storedRole === "admin" ? adminUser : petugasUser;
+    if (!activeUser || activeUser.id !== initialUser.id) {
+      setActiveUser(initialUser);
+    }
+  }, []); // Run only once on mount
+
 
   const handleNavigate = (href: string) => {
     router.push(href);
-    setOpenMobile(false); // Close mobile sidebar on navigation
+    setOpenMobile(false); 
   };
 
   const handleLogout = async () => {
-    window.location.href = '/login';
+    localStorage.removeItem("activeRole");
+    window.location.href = "/login";
+  };
+  
+  const handleRoleSwitch = () => {
+    const newRole = activeUser?.role === 'Admin Desa' ? 'petugas' : 'admin';
+    localStorage.setItem("activeRole", newRole);
+    // Force a reload to ensure all server components re-fetch data with the new role context
+    window.location.reload();
   };
 
-  const userIsAdmin = currentUser?.role === "Admin Desa";
+  const userIsAdmin = activeUser?.role === "Admin Desa";
 
   return (
     <Sidebar>
@@ -122,6 +135,18 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
         <SidebarMenu>
+          <SidebarMenuItem>
+             <SidebarMenuButton
+                variant="ghost"
+                className="w-full justify-start"
+                tooltip={{ children: userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
+                icon={<Replace />}
+                onClick={handleRoleSwitch}
+            >
+                {userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
           {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton

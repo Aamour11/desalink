@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { PanelLeft, Replace } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import type { User } from "@/lib/types"
 
 type SidebarContext = {
   state: "expanded" | "collapsed"
@@ -25,6 +26,8 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  activeUser: Omit<User, "password_hash"> | null,
+  setActiveUser: (user: Omit<User, "password_hash"> | null) => void,
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -60,6 +63,8 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
+    const [activeUser, setActiveUser] = React.useState<Omit<User, "password_hash"> | null>(null);
+
 
     // This is the internal state of the sidebar.
     const [_open, _setOpen] = React.useState(defaultOpen)
@@ -110,8 +115,10 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        activeUser,
+        setActiveUser,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, activeUser, setActiveUser]
     )
 
     return (

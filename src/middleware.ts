@@ -9,6 +9,15 @@ export function middleware(request: NextRequest) {
                    request.nextUrl.pathname.startsWith('/signup') || 
                    request.nextUrl.pathname.startsWith('/signup-petugas');
 
+  // For the role switcher demo, we pass the role via a custom header
+  // This allows server components to know which user to simulate
+  const requestHeaders = new Headers(request.headers);
+  const activeRole = request.cookies.get('activeRole')?.value;
+  if (activeRole) {
+    requestHeaders.set('x-active-role', activeRole);
+  }
+
+
   // If the user is on an auth page but already has a session, redirect to the dashboard.
   if (isAuthPage && sessionCookie) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
@@ -20,7 +29,11 @@ export function middleware(request: NextRequest) {
   //   return NextResponse.redirect(loginUrl)
   // }
  
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
  
 export const config = {

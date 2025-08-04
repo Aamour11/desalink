@@ -12,16 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Input } from "../ui/input";
 import { LogOut, Search, Settings, User } from "lucide-react";
 import { signOut } from "@/server/actions";
-import { useRouter } from "next/navigation";
 import type { User as UserType } from "@/lib/types";
 import { Skeleton } from "../ui/skeleton";
 
-export function DashboardHeader({ user }: { user: Omit<UserType, "password_hash"> | null }) {
-  const router = useRouter();
+// The header now gets the active user from the sidebar context
+export function DashboardHeader() {
+  const { activeUser: user } = useSidebar();
   
   const handleLogout = async () => {
     // Since we are bypassing login, logout just redirects to login page.
