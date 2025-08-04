@@ -51,19 +51,19 @@ export function DashboardSidebar() {
   const router = useRouter();
   const { setOpenMobile, user } = useSidebar();
   const [activeRole, setActiveRole] = useState("admin");
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This code runs only on the client, so window is defined.
+    setIsClient(true);
     const storedRole = localStorage.getItem("activeRole");
     if (storedRole) {
       setActiveRole(storedRole);
-    } else {
-      // If nothing is stored, default to the user's actual role.
-      const initialRole = user?.role === 'Admin Desa' ? 'admin' : 'petugas';
+    } else if (user) {
+      const initialRole = user.role === 'Admin Desa' ? 'admin' : 'petugas';
       setActiveRole(initialRole);
       localStorage.setItem("activeRole", initialRole);
     }
-  }, [user?.role]);
+  }, [user]);
   
   const handleNavigate = (href: string) => {
     router.push(href);
@@ -94,6 +94,21 @@ export function DashboardSidebar() {
   // The ability to switch roles is based on the user's *actual* role.
   const isOriginalUserAdmin = user?.role === "Admin Desa";
 
+  // Prevent rendering the switch button on the server to avoid hydration mismatch
+  if (!isClient) {
+      return (
+        <Sidebar>
+            <SidebarHeader>
+                 <Link href="/dashboard" className="flex items-center gap-2.5">
+                    <div className="bg-primary p-2 rounded-lg">
+                        <LogoIcon className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                 </Link>
+            </SidebarHeader>
+        </Sidebar>
+      );
+  }
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -101,7 +116,7 @@ export function DashboardSidebar() {
           <div className="bg-primary p-2 rounded-lg">
             <LogoIcon className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[state=collapsed]:hidden">
+          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[state=expanded]:hidden">
             DesaLink
           </span>
         </Link>
