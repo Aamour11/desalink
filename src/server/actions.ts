@@ -46,26 +46,29 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
     const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
     const activeRole = headers().get('x-active-role') || cookies().get(ROLE_COOKIE_NAME)?.value;
-    
-    // Fallback for demo mode (no one logged in)
+
+    const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
+
     if (!sessionUserId) {
-        // Default to admin view for demo purposes if no one is logged in.
-        const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
+        // If no one is logged in, default to a generic Admin view for demo purposes.
         return mockAdmin || null;
     }
 
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
-     if (!originalUser) {
-        // If the cookie is invalid, treat as logged out.
-        return mockUsers.find(u => u.role === 'Admin Desa') || null; 
+
+    if (!originalUser) {
+        // If the session cookie is invalid, also default to a generic Admin view.
+        return mockAdmin || null;
     }
     
-    // If Admin wants to simulate a Petugas
+    // This is the core logic for role simulation.
+    // Check if the *original* user is an Admin and if they want to *simulate* a Petugas.
     if (originalUser.role === 'Admin Desa' && activeRole === 'petugas') {
       // Find a mock petugas to impersonate. Using the first one for consistency.
       const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
       if (mockPetugas) {
-         // Return the full mock Petugas profile, but keep the original Admin's ID for session purposes.
+         // Return the full mock Petugas profile, but importantly,
+         // keep the original Admin's ID so the session remains valid.
          return {
             ...mockPetugas, 
             id: originalUser.id, 
@@ -73,7 +76,8 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
       }
     }
 
-    // If no simulation is active, or the user is not an Admin, return their original data.
+    // If no simulation is active (e.g., an Admin viewing as an Admin, or a Petugas viewing as themselves),
+    // return their original, unmodified user data.
     return originalUser;
 }
 
@@ -104,6 +108,10 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
 }
 
 export async function deleteUser(userId: string) {
+    const user = await getCurrentUser();
+    if(user?.id === userId){
+        throw new Error("Anda tidak dapat menghapus akun Anda sendiri.");
+    }
     console.log("Mock delete user:", userId);
     revalidatePath("/dashboard/users");
 }

@@ -4,30 +4,23 @@ import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UmkmTable } from "@/components/dashboard/umkm-table";
 import { getUmkmData, getCurrentUser } from "@/server/actions";
-import type { UMKM } from "@/lib/types";
+import { redirect } from "next/navigation";
 
-export default async function UmkmPage({
-  searchParams,
-}: {
-  searchParams?: {
-    q?: string;
-    type?: string;
-    status?: string;
-    rw?: string;
-    rt?: string;
-  };
-}) {
-  const allUmkm = await getUmkmData();
-  let currentUser = await getCurrentUser();
-
+export default async function UmkmPage() {
+  // Fetch the current user, which could be the original user or the simulated one.
+  const currentUser = await getCurrentUser();
+  
   if (!currentUser) {
-    // This should ideally not happen if middleware is correct, but as a fallback:
-    return <div>Loading...</div>; // Or redirect to login
+    // If for any reason no user can be determined, redirect to login.
+    return redirect("/login");
   }
 
-  // A user can add UMKM if they are a Petugas, or an Admin simulating a Petugas.
-  // The getCurrentUser function correctly reflects the simulated role.
-  const canAddUmkm = currentUser?.role === 'Petugas RT/RW';
+  // The umkm data will be correctly filtered on the server based on the currentUser's role.
+  const allUmkm = await getUmkmData();
+
+  // The button visibility is now determined by the role of the (potentially simulated) user.
+  // If the user is an Admin simulating a Petugas, `currentUser.role` will be 'Petugas RT/RW'.
+  const canAddUmkm = currentUser.role === 'Petugas RT/RW';
 
   return (
     <div className="space-y-6">
@@ -52,6 +45,3 @@ export default async function UmkmPage({
     </div>
   );
 }
-
-    
-
