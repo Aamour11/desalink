@@ -6,38 +6,47 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { RowDataPacket } from "mysql2";
+
+import pool from "@/lib/db";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
-import { mockUsers } from "@/server/db";
-import { mockUmkm, mockAnnouncements } from "@/lib/data";
 import type { UMKM, User, Announcement } from "@/lib/types";
-import { unlink, stat } from "fs/promises";
-import { join } from "path";
+import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-that-is-long-enough";
 const JWT_EXPIRES_IN = "1d";
+
+// Helper function to execute queries
+async function executeQuery<T>(query: string, values: any[] = []): Promise<T> {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    const [results] = await connection.execute(query, values);
+    return results as T;
+  } catch (error) {
+    console.error("Database Query Error:", error);
+    throw new Error("Terjadi kesalahan pada server database.");
+  } finally {
+    if (connection) connection.release();
+  }
+}
 
 // --- AUTH ACTIONS ---
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
   const validatedFields = loginSchema.safeParse(values);
-
-  if (!validatedFields.success) {
-    throw new Error("Data tidak valid. Silakan periksa kembali.");
-  }
+  if (!validatedFields.success) throw new Error("Data tidak valid.");
   
   const { email, password } = validatedFields.data;
 
-  const user = mockUsers.find(u => u.email === email);
-  if (!user) {
-    throw new Error("Email atau kata sandi salah.");
-  }
+  const users = await executeQuery<User[] & RowDataPacket[]>("SELECT * FROM users WHERE email = ?", [email]);
+  const user = users[0];
+
+  if (!user) throw new Error("Email atau kata sandi salah.");
   
   const passwordsMatch = await bcrypt.compare(password, user.password_hash);
-  if (!passwordsMatch) {
-    throw new Error("Email atau kata sandi salah.");
-  }
+  if (!passwordsMatch) throw new Error("Email atau kata sandi salah.");
 
-  // Create a token payload without the password hash
   const tokenPayload = {
     id: user.id, 
     name: user.name, 
@@ -72,7 +81,6 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     return decoded;
   } catch (error) {
     console.error("JWT Verification Error:", error);
-    // If token is invalid, delete it to prevent loops
     cookies().delete("session");
     return null;
   }
@@ -80,74 +88,48 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
 
 // --- USER ACTIONS ---
 
+async function
+ 
+createUserAction(values: z.infer<typeof signupSchema | typeof signupPetugasSchema>, role: "Admin Desa" | "Petugas RT/RW", rtRw?: string) {
+    const { name, email, password } = values;
+
+    const existingUsers = await executeQuery<any[]>("SELECT id FROM users WHERE email = ?", [email]);
+    if (existingUsers.length > 0) {
+        throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = `user-${Date.now()}`;
+    const avatarUrl = `https://placehold.co/100x100.png?text=${name.charAt(0)}`;
+    const finalRtRw = role === "Admin Desa" ? '-' : rtRw;
+
+    await executeQuery(
+        "INSERT INTO users (id, name, email, password_hash, role, rtRw, avatarUrl) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [userId, name, email, hashedPassword, role, finalRtRw, avatarUrl]
+    );
+
+    revalidatePath("/dashboard/users");
+}
+
+
 export async function createUser(values: z.infer<typeof signupSchema>) {
-  const validatedFields = signupSchema.safeParse(values);
-  if (!validatedFields.success) throw new Error("Data tidak valid.");
-  
-  const { name, email, password } = validatedFields.data;
-
-  if (mockUsers.find(u => u.email === email)) {
-      throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser: User = {
-    id: `user-${Date.now()}`,
-    name,
-    email,
-    password_hash: hashedPassword,
-    role: "Admin Desa",
-    rtRw: "-",
-    avatarUrl: `https://placehold.co/100x100.png?text=${name.charAt(0)}`
-  };
-  mockUsers.push(newUser);
-  revalidatePath("/dashboard/users");
+    const validatedFields = signupSchema.safeParse(values);
+    if (!validatedFields.success) throw new Error("Data tidak valid.");
+    await createUserAction(validatedFields.data, "Admin Desa");
 }
 
 export async function createPetugasUser(values: z.infer<typeof signupPetugasSchema>) {
-  const validatedFields = signupPetugasSchema.safeParse(values);
-  if (!validatedFields.success) throw new Error("Data tidak valid.");
-
-  const { name, email, password, rtRw } = validatedFields.data;
-  if (mockUsers.find(u => u.email === email)) {
-      throw new Error("Email sudah terdaftar.");
-  }
-  
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser: User = {
-    id: `user-${Date.now()}`,
-    name,
-    email,
-    password_hash: hashedPassword,
-    role: "Petugas RT/RW",
-    rtRw: rtRw,
-    avatarUrl: `https://placehold.co/100x100.png?text=${name.charAt(0)}`
-  };
-  mockUsers.push(newUser);
-  revalidatePath("/dashboard/users");
+    const validatedFields = signupPetugasSchema.safeParse(values);
+    if (!validatedFields.success) throw new Error("Data tidak valid.");
+    await createUserAction(validatedFields.data, "Petugas RT/RW", validatedFields.data.rtRw);
 }
+
 
 export async function addNewUser(values: z.infer<typeof userFormSchema>) {
     const validatedFields = userFormSchema.safeParse(values);
     if (!validatedFields.success) throw new Error("Data tidak valid.");
 
-    const { name, email, password, role, rtRw } = validatedFields.data;
-    if (mockUsers.find(u => u.email === email)) {
-        throw new Error("Email sudah terdaftar untuk pengguna lain.");
-    }
-    
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser: User = {
-        id: `user-${Date.now()}`,
-        name,
-        email,
-        password_hash: hashedPassword,
-        role,
-        rtRw: role === 'Admin Desa' ? '-' : rtRw || '',
-        avatarUrl: `https://placehold.co/100x100.png?text=${name.charAt(0)}`
-    };
-    mockUsers.push(newUser);
-    revalidatePath("/dashboard/users");
+    await createUserAction(validatedFields.data, validatedFields.data.role, validatedFields.data.rtRw);
 }
 
 export async function updateUser(id: string, values: z.infer<typeof editUserFormSchema>) {
@@ -155,14 +137,14 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
     if (!validatedFields.success) throw new Error("Data tidak valid.");
 
     const { name, role, rtRw, password } = validatedFields.data;
-    const userIndex = mockUsers.findIndex(u => u.id === id);
-    if (userIndex === -1) throw new Error("Pengguna tidak ditemukan.");
-
-    const updatedUser = { ...mockUsers[userIndex], name, role, rtRw: role === 'Admin Desa' ? '-' : rtRw || '' };
+    const finalRtRw = role === 'Admin Desa' ? '-' : rtRw || '';
+    
     if (password) {
-        updatedUser.password_hash = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ?, password_hash = ? WHERE id = ?", [name, role, finalRtRw, hashedPassword, id]);
+    } else {
+        await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ? WHERE id = ?", [name, role, finalRtRw, id]);
     }
-    mockUsers[userIndex] = updatedUser;
 
     revalidatePath("/dashboard/users");
     revalidatePath(`/dashboard/users/${id}`);
@@ -172,10 +154,7 @@ export async function deleteUser(userId: string) {
     const currentUser = await getCurrentUser();
     if (currentUser?.id === userId) throw new Error("Anda tidak dapat menghapus akun Anda sendiri.");
 
-    const index = mockUsers.findIndex(u => u.id === userId);
-    if (index === -1) throw new Error('Pengguna tidak ditemukan.');
-
-    mockUsers.splice(index, 1);
+    await executeQuery("DELETE FROM users WHERE id = ?", [userId]);
     revalidatePath("/dashboard/users");
 }
 
@@ -183,11 +162,8 @@ export async function updateProfile(userId: string, values: z.infer<typeof updat
     const validatedFields = updateProfileSchema.safeParse(values);
     if (!validatedFields.success) throw new Error("Data tidak valid.");
     
-    const {name} = validatedFields.data;
-    const userIndex = mockUsers.findIndex(u => u.id === userId);
-    if (userIndex === -1) throw new Error('Pengguna tidak ditemukan.');
-
-    mockUsers[userIndex].name = name;
+    const { name } = validatedFields.data;
+    await executeQuery("UPDATE users SET name = ? WHERE id = ?", [name, userId]);
     revalidatePath('/dashboard/settings');
     revalidatePath('/dashboard/users');
 }
@@ -197,15 +173,18 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
     if (!validatedFields.success) throw new Error("Data tidak valid.");
     
     const { currentPassword, newPassword } = validatedFields.data;
-    const user = mockUsers.find(u => u.id === userId);
+    
+    const users = await executeQuery<User[] & RowDataPacket[]>("SELECT password_hash FROM users WHERE id = ?", [userId]);
+    const user = users[0];
     if (!user) throw new Error("Pengguna tidak ditemukan.");
 
     const passwordsMatch = await bcrypt.compare(currentPassword, user.password_hash);
     if (!passwordsMatch) throw new Error("Kata sandi saat ini salah.");
 
-    const userIndex = mockUsers.findIndex(u => u.id === userId);
-    mockUsers[userIndex].password_hash = await bcrypt.hash(newPassword, 10);
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+    await executeQuery("UPDATE users SET password_hash = ? WHERE id = ?", [newHashedPassword, userId]);
 }
+
 
 // --- UMKM ACTIONS ---
 
@@ -218,15 +197,16 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
   if (!validatedFields.success) throw new Error("Data tidak valid.");
   if (validatedFields.data.rtRw !== currentUser.rtRw) throw new Error("Anda hanya dapat menambah data untuk wilayah Anda sendiri.");
 
-  const newUmkm: UMKM = {
-    id: `umkm-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    ...validatedFields.data,
-    employeeCount: validatedFields.data.employeeCount || 0,
-    imageUrl: validatedFields.data.imageUrl || 'https://placehold.co/600x400.png'
-  };
+  const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, legality, startDate, employeeCount, description, imageUrl, legalityDocumentUrl } = validatedFields.data;
+  const umkmId = `umkm-${Date.now()}`;
+  const finalImageUrl = imageUrl || 'https://placehold.co/600x400.png';
 
-  mockUmkm.unshift(newUmkm);
+  const query = `
+    INSERT INTO umkm (id, businessName, ownerName, nib, businessType, address, rtRw, contact, status, legality, startDate, employeeCount, description, imageUrl, legalityDocumentUrl)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  await executeQuery(query, [umkmId, businessName, ownerName, nib, businessType, address, rtRw, contact, status, legality, startDate || null, employeeCount || 0, description, finalImageUrl, legalityDocumentUrl]);
+  
   revalidatePath("/dashboard/umkm");
 }
 
@@ -235,33 +215,39 @@ export async function updateUmkm(id: string, values: z.infer<typeof umkmSchema>)
   if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
   if (currentUser.role !== 'Petugas RT/RW') throw new Error("Anda tidak memiliki izin untuk mengedit data UMKM.");
 
-  const umkmToUpdate = mockUmkm.find(u => u.id === id);
+  const umkms = await executeQuery<UMKM[] & RowDataPacket[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
+  const umkmToUpdate = umkms[0];
   if (!umkmToUpdate) throw new Error("UMKM tidak ditemukan.");
   if (currentUser.rtRw !== umkmToUpdate.rtRw) throw new Error("Anda tidak memiliki izin untuk mengedit UMKM ini.");
 
   const validatedFields = umkmSchema.safeParse(values);
   if (!validatedFields.success) throw new Error("Data tidak valid.");
 
-  const umkmIndex = mockUmkm.findIndex(u => u.id === id);
-  if (umkmIndex === -1) throw new Error("UMKM tidak ditemukan.");
+  const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, legality, startDate, employeeCount, description, imageUrl, legalityDocumentUrl } = validatedFields.data;
   
-  mockUmkm[umkmIndex] = { ...mockUmkm[umkmIndex], ...validatedFields.data };
+  const query = `
+    UPDATE umkm SET
+      businessName = ?, ownerName = ?, nib = ?, businessType = ?, address = ?, rtRw = ?, contact = ?, status = ?, legality = ?, startDate = ?, employeeCount = ?, description = ?, imageUrl = ?, legalityDocumentUrl = ?
+    WHERE id = ?
+  `;
+  await executeQuery(query, [businessName, ownerName, nib, businessType, address, rtRw, contact, status, legality, startDate || null, employeeCount, description, imageUrl, legalityDocumentUrl, id]);
+
   revalidatePath(`/dashboard/umkm`);
   revalidatePath(`/dashboard/umkm/${id}/edit`);
 }
+
 
 export async function deleteUmkm(id: string) {
     const currentUser = await getCurrentUser();
     if (!currentUser) throw new Error("Anda harus login.");
     if (currentUser.role !== 'Petugas RT/RW') throw new Error("Hanya Petugas RT/RW yang berwenang yang dapat menghapus data.");
 
-    const umkmIndex = mockUmkm.findIndex(u => u.id === id);
-    if (umkmIndex === -1) throw new Error("UMKM tidak ditemukan.");
-    
-    const umkmData = mockUmkm[umkmIndex];
+    const umkms = await executeQuery<UMKM[] & RowDataPacket[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
+    const umkmData = umkms[0];
+    if (!umkmData) throw new Error("UMKM tidak ditemukan.");
     if (currentUser.rtRw !== umkmData.rtRw) throw new Error("Anda tidak memiliki izin untuk menghapus UMKM ini.");
 
-    mockUmkm.splice(umkmIndex, 1);
+    await executeQuery("DELETE FROM umkm WHERE id = ?", [id]);
     revalidatePath("/dashboard/umkm");
 }
 
@@ -269,10 +255,7 @@ export async function deactivateUmkm(id: string) {
     const currentUser = await getCurrentUser();
     if (currentUser?.role !== 'Admin Desa') throw new Error("Hanya Admin Desa yang dapat menonaktifkan UMKM.");
 
-    const umkmIndex = mockUmkm.findIndex(u => u.id === id);
-    if (umkmIndex === -1) throw new Error("UMKM tidak ditemukan.");
-
-    mockUmkm[umkmIndex].status = "tidak aktif";
+    await executeQuery("UPDATE umkm SET status = ? WHERE id = ?", ["tidak aktif", id]);
     revalidatePath("/dashboard/umkm");
     revalidatePath(`/dashboard/structure`);
 }
@@ -300,10 +283,10 @@ export async function getUmkmData(): Promise<UMKM[]> {
     if (!user) return [];
 
     if (user.role === 'Petugas RT/RW' && user.rtRw) {
-        return mockUmkm.filter(u => u.rtRw === user.rtRw);
+        return await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm WHERE rtRw = ? ORDER BY createdAt DESC", [user.rtRw]);
     }
     if (user.role === 'Admin Desa') {
-      return [...mockUmkm].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm ORDER BY createdAt DESC");
     }
     return [];
 }
@@ -311,12 +294,13 @@ export async function getUmkmData(): Promise<UMKM[]> {
 export async function getUsersData(): Promise<Omit<User, 'password_hash'>[]> {
     const user = await getCurrentUser();
     if (user?.role !== 'Admin Desa') return [];
-    // Return all users without their password hashes
-    return mockUsers.map(({ password_hash, ...userWithoutPassword }) => userWithoutPassword);
+    
+    return await executeQuery<Omit<User, 'password_hash'>[] & RowDataPacket[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users");
 }
 
 export async function getUmkmById(id: string): Promise<UMKM | null> {
-    const umkm = mockUmkm.find(u => u.id === id);
+    const umkms = await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm WHERE id = ?", [id]);
+    const umkm = umkms[0];
     if (!umkm) return null;
 
     const user = await getCurrentUser();
@@ -331,21 +315,19 @@ export async function getUserById(id: string): Promise<Omit<User, 'password_hash
     if (!currentUser) return null;
     if (currentUser.id !== id && currentUser.role !== 'Admin Desa') return null;
     
-    const targetUser = mockUsers.find(u => u.id === id);
-    if (!targetUser) return null;
-    
-    const { password_hash, ...userWithoutPassword } = targetUser;
-    return userWithoutPassword;
+    const users = await executeQuery<Omit<User, 'password_hash'>[] & RowDataPacket[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [id]);
+    return users[0] || null;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
   const user = await getCurrentUser();
   if (user?.role !== 'Admin Desa') return [];
   if (!rtRw || rtRw === '-') return [];
-  return mockUmkm.filter(u => u.rtRw === rtRw);
+  return await executeQuery<UMKM[] & RowDataPacket[]>("SELECT * FROM umkm WHERE rtRw = ?", [rtRw]);
 }
 
 export async function getLatestAnnouncement(): Promise<Announcement | null> {
+    // This remains mock as there is no announcements table
     if (mockAnnouncements.length === 0) return null;
     return mockAnnouncements[0];
 }
