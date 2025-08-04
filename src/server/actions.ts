@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import cookie from "cookie";
 import { executeQuery } from "@/lib/db";
 
@@ -15,30 +15,7 @@ const SESSION_COOKIE_NAME = "session_id";
 
 // --- Custom Cookie Helpers ---
 function getSessionId() {
-  const cookieHeader = headers().get("cookie");
-  if (!cookieHeader) return null;
-  const cookies = cookie.parse(cookieHeader);
-  return cookies[SESSION_COOKIE_NAME] || null;
-}
-
-function setSessionCookie(resHeaders: Headers, userId: string) {
-    const newCookie = cookie.serialize(SESSION_COOKIE_NAME, userId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24, // 1 day
-        path: '/',
-    });
-    resHeaders.append('Set-Cookie', newCookie);
-}
-
-function deleteSessionCookie(resHeaders: Headers) {
-    const expiredCookie = cookie.serialize(SESSION_COOKIE_NAME, '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: -1, // Expire immediately
-        path: '/',
-    });
-    resHeaders.append('Set-Cookie', expiredCookie);
+  return cookies().get(SESSION_COOKIE_NAME)?.value || null;
 }
 
 // --- AUTH ACTIONS ---
@@ -62,17 +39,20 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     throw new Error("Email atau kata sandi salah.");
   }
 
-  const responseHeaders = new Headers();
-  setSessionCookie(responseHeaders, user.id);
+  // Use Next.js built-in cookies() function to set the session
+  cookies().set(SESSION_COOKIE_NAME, user.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24, // 1 day
+    path: '/',
+  });
   
   revalidatePath('/', 'layout');
-
-  return { success: true };
 }
 
 export async function signOut() {
-  const responseHeaders = new Headers();
-  deleteSessionCookie(responseHeaders);
+  // Use Next.js built-in cookies() function to delete the session
+  cookies().delete(SESSION_COOKIE_NAME);
   revalidatePath('/', 'layout');
 }
 
@@ -83,12 +63,16 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
   try {
     const users = await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [userId]);
     const user = users[0];
-    return user || null;
+    if (user) {
+        return user;
+    } else {
+        // If user not found in DB, clear the invalid cookie
+        cookies().delete(SESSION_COOKIE_NAME);
+        return null;
+    }
   } catch (error) {
     console.error("Failed to fetch current user:", error);
-    const responseHeaders = new Headers();
-    deleteSessionCookie(responseHeaders);
-    revalidatePath('/', 'layout');
+    cookies().delete(SESSION_COOKIE_NAME);
     return null;
   }
 }
