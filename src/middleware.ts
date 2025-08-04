@@ -26,13 +26,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // If the user tries to access a dashboard page without a session, redirect to login.
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionToken) {
-    const loginUrl = new URL('/login', request.url)
-    // You can add a 'from' query parameter to redirect back after login
-    loginUrl.searchParams.set('from', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl)
-  }
+  // If the user tries to access a dashboard page without a session, we now allow it
+  // The dashboard layout will handle showing mock data.
+  // if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionToken) {
+  //   const loginUrl = new URL('/login', request.url)
+  //   // You can add a 'from' query parameter to redirect back after login
+  //   loginUrl.searchParams.set('from', request.nextUrl.pathname);
+  //   return NextResponse.redirect(loginUrl)
+  // }
  
   return NextResponse.next({
     request: {
