@@ -20,7 +20,7 @@ pool.getConnection()
     conn.release();
   })
   .catch(err => {
-    console.error("Failed to connect to the database:", err);
+    console.error("Failed to connect to the database. Please check your .env variables.", err);
   });
 
 

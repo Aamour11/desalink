@@ -20,6 +20,7 @@ const JWT_EXPIRES_IN = "1d";
 async function executeQuery<T>(query: string, values: any[] = []): Promise<T> {
   let connection;
   try {
+    console.log(`Executing query: ${query.split('?').join('\'%s\'')}`, values);
     connection = await pool.getConnection();
     const [results] = await connection.execute(query, values);
     return results as T;
@@ -42,10 +43,16 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
   const users = await executeQuery<User[] & RowDataPacket[]>("SELECT * FROM users WHERE email = ?", [email]);
   const user = users[0];
 
-  if (!user) throw new Error("Email atau kata sandi salah.");
+  if (!user) {
+    console.log(`Login failed: No user found for email ${email}`);
+    throw new Error("Email atau kata sandi salah.");
+  }
   
   const passwordsMatch = await bcrypt.compare(password, user.password_hash);
-  if (!passwordsMatch) throw new Error("Email atau kata sandi salah.");
+  if (!passwordsMatch) {
+    console.log(`Login failed: Password mismatch for email ${email}`);
+    throw new Error("Email atau kata sandi salah.");
+  }
 
   const tokenPayload = {
     id: user.id, 
