@@ -38,19 +38,13 @@ import { UmkmTableActions } from "./umkm-table-actions";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { Briefcase, Calendar, MapPin, Phone, User as UserIcon, Hash, CheckCircle, XCircle, Users, FileCheck2, AlertTriangle, Clock, PowerOff, FileDown, FileText, Download } from "lucide-react";
-import { getCurrentUser } from "@/server/actions";
 
-export function UmkmTable({ data }: { data: UMKM[] }) {
+export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Omit<User, 'password_hash'> | null }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
   
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [selectedUmkm, setSelectedUmkm] = React.useState<UMKM | null>(null);
-
-  React.useEffect(() => {
-    getCurrentUser().then(setCurrentUser);
-  }, []);
 
   const handleSearch = (term: string) => {
     const params = new URLSearchParams(searchParams);

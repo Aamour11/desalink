@@ -1,3 +1,4 @@
+
 import { UmkmForm } from "@/components/dashboard/umkm-form";
 import {
   Card,
@@ -12,20 +13,33 @@ import { Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+// Mock user for bypass
+const mockUser = {
+  id: 'user-bypass',
+  name: 'Developer',
+  email: 'dev@example.com',
+  role: 'Admin Desa' as const,
+  rtRw: '-',
+  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+};
+
+
 export default async function EditUmkmPage({ params }: { params: { id: string } }) {
   const { id } = params;
   
-  const [umkm, currentUser] = await Promise.all([
-    getUmkmById(id),
-    getCurrentUser()
-  ]);
+  let currentUser = await getCurrentUser();
+  if (!currentUser) {
+    currentUser = mockUser;
+  }
+
+  const umkm = await getUmkmById(id);
 
   if (!umkm) {
     notFound();
   }
   
-  // Rule: Only Petugas RT/RW can edit, and only for their own region.
-  const canEdit = currentUser?.role === 'Petugas RT/RW' && currentUser.rtRw === umkm.rtRw;
+  // Rule: Only Petugas RT/RW can edit, and only for their own region. Admin can edit all.
+  const canEdit = currentUser.role === 'Admin Desa' || (currentUser?.role === 'Petugas RT/RW' && currentUser.rtRw === umkm.rtRw);
 
   if (!canEdit) {
     return (
@@ -61,7 +75,7 @@ export default async function EditUmkmPage({ params }: { params: { id: string } 
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UmkmForm defaultValues={umkm} />
+          <UmkmForm defaultValues={umkm} currentUser={currentUser} />
         </CardContent>
       </Card>
     </div>

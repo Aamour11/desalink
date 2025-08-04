@@ -48,20 +48,23 @@ const bottomNavItems = [
   { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
 ];
 
+// Mock user data for bypass
+const mockUser = {
+  id: 'user-bypass',
+  name: 'Developer',
+  email: 'dev@example.com',
+  role: 'Admin Desa' as const,
+  rtRw: '-',
+  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+};
+
+
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const { setOpenMobile } = useSidebar();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    async function fetchUser() {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-    }
-    fetchUser();
-  }, []);
+  const [currentUser, setCurrentUser] = useState<Omit<User, "password_hash"> | null>(mockUser);
 
   const handleNavigate = (href: string) => {
     router.push(href);
@@ -69,13 +72,7 @@ export function DashboardSidebar() {
   };
 
   const handleLogout = async () => {
-    try {
-        await signOut();
-        toast({ title: "Logout Berhasil", description: "Anda telah keluar dari sesi." });
-        window.location.href = '/login';
-    } catch (error) {
-        toast({ variant: "destructive", title: "Logout Gagal", description: "Terjadi kesalahan saat mencoba keluar." });
-    }
+    window.location.href = '/login';
   };
 
   const userIsAdmin = currentUser?.role === "Admin Desa";

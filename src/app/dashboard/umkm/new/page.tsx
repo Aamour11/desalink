@@ -1,3 +1,4 @@
+
 import { UmkmForm } from "@/components/dashboard/umkm-form";
 import {
   Card,
@@ -6,8 +7,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getCurrentUser } from "@/server/actions";
 
-export default function NewUmkmPage() {
+// Mock user for bypass
+const mockUser = {
+  id: 'user-bypass',
+  name: 'Developer',
+  email: 'dev@example.com',
+  role: 'Admin Desa' as const,
+  rtRw: '-',
+  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+};
+
+
+export default async function NewUmkmPage() {
+  let currentUser = await getCurrentUser();
+  if (!currentUser) {
+    currentUser = mockUser;
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
       <Card>
@@ -18,7 +36,7 @@ export default function NewUmkmPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <UmkmForm />
+          <UmkmForm currentUser={currentUser} />
         </CardContent>
       </Card>
     </div>

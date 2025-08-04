@@ -35,18 +35,12 @@ import { Button } from "@/components/ui/button";
 import type { User } from "@/lib/types";
 import { ScrollArea } from "../ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { deleteUser, getCurrentUser } from "@/server/actions";
+import { deleteUser } from "@/server/actions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-export function UsersTable({ data }: { data: Omit<User, 'password_hash'>[] }) {
+export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_hash'>[], currentUser: Omit<User, 'password_hash'> | null }) {
   const { toast } = useToast();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<Omit<User, 'password_hash'> | null>(null);
-
-  useEffect(() => {
-    getCurrentUser().then(setCurrentUser);
-  }, []);
 
   const handleDelete = async (userId: string) => {
     try {
@@ -166,5 +160,3 @@ export function UsersTable({ data }: { data: Omit<User, 'password_hash'>[] }) {
     </ScrollArea>
   );
 }
-
-    

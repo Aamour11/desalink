@@ -33,25 +33,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { umkmSchema } from "@/lib/schema";
-import { createUmkm, updateUmkm, getCurrentUser } from "@/server/actions";
+import { createUmkm, updateUmkm } from "@/server/actions";
 import type { UMKM, User } from "@/lib/types";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 type UmkmFormValues = z.infer<typeof umkmSchema>;
 
-export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
+export function UmkmForm({ defaultValues, currentUser }: { defaultValues?: UMKM, currentUser: Omit<User, 'password_hash'> | null }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = React.useState(false);
   const [isDocUploading, setIsDocUploading] = React.useState(false);
-  const [currentUser, setCurrentUser] = React.useState<Omit<User, 'password_hash'> | null>(null);
   const imageInputRef = React.useRef<HTMLInputElement>(null);
   const docInputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    getCurrentUser().then(setCurrentUser);
-  }, []);
 
   const form = useForm<UmkmFormValues>({
     resolver: zodResolver(umkmSchema),
@@ -503,5 +498,3 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
     </Form>
   );
 }
-
-    

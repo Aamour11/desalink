@@ -6,6 +6,16 @@ import { UmkmTable } from "@/components/dashboard/umkm-table";
 import { getUmkmData, getCurrentUser } from "@/server/actions";
 import type { UMKM } from "@/lib/types";
 
+// Mock user for bypass
+const mockUser = {
+  id: 'user-bypass',
+  name: 'Developer',
+  email: 'dev@example.com',
+  role: 'Admin Desa' as const,
+  rtRw: '-',
+  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+};
+
 export default async function UmkmPage({
   searchParams,
 }: {
@@ -17,7 +27,11 @@ export default async function UmkmPage({
 }) {
   // Data fetching remains on the server component
   const allUmkm = await getUmkmData();
-  const currentUser = await getCurrentUser();
+  let currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    currentUser = mockUser;
+  }
 
   const canAddUmkm = currentUser?.role === 'Petugas RT/RW';
 
@@ -40,7 +54,7 @@ export default async function UmkmPage({
         )}
       </div>
 
-      <UmkmTable data={allUmkm} />
+      <UmkmTable data={allUmkm} currentUser={currentUser} />
     </div>
   );
 }
