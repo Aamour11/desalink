@@ -13,7 +13,11 @@ import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSche
 import type { UMKM, User, Announcement, Management } from "@/lib/types";
 import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-that-is-long-enough";
+// Throw an error if the JWT_SECRET is not set in the .env file
+if (!process.env.JWT_SECRET) {
+    throw new Error("FATAL ERROR: JWT_SECRET is not defined in .env file.");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "1d";
 
 // Helper function to execute queries
@@ -77,6 +81,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
 
 export async function signOut() {
   cookies().delete("session");
+  // No need to redirect from here, the client-side will handle it.
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
@@ -87,6 +92,7 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     const decoded = jwt.verify(token, JWT_SECRET) as Omit<User, 'password_hash'>;
     return decoded;
   } catch (error) {
+    // If token is invalid (e.g. secret changed), delete the cookie
     console.error("JWT Verification Error:", error);
     cookies().delete("session");
     return null;

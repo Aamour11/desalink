@@ -27,6 +27,8 @@ import { LogoIcon } from "@/components/icons";
 import { signOut, getCurrentUser } from "@/server/actions";
 import type { User } from "@/lib/types";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -49,6 +51,7 @@ const bottomNavItems = [
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { toast } = useToast();
   const { setOpenMobile } = useSidebar();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -66,8 +69,13 @@ export function DashboardSidebar() {
   };
 
   const handleLogout = async () => {
-    await signOut();
-    router.push("/login");
+    try {
+        await signOut();
+        toast({ title: "Logout Berhasil", description: "Anda telah keluar dari sesi." });
+        window.location.href = '/login';
+    } catch (error) {
+        toast({ variant: "destructive", title: "Logout Gagal", description: "Terjadi kesalahan saat mencoba keluar." });
+    }
   };
 
   const userIsAdmin = currentUser?.role === "Admin Desa";
