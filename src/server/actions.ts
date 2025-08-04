@@ -182,11 +182,12 @@ export async function deleteUser(userId: string) {
 export async function updateProfile(userId: string, values: z.infer<typeof updateProfileSchema>) {
     const validatedFields = updateProfileSchema.safeParse(values);
     if (!validatedFields.success) throw new Error("Data tidak valid.");
-
+    
+    const {name} = validatedFields.data;
     const userIndex = mockUsers.findIndex(u => u.id === userId);
     if (userIndex === -1) throw new Error('Pengguna tidak ditemukan.');
 
-    mockUsers[userIndex].name = values.data.name;
+    mockUsers[userIndex].name = name;
     revalidatePath('/dashboard/settings');
     revalidatePath('/dashboard/users');
 }
