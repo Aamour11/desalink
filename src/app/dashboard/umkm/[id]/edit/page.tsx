@@ -12,16 +12,7 @@ import { notFound, redirect } from "next/navigation";
 import { Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-// Mock user for bypass
-const mockUser = {
-  id: 'user-bypass',
-  name: 'Developer',
-  email: 'dev@example.com',
-  role: 'Admin Desa' as const,
-  rtRw: '-',
-  avatarUrl: 'https://placehold.co/100x100.png?text=D'
-};
+import { mockUsers } from "@/lib/data";
 
 
 export default async function EditUmkmPage({ params }: { params: { id: string } }) {
@@ -29,7 +20,14 @@ export default async function EditUmkmPage({ params }: { params: { id: string } 
   
   let currentUser = await getCurrentUser();
   if (!currentUser) {
-    currentUser = mockUser;
+    // Fallback to mock admin if no user is found in session
+    // This allows access in demo mode without login.
+    const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
+    if (!mockAdmin) {
+        // If even the mock admin isn't found, something is very wrong.
+        return redirect("/login");
+    }
+    currentUser = mockAdmin;
   }
 
   const umkm = await getUmkmById(id);
