@@ -1,4 +1,4 @@
-require('dotenv').config();
+
 import mysql from 'mysql2/promise';
 
 // Membuat koneksi pool ke database
