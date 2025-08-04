@@ -48,7 +48,7 @@ function ThreeDCardAnimation() {
      <div
       className="relative flex h-96 w-full max-w-4xl items-center justify-center rounded-xl bg-muted/40 p-8"
     >
-      <div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }} className="absolute w-[450px] h-64 rounded-xl border bg-card p-4 shadow-lg shadow-primary/10">
+      <div className="w-[450px] h-64 rounded-xl border bg-card p-4 shadow-lg shadow-primary/10">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <LogoIcon className="h-5 w-5 text-primary" />
@@ -62,58 +62,6 @@ function ThreeDCardAnimation() {
         </div>
         <div className="mt-4 h-48 w-full rounded-md border border-dashed border-border p-2">
              <AnimatedBarChart />
-        </div>
-      </div>
-
-       <div
-        style={{
-            transform: "translateZ(120px) translateX(-250px) translateY(-80px) rotateZ(-10deg)",
-            transformStyle: "preserve-3d",
-        }}
-        className="absolute"
-      >
-        <div className="flex items-center gap-3 w-48 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10">
-            <div className="p-2 rounded-md bg-secondary">
-                <Store className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-                <h4 className="font-semibold">Total UMKM</h4>
-                <p className="text-sm text-muted-foreground">6 Terdata</p>
-            </div>
-        </div>
-      </div>
-      
-       <div
-        style={{
-            transform: "translateZ(90px) translateX(240px) translateY(-40px) rotateZ(8deg)",
-            transformStyle: "preserve-3d",
-        }}
-        className="absolute"
-      >
-        <div className="flex items-center gap-3 w-48 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10">
-            <div className="p-2 rounded-md bg-secondary">
-              <CheckCircle className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-                <h4 className="font-semibold">UMKM Aktif</h4>
-                <p className="text-sm text-muted-foreground">5 Aktif</p>
-            </div>
-        </div>
-      </div>
-
-       <div
-         style={{
-            transform: "translateZ(100px) translateX(180px) translateY(120px) rotateZ(-12deg)",
-            transformStyle: "preserve-3d",
-        }}
-        className="absolute flex items-center gap-3 p-3 rounded-lg border bg-card shadow-xl shadow-primary/10"
-      >
-        <div className="p-2 rounded-md bg-secondary">
-          <FileText className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-            <h4 className="font-semibold">Laporan</h4>
-            <p className="text-sm text-muted-foreground">PDF & CSV</p>
         </div>
       </div>
     </div>
@@ -219,7 +167,14 @@ export function LandingPage() {
 
         <section className="bg-muted/40 py-20 sm:py-32">
           <div className="container flex justify-center">
-            <ThreeDCardAnimation />
+            <Image 
+              src="https://placehold.co/1024x576.png" 
+              alt="Dashboard preview"
+              width={1024}
+              height={576}
+              className="rounded-xl border shadow-lg"
+              data-ai-hint="dashboard interface"
+            />
           </div>
         </section>
 
