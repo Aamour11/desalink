@@ -54,9 +54,9 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
 
     const activeRole = headers().get('x-active-role') || cookies().get(ROLE_COOKIE_NAME)?.value;
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
-
-    // This logic allows an admin to switch between viewing as admin and as a sample petugas
-    if (originalUser?.id === 'user-admin-master') {
+    
+    // Logic for role switching
+    if (originalUser?.role === 'Admin Desa') {
       if (activeRole === 'petugas') {
         // When admin switches to 'petugas' view, show the first petugas user.
         return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;

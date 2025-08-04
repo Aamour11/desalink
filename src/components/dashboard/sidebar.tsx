@@ -111,16 +111,16 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
         <SidebarMenu>
-          {user?.id === 'user-admin-master' && (
+          {userIsAdmin && (
               <SidebarMenuItem>
                 <SidebarMenuButton
                     variant="ghost"
                     className="w-full justify-start"
-                    tooltip={{ children: userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
+                    tooltip={{ children: "Beralih ke Petugas" }}
                     icon={<Replace />}
                     onClick={handleRoleSwitch}
                 >
-                    {userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
+                  Beralih ke Petugas
                 </SidebarMenuButton>
               </SidebarMenuItem>
           )}
