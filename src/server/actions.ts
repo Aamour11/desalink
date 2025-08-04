@@ -39,8 +39,8 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     if (roleFromStorage === 'admin') {
       return mockUsers.find(u => u.role === 'Admin Desa') || null;
     }
-    // Default to petugas if not admin or not set
-    return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;
+    // Default to a specific petugas user for demo purposes
+    return mockUsers.find(u => u.id === 'user-1') || null;
 }
 
 // --- USER ACTIONS ---
@@ -125,9 +125,9 @@ export async function sendAnnouncement(message: string) {
 
 // --- DATA FETCHING ---
 
-export async function getUmkmData(): Promise<UMKM[]> {
+export async function getUmkmData(forceAll = false): Promise<UMKM[]> {
   const user = await getCurrentUser();
-  if (user?.role === 'Petugas RT/RW') {
+  if (user?.role === 'Petugas RT/RW' && !forceAll) {
     return mockUmkm.filter(umkm => umkm.rtRw === user.rtRw);
   }
   // Admin sees all
@@ -160,3 +160,5 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 export async function getManagementData(): Promise<Management[]> {
     return mockManagement;
 }
+
+    

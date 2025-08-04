@@ -27,6 +27,7 @@ import {
 import { LogoIcon } from "@/components/icons";
 import type { User } from "@/lib/types";
 import { useEffect, useState } from "react";
+import { getCurrentUser } from "@/server/actions";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -46,38 +47,20 @@ const bottomNavItems = [
   { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
 ];
 
-const adminUser: Omit<User, "password_hash"> = {
-  id: "user-admin",
-  name: "Admin Desa",
-  email: "admin@desa.com",
-  role: "Admin Desa",
-  rtRw: "-",
-  avatarUrl: "https://placehold.co/100x100.png?text=AD",
-};
-
-const petugasUser: Omit<User, "password_hash"> = {
-  id: "user-1",
-  name: "Ahmad Fauzi",
-  email: "ahmad.f@example.com",
-  role: "Petugas RT/RW",
-  rtRw: "001/001",
-  avatarUrl: "https://placehold.co/100x100.png?text=AF",
-};
-
-
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { setOpenMobile, activeUser, setActiveUser } = useSidebar();
   
   useEffect(() => {
-    // On initial load, determine the user from localStorage or default to petugas
-    const storedRole = localStorage.getItem("activeRole");
-    const initialUser = storedRole === "admin" ? adminUser : petugasUser;
-    if (!activeUser || activeUser.id !== initialUser.id) {
-      setActiveUser(initialUser);
+    // On initial load, set the active user from the server action
+    // This respects the cookie/header logic for role switching
+    const fetchAndSetUser = async () => {
+        const user = await getCurrentUser();
+        setActiveUser(user);
     }
-  }, []); // Run only once on mount
+    fetchAndSetUser();
+  }, [setActiveUser]);
 
 
   const handleNavigate = (href: string) => {
@@ -87,12 +70,14 @@ export function DashboardSidebar() {
 
   const handleLogout = async () => {
     localStorage.removeItem("activeRole");
+    // Also remove the server-side cookie if it exists
+    const res = await fetch('/api/logout', { method: 'POST' });
     window.location.href = "/login";
   };
   
   const handleRoleSwitch = () => {
     const newRole = activeUser?.role === 'Admin Desa' ? 'petugas' : 'admin';
-    localStorage.setItem("activeRole", newRole);
+    document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Set cookie for middleware
     // Force a reload to ensure all server components re-fetch data with the new role context
     window.location.reload();
   };
@@ -175,3 +160,5 @@ export function DashboardSidebar() {
     </Sidebar>
   );
 }
+
+    

@@ -1,9 +1,12 @@
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+
+// Define the name for your session cookie
+const SESSION_COOKIE_NAME = "session_id";
  
 export function middleware(request: NextRequest) {
-  const sessionCookie = request.cookies.get('session_id');
+  const sessionToken = request.cookies.get(SESSION_COOKIE_NAME);
  
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
                    request.nextUrl.pathname.startsWith('/signup') || 
@@ -18,16 +21,18 @@ export function middleware(request: NextRequest) {
   }
 
 
-  // If the user is on an auth page but already has a session, redirect to the dashboard.
-  if (isAuthPage && sessionCookie) {
+  // If the user is on an auth page but has a session, redirect to the dashboard.
+  if (isAuthPage && sessionToken) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // --- BYPASS: Temporarily disabled to allow direct dashboard access ---
-  // if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionCookie) {
-  //   const loginUrl = new URL('/login', request.url)
-  //   return NextResponse.redirect(loginUrl)
-  // }
+  // If the user tries to access a dashboard page without a session, redirect to login.
+  if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionToken) {
+    const loginUrl = new URL('/login', request.url)
+    // You can add a 'from' query parameter to redirect back after login
+    loginUrl.searchParams.set('from', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl)
+  }
  
   return NextResponse.next({
     request: {
@@ -37,5 +42,15 @@ export function middleware(request: NextRequest) {
 }
  
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/signup', '/signup-petugas'],
+  // Match all routes except for static files, API routes, and the homepage
+  matcher: [
+    '/dashboard/:path*', 
+    '/login', 
+    '/signup', 
+    '/signup-petugas',
+    // Exclude API routes and static files from middleware
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'
+  ],
 }
+
+    

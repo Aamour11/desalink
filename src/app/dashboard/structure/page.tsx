@@ -64,7 +64,8 @@ export default function StructurePage() {
       try {
         const [user, umkmData] = await Promise.all([
             getCurrentUser(),
-            getUmkmData()
+            // For this page, admin needs all data, not pre-filtered data
+            getUmkmData(true) 
         ]);
         setCurrentUser(user);
         setAllUmkm(umkmData);
@@ -78,18 +79,27 @@ export default function StructurePage() {
   useEffect(() => {
     fetchData();
   }, []);
+  
+  const isPetugas = currentUser?.role === "Petugas RT/RW";
+  const petugasRw = isPetugas ? currentUser?.rtRw.split("/")[1] : null;
 
-  const umkmByRw: UmkmByRw = useMemo(() => allUmkm.reduce((acc, umkm) => {
-    const [rt, rw] = umkm.rtRw.split("/");
-    if (!acc[rw]) {
-      acc[rw] = {};
-    }
-    if (!acc[rw][rt]) {
-      acc[rw][rt] = [];
-    }
-    acc[rw][rt].push(umkm);
-    return acc;
-  }, {} as UmkmByRw), [allUmkm]);
+  const umkmByRw: UmkmByRw = useMemo(() => {
+    const dataToProcess = isPetugas 
+        ? allUmkm.filter(u => u.rtRw.endsWith(`/${petugasRw}`)) 
+        : allUmkm;
+    
+    return dataToProcess.reduce((acc, umkm) => {
+        const [rt, rw] = umkm.rtRw.split("/");
+        if (!acc[rw]) {
+        acc[rw] = {};
+        }
+        if (!acc[rw][rt]) {
+        acc[rw][rt] = [];
+        }
+        acc[rw][rt].push(umkm);
+        return acc;
+    }, {} as UmkmByRw)
+  }, [allUmkm, isPetugas, petugasRw]);
   
   const handleDeactivate = async () => {
     if (!selectedUmkm) return;
@@ -123,9 +133,6 @@ export default function StructurePage() {
   } as const;
 
 
-  const isPetugas = currentUser?.role === "Petugas RT/RW";
-  const petugasRw = isPetugas ? currentUser?.rtRw.split("/")[1] : null;
-
   if (loading) {
       return <Loading />;
   }
@@ -157,7 +164,7 @@ export default function StructurePage() {
                         Tidak ada data UMKM untuk ditampilkan.
                     </p>
                 ) : (
-                    <Accordion type="single" collapsible className="w-full">
+                    <Accordion type="single" collapsible className="w-full" defaultValue={isPetugas ? `rw-${petugasRw}` : undefined}>
                     {Object.entries(umkmByRw)
                         .sort(([rwA], [rwB]) => rwA.localeCompare(rwB))
                         .map(([rw, rts]) => {
@@ -365,3 +372,5 @@ export default function StructurePage() {
     </>
   );
 }
+
+    
