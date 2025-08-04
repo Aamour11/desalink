@@ -1,4 +1,4 @@
-import type { Announcement, Management } from "@/lib/types";
+import type { Announcement, Management, UMKM, User } from "@/lib/types";
 
 // This file now only contains mock data for Announcements
 // as user and UMKM data are now fetched from the database.
@@ -39,4 +39,87 @@ export const mockManagement: Management[] = [
     avatarUrl: "https://placehold.co/100x100.png?text=AW",
     aiHint: "man official"
   },
+];
+
+export const mockUsers: Omit<User, "password_hash">[] = [
+  {
+    id: "user-1",
+    name: "Ahmad Fauzi",
+    email: "ahmad.f@example.com",
+    role: "Petugas RT/RW",
+    rtRw: "001/001",
+    avatarUrl: "https://placehold.co/100x100.png?text=AF",
+  },
+  {
+    id: "user-2",
+    name: "Dewi Lestari",
+    email: "dewi.l@example.com",
+    role: "Petugas RT/RW",
+    rtRw: "002/001",
+    avatarUrl: "https://placehold.co/100x100.png?text=DL",
+  },
+  {
+    id: "user-admin",
+    name: "Admin Desa",
+    email: "admin@desa.com",
+    role: "Admin Desa",
+    rtRw: "-",
+    avatarUrl: "https://placehold.co/100x100.png?text=AD",
+  }
+];
+
+
+export const mockUmkm: UMKM[] = [
+    {
+      id: "umkm-1",
+      businessName: "Warung Kopi Senja",
+      ownerName: "Bambang G.",
+      businessType: "Kuliner",
+      address: "Jl. Merdeka No. 1",
+      rtRw: "001/001",
+      contact: "08123456789",
+      status: "aktif",
+      legality: "Lengkap",
+      startDate: "2022-01-15",
+      employeeCount: 3,
+      description: "Warung kopi sederhana dengan biji kopi pilihan dari seluruh nusantara.",
+      imageUrl: "https://placehold.co/600x400.png",
+      legalityDocumentUrl: "/path/to/doc.pdf",
+      createdAt: new Date().toISOString(),
+      nib: '1234567890123'
+    },
+    {
+      id: "umkm-2",
+      businessName: "Jahit & Fashion",
+      ownerName: "Rina S.",
+      businessType: "Fashion",
+      address: "Jl. Pahlawan No. 2",
+      rtRw: "002/001",
+      contact: "08234567890",
+      status: "aktif",
+      legality: "Sedang Diproses",
+      startDate: "2021-08-20",
+      employeeCount: 5,
+      description: "Menerima jahitan pakaian pria dan wanita, serta menjual baju jadi.",
+      imageUrl: "https://placehold.co/600x400.png",
+      createdAt: new Date().toISOString(),
+      nib: '2345678901234'
+    },
+    {
+      id: "umkm-3",
+      businessName: "Kerajinan Rotan",
+      ownerName: "Eko Prasetyo",
+      businessType: "Kerajinan",
+      address: "Gg. Damai No. 3",
+      rtRw: "001/001",
+      contact: "08345678901",
+      status: "tidak aktif",
+      legality: "Tidak Lengkap",
+      startDate: "2020-03-10",
+      employeeCount: 2,
+      description: "Membuat berbagai macam kerajinan tangan dari bahan dasar rotan alami.",
+      imageUrl: "https://placehold.co/600x400.png",
+      createdAt: new Date().toISOString(),
+      nib: '3456789012345'
+    }
 ];

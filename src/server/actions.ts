@@ -8,7 +8,7 @@ import { executeQuery } from "@/lib/db";
 
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
 import type { UMKM, User, Announcement, Management } from "@/lib/types";
-import { mockAnnouncements, mockManagement } from "@/lib/data";
+import { mockAnnouncements, mockManagement, mockUmkm, mockUsers } from "@/lib/data";
 
 const SESSION_COOKIE_NAME = "session_id";
 
@@ -117,28 +117,30 @@ export async function sendAnnouncement(message: string) {
 // --- DATA FETCHING ---
 
 export async function getUmkmData(): Promise<UMKM[]> {
-  // Return empty array to avoid db calls
-  return [];
+  const user = await getCurrentUser();
+  if (user?.role === 'Petugas RT/RW') {
+    return mockUmkm.filter(umkm => umkm.rtRw === user.rtRw);
+  }
+  // Admin sees all
+  return mockUmkm;
 }
 
 export async function getUsersData(): Promise<Omit<User, 'password_hash'>[]> {
-    // Return empty array to avoid db calls
-    return [];
+    return mockUsers;
 }
 
 export async function getUmkmById(id: string): Promise<UMKM | null> {
-    // Return null to avoid db calls
-    return null;
+    const umkm = mockUmkm.find(u => u.id === id) || null;
+    return umkm;
 }
 
 export async function getUserById(id: string): Promise<Omit<User, 'password_hash'> | null> {
-    // Return null to avoid db calls
-    return null;
+    const user = mockUsers.find(u => u.id === id) || null;
+    return user;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
-  // Return empty array to avoid db calls
-  return [];
+  return mockUmkm.filter(umkm => umkm.rtRw === rtRw);
 }
 
 export async function getLatestAnnouncement(): Promise<Announcement | null> {
@@ -147,6 +149,5 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 }
 
 export async function getManagementData(): Promise<Management[]> {
-    // Return mock data to avoid db calls
     return mockManagement;
 }

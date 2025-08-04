@@ -49,7 +49,7 @@ const bottomNavItems = [
 ];
 
 // Mock user data for bypass
-const mockUser = {
+const mockUser: Omit<User, "password_hash"> = {
   id: 'user-bypass',
   name: 'Developer',
   email: 'dev@example.com',
@@ -64,7 +64,16 @@ export function DashboardSidebar() {
   const router = useRouter();
   const { toast } = useToast();
   const { setOpenMobile } = useSidebar();
-  const [currentUser, setCurrentUser] = useState<Omit<User, "password_hash"> | null>(mockUser);
+  const [currentUser, setCurrentUser] = useState<Omit<User, "password_hash"> | null>(null);
+
+  useEffect(() => {
+      async function fetchUser() {
+        const user = await getCurrentUser();
+        // Use mockUser if no user is found (login bypass)
+        setCurrentUser(user || mockUser);
+      }
+      fetchUser();
+  }, [])
 
   const handleNavigate = (href: string) => {
     router.push(href);
