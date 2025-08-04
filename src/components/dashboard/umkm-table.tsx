@@ -46,16 +46,6 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
   
   const [selectedUmkm, setSelectedUmkm] = React.useState<UMKM | null>(null);
 
-  const handleSearch = (term: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set("q", term);
-    } else {
-      params.delete("q");
-    }
-    replace(`${pathname}?${params.toString()}`);
-  };
-
   const handleFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value && value !== "all") {
@@ -69,6 +59,12 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
   const query = searchParams.get("q") || "";
   const typeFilter = searchParams.get("type") || "all";
   const statusFilter = searchParams.get("status") || "all";
+  const rwFilter = searchParams.get("rw") || "all";
+
+  const allRws = React.useMemo(() => {
+    const rws = new Set(data.map(umkm => umkm.rtRw.split('/')[1]));
+    return Array.from(rws).sort();
+  }, [data]);
 
   const filteredUmkm: UMKM[] = React.useMemo(() => 
     data.filter((umkm) => {
@@ -78,8 +74,9 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
         umkm.rtRw.includes(query);
       const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
       const matchesStatus = statusFilter === "all" || umkm.status === statusFilter;
-      return matchesQuery && matchesType && matchesStatus;
-  }), [data, query, typeFilter, statusFilter]);
+      const matchesRw = rwFilter === "all" || umkm.rtRw.split('/')[1] === rwFilter;
+      return matchesQuery && matchesType && matchesStatus && matchesRw;
+  }), [data, query, typeFilter, statusFilter, rwFilter]);
 
 
   const handleExportCSV = () => {
@@ -120,6 +117,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
   };
 
   const isPetugas = currentUser?.role === 'Petugas RT/RW';
+  const isAdmin = currentUser?.role === 'Admin Desa';
   
   const legalityInfo = {
     'Lengkap': { icon: <FileCheck2 className="h-5 w-5 text-green-600" />, text: "Lengkap", color: "success" },
@@ -135,11 +133,11 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
             <Input
               placeholder="Cari nama usaha, pemilik..."
               defaultValue={searchParams.get("q")?.toString()}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => handleFilter("q", e.target.value)}
               className="max-w-xs"
             />
             <Select
-              defaultValue={searchParams.get("type") || "all"}
+              defaultValue={typeFilter}
               onValueChange={(value) => handleFilter("type", value)}
             >
               <SelectTrigger className="w-full sm:w-[180px]">
@@ -155,7 +153,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
               </SelectContent>
             </Select>
             <Select
-              defaultValue={searchParams.get("status") || "all"}
+              defaultValue={statusFilter}
               onValueChange={(value) => handleFilter("status", value)}
             >
               <SelectTrigger className="w-full sm:w-[180px]">
@@ -167,6 +165,22 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                 <SelectItem value="tidak aktif">Tidak Aktif</SelectItem>
               </SelectContent>
             </Select>
+             {isAdmin && (
+               <Select
+                defaultValue={rwFilter}
+                onValueChange={(value) => handleFilter("rw", value)}
+                >
+                <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Semua RW" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Semua RW</SelectItem>
+                    {allRws.map(rw => (
+                        <SelectItem key={rw} value={rw}>RW {rw}</SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+             )}
           </div>
           <div className="flex gap-2">
               <Button variant="outline" onClick={handleExportCSV}>
