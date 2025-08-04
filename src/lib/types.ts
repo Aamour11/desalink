@@ -1,3 +1,4 @@
+
 export type UMKM = {
   id: string;
   businessName: string;
@@ -10,9 +11,9 @@ export type UMKM = {
   status: "aktif" | "tidak aktif";
   legality: "Lengkap" | "Tidak Lengkap" | "Sedang Diproses";
   startDate?: string;
-  employeeCount: number;
+  employeeCount?: number;
   description?: string;
-  imageUrl: string;
+  imageUrl?: string;
   legalityDocumentUrl?: string;
   createdAt: string;
 };
