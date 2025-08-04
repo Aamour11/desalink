@@ -4,23 +4,16 @@ import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UsersTable } from "@/components/dashboard/users-table";
 import { getUsersData, getCurrentUser } from "@/server/actions";
+import { redirect } from "next/navigation";
 
-// Mock user for bypass
-const mockUser = {
-  id: 'user-bypass',
-  name: 'Developer',
-  email: 'dev@example.com',
-  role: 'Admin Desa' as const,
-  rtRw: '-',
-  avatarUrl: 'https://placehold.co/100x100.png?text=D'
-};
 
 export default async function UsersPage() {
   const users = await getUsersData();
   let currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    currentUser = mockUser;
+    // This case should ideally be handled by middleware, but as a safeguard:
+    redirect('/login');
   }
 
   return (

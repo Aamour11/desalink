@@ -15,6 +15,12 @@ export default async function DashboardLayout({ children }: PropsWithChildren) {
   // We can pass a default or null user to the header initially.
   const user = await getCurrentUser();
 
+  if (!user) {
+    // This is a hard check on the server. If no user can be resolved at all,
+    // (e.g., cookie is missing), redirect to login.
+    redirect("/login");
+  }
+
   return (
     <SidebarProvider>
       <div className="flex h-screen bg-muted/40">

@@ -16,31 +16,62 @@ const SESSION_COOKIE_NAME = "session_id";
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
   console.log("Mock sign in for:", values.email);
-  // This is a mock implementation. A real implementation would validate credentials.
   const user = mockUsers.find(u => u.email === values.email);
-  if (!user) throw new Error("Kombinasi email dan kata sandi salah.");
+  if (!user) {
+    // In a real app, you'd also check the password here.
+    throw new Error("Kombinasi email dan kata sandi salah.");
+  }
 
-  // Store role in cookie to be read by middleware or server components
-  cookies().set(SESSION_COOKIE_NAME, user.role, {
+  // The session ID in this mock is just the user's ID.
+  cookies().set(SESSION_COOKIE_NAME, user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // One week
       path: '/',
     });
+  
+  // Set the default role to switch to. Admin defaults to admin, Petugas defaults to petugas.
+  const defaultRole = user.role === 'Admin Desa' ? 'admin' : 'petugas';
+  if (!cookies().has('activeRole')) {
+    cookies().set('activeRole', defaultRole, {
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+    });
+  }
 }
 
 export async function signOut() {
   cookies().delete(SESSION_COOKIE_NAME);
+  cookies().delete('activeRole');
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
-    const roleFromStorage = headers().get('x-active-role');
+    const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
+    const roleFromHeader = headers().get('x-active-role'); // This comes from middleware.
 
-    if (roleFromStorage === 'admin') {
-      return mockUsers.find(u => u.role === 'Admin Desa') || null;
+    if (!sessionUserId) {
+        return null;
     }
-    // Default to a specific petugas user for demo purposes
-    return mockUsers.find(u => u.id === 'user-1') || null;
+
+    if (roleFromHeader === 'admin') {
+        const adminUser = mockUsers.find(u => u.role === 'Admin Desa');
+        return adminUser || null;
+    }
+    
+    if (roleFromHeader === 'petugas') {
+        // Find the original logged-in user to determine their RT/RW
+        const originalUser = mockUsers.find(u => u.id === sessionUserId);
+        if (originalUser?.role === 'Admin Desa') {
+             // If admin is switching to petugas view, show a default petugas
+             return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;
+        }
+        // If the original user is a petugas, just return them.
+        return originalUser || null;
+    }
+
+    // Fallback: If no role switcher is active, return the user based on session.
+    const user = mockUsers.find(u => u.id === sessionUserId);
+    return user || null;
 }
 
 // --- USER ACTIONS ---
@@ -160,5 +191,3 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 export async function getManagementData(): Promise<Management[]> {
     return mockManagement;
 }
-
-    

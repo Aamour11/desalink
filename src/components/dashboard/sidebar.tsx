@@ -27,7 +27,7 @@ import {
 import { LogoIcon } from "@/components/icons";
 import type { User } from "@/lib/types";
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "@/server/actions";
+import { getCurrentUser, signOut as serverSignOut } from "@/server/actions";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -56,8 +56,18 @@ export function DashboardSidebar() {
     // On initial load, set the active user from the server action
     // This respects the cookie/header logic for role switching
     const fetchAndSetUser = async () => {
-        const user = await getCurrentUser();
-        setActiveUser(user);
+        try {
+            const user = await getCurrentUser();
+            if (user) {
+                setActiveUser(user);
+            } else {
+                // If no user is found client-side, something is wrong, redirect to login
+                window.location.href = "/login";
+            }
+        } catch (e) {
+            console.error("Failed to fetch current user, redirecting.", e);
+            window.location.href = "/login";
+        }
     }
     fetchAndSetUser();
   }, [setActiveUser]);
@@ -69,15 +79,17 @@ export function DashboardSidebar() {
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem("activeRole");
-    // Also remove the server-side cookie if it exists
-    const res = await fetch('/api/logout', { method: 'POST' });
+    await serverSignOut();
     window.location.href = "/login";
   };
   
   const handleRoleSwitch = () => {
-    const newRole = activeUser?.role === 'Admin Desa' ? 'petugas' : 'admin';
-    document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Set cookie for middleware
+    const currentRole = document.cookie.split('; ').find(row => row.startsWith('activeRole='))?.split('=')[1];
+    const newRole = currentRole === 'admin' ? 'petugas' : 'admin';
+    
+    // Set cookie for middleware to pick up on the next request
+    document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
+    
     // Force a reload to ensure all server components re-fetch data with the new role context
     window.location.reload();
   };
@@ -160,5 +172,3 @@ export function DashboardSidebar() {
     </Sidebar>
   );
 }
-
-    
