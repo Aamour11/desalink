@@ -44,6 +44,14 @@ export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_h
 
   const handleDelete = async (userId: string) => {
     try {
+      if (currentUser?.id === userId) {
+        toast({
+            variant: "destructive",
+            title: "Gagal Menghapus",
+            description: "Anda tidak dapat menghapus akun Anda sendiri.",
+        });
+        return;
+      }
       await deleteUser(userId);
       toast({
         title: "Sukses",
@@ -160,3 +168,5 @@ export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_h
     </ScrollArea>
   );
 }
+
+    

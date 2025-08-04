@@ -80,8 +80,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
 
   const filteredUmkm: UMKM[] = React.useMemo(() => 
     data.filter((umkm) => {
-      // For Petugas, the data is already pre-filtered by `getUmkmData` action.
-      // So, we just apply the client-side filters on top of the pre-filtered data.
+      // Data is pre-filtered by `getUmkmData`. We just apply client-side filters.
       const [rt, rw] = umkm.rtRw.split('/');
       const matchesQuery =
         umkm.businessName.toLowerCase().includes(query.toLowerCase()) ||
@@ -90,9 +89,9 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
       const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
       const matchesStatus = statusFilter === "all" || umkm.status === statusFilter;
       
-      // For Admin, apply RT/RW filters. For Petugas, these filters are ignored.
-      const matchesRw = currentUser?.role === 'Admin Desa' ? (rwFilter === "all" || rw === rwFilter) : true;
-      const matchesRt = currentUser?.role === 'Admin Desa' ? (rtFilter === "all" || rt === rtFilter) : true;
+      const isAdminView = currentUser?.role === 'Admin Desa';
+      const matchesRw = isAdminView ? (rwFilter === "all" || rw === rwFilter) : true;
+      const matchesRt = isAdminView ? (rtFilter === "all" || rt === rtFilter) : true;
       
       return matchesQuery && matchesType && matchesStatus && matchesRw && matchesRt;
   }), [data, query, typeFilter, statusFilter, rwFilter, rtFilter, currentUser]);
@@ -418,3 +417,5 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
     </>
   );
 }
+
+    

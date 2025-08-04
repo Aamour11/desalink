@@ -60,15 +60,12 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     
     // If the user wants to simulate a petugas
     if (originalUser.role === 'Admin Desa' && activeRole === 'petugas') {
-      // Find the first Petugas user to act as the mock.
       const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
-      // Return mock Petugas, but ensure we keep the original admin's ID for context if needed
-      // while maintaining the 'Petugas RT/RW' role for UI purposes.
       if (mockPetugas) {
          return {
-            ...mockPetugas, // Has role 'Petugas RT/RW', name, etc.
-            id: originalUser.id, // IMPORTANT: Keep the original admin ID to know who is simulating
-            role: 'Petugas RT/RW' // Explicitly set role for clarity
+            ...mockPetugas, 
+            id: originalUser.id, 
+            role: 'Petugas RT/RW'
         };
       }
     }
@@ -161,10 +158,16 @@ export async function sendAnnouncement(message: string) {
 
 export async function getUmkmData(forceAll = false): Promise<UMKM[]> {
   const user = await getCurrentUser();
-  if (user?.role === 'Petugas RT/RW' && !forceAll) {
+  
+  if (!user) return [];
+
+  // If role is Petugas (either real or simulated), filter data by their rtRw.
+  // The `forceAll` flag is used by pages like Structure to override this filtering for Admin.
+  if (user.role === 'Petugas RT/RW' && !forceAll) {
     return mockUmkm.filter(umkm => umkm.rtRw === user.rtRw);
   }
-  // Admin sees all
+
+  // Admin sees all data.
   return mockUmkm;
 }
 
@@ -178,15 +181,8 @@ export async function getUmkmById(id: string): Promise<UMKM | null> {
 }
 
 export async function getUserById(id: string): Promise<Omit<User, 'password_hash'> | null> {
-    // If the ID is the admin's ID, but they are simulating a petugas, we might want to return the simulated profile
-    // For now, returning the actual user profile is simpler.
     const user = mockUsers.find(u => u.id === id);
     if (user) return user;
-
-    // It's possible the ID belongs to an admin who is simulating a role.
-    // In that case, we should find the admin user.
-    const adminUser = mockUsers.find(u => u.role === "Admin Desa");
-    if (adminUser?.id === id) return adminUser;
     
     return null;
 }
@@ -203,3 +199,5 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 export async function getManagementData(): Promise<Management[]> {
     return mockManagement;
 }
+
+    
