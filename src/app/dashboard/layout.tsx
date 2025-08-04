@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/server/actions";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({ children }: PropsWithChildren) {
-  let user = await getCurrentUser();
+  const user = await getCurrentUser();
 
   if (!user) {
      // If no user is found (not even a mock one), something is wrong.
