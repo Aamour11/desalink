@@ -124,14 +124,19 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    doc.text("Laporan Data UMKM", 14, 16);
+    doc.setFontSize(18);
+    doc.text("Laporan Data UMKM", 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text("Desa Cilame, Kecamatan Ngamprah, Kabupaten Bandung Barat", 14, 28);
+
     autoTable(doc, {
       head: [["Nama Usaha", "Pemilik", "Jenis", "RT/RW", "Status", "Legalitas"]],
       body: filteredUmkm.map(umkm => [umkm.businessName, umkm.ownerName, umkm.businessType, umkm.rtRw, umkm.status, umkm.legality]),
-      startY: 20,
+      startY: 36,
       headStyles: { fillColor: [34, 47, 62] }, // hsl(215, 40%, 17%)
     });
-    doc.save('laporan-umkm.pdf');
+    doc.save('laporan-umkm-desacilame.pdf');
   };
 
   const isAdminView = currentUser?.role === 'Admin Desa';
@@ -417,5 +422,6 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
     </>
   );
 }
+    
 
     
