@@ -156,7 +156,6 @@ export function DashboardSidebar() {
              <SidebarMenuItem>
                 <SidebarMenuButton
                     variant="ghost"
-                    className="w-full justify-start"
                     tooltip={{ children: isDisplayingAsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
                     icon={<Replace />}
                     onClick={handleRoleSwitch}
@@ -181,7 +180,6 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               variant="ghost"
-              className="w-full justify-start"
               tooltip={{ children: "Logout" }}
               icon={<LogOut />}
               onClick={handleLogout}
