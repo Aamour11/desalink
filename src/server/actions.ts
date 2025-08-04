@@ -467,8 +467,12 @@ export async function getUmkmData(): Promise<UMKM[]> {
         return mockUmkm.filter(u => u.rtRw === user.rtRw);
     }
     
-    // Sort by most recently created
-    return [...mockUmkm].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Sort by most recently created for Admin
+    if(user?.role === 'Admin Desa') {
+      return [...mockUmkm].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return [];
 }
 
 export async function getUsersData(): Promise<User[]> {
@@ -476,23 +480,53 @@ export async function getUsersData(): Promise<User[]> {
     if (user?.role !== 'Admin Desa') {
         return [];
     }
-    return [...mockUsers];
+    // Return all users without their password hashes
+    return [...mockUsers].map(u => {
+      const { password_hash, ...userWithoutPassword } = u;
+      return userWithoutPassword;
+    }) as User[];
 }
 
 export async function getUmkmById(id: string): Promise<UMKM | null> {
-    return mockUmkm.find(u => u.id === id) || null;
+    const umkm = mockUmkm.find(u => u.id === id);
+    if (!umkm) return null;
+
+    const user = await getCurrentUser();
+
+    // Security check: Petugas can only access UMKM in their own area
+    if (user?.role === 'Petugas RT/RW' && umkm.rtRw !== user.rtRw) {
+        return null;
+    }
+
+    return umkm;
 }
 
 
 export async function getUserById(id: string): Promise<User | null> {
-    const user = mockUsers.find(u => u.id === id);
-    if (!user) return null;
-    // Return a copy without the password hash
-    const { password_hash, ...userWithoutPassword } = user;
+    const user = await getCurrentUser();
+    // Only Admin can fetch user profiles
+    if (user?.role !== 'Admin Desa') {
+        // Allow users to view their own profile
+        if (id === user?.id) {
+           const self = mockUsers.find(u => u.id === id);
+           if (!self) return null;
+           const { password_hash, ...userWithoutPassword } = self;
+           return userWithoutPassword as User;
+        }
+        return null;
+    }
+    
+    const targetUser = mockUsers.find(u => u.id === id);
+    if (!targetUser) return null;
+    
+    const { password_hash, ...userWithoutPassword } = targetUser;
     return userWithoutPassword as User;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
+  const user = await getCurrentUser();
+  if (user?.role !== 'Admin Desa') return [];
+
   if (!rtRw || rtRw === '-') return [];
   return mockUmkm.filter(u => u.rtRw === rtRw);
 }

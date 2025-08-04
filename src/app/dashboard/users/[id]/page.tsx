@@ -1,3 +1,4 @@
+
 import { getUserById, getUmkmManagedByUser } from "@/server/actions";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -22,7 +23,8 @@ export default async function UserProfilePage({ params }: { params: { id: string
     notFound();
   }
 
-  const umkmManagedByUser = await getUmkmManagedByUser(user.rtRw);
+  // Only Admin can see the list of managed UMKM on a profile page
+  const umkmManagedByUser = user.role === "Petugas RT/RW" ? await getUmkmManagedByUser(user.rtRw) : [];
 
   return (
     <div className="space-y-8">

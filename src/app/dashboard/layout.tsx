@@ -3,12 +3,17 @@ import type { PropsWithChildren } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { getCurrentUser } from "@/server/actions";
+import { redirect } from "next/navigation";
 
-export default function DashboardLayout({ children }: PropsWithChildren) {
-  // Authentication logic is now fully handled by middleware.ts.
-  // This layout component's only responsibility is to render the UI shell
-  // for authenticated users. Child components like Header and Sidebar
-  // will fetch the user's data on the client side.
+export default async function DashboardLayout({ children }: PropsWithChildren) {
+  // Middleware handles redirection for unauthenticated users.
+  // We can safely assume a user exists here.
+  // This server-side check adds an extra layer of security.
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect('/login');
+  }
 
   return (
     <SidebarProvider>
