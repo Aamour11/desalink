@@ -25,7 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LogoIcon } from "@/components/icons";
+import { LogoIcon, CilameLogoIcon } from "@/components/icons";
 
 
 function AnimatedBarChart() {
@@ -210,6 +210,35 @@ export function LandingPage() {
                 </Card>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="bg-muted/40 py-20 sm:py-32">
+          <div className="container">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl">
+                Studi Kasus: DesaLink di Cilame
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Bagaimana aplikasi kami membantu digitalisasi dan mendorong
+                pertumbuhan ekonomi di Desa Cilame, Ngamprah, Bandung Barat.
+              </p>
+            </div>
+            <div className="mt-16 flex flex-col md:flex-row items-center justify-center gap-12">
+               <div className="flex-shrink-0">
+                  <div className="p-4 bg-background rounded-full shadow-lg">
+                    <CilameLogoIcon className="h-32 w-32 text-primary" />
+                  </div>
+               </div>
+               <div className="max-w-2xl text-center md:text-left">
+                  <h3 className="font-headline text-2xl font-semibold text-primary">
+                    Transformasi Digital UMKM Desa Cilame
+                  </h3>
+                  <p className="mt-4 text-muted-foreground">
+                    Sebelum DesaLink, pendataan UMKM di Desa Cilame dilakukan secara manual, menyebabkan data tidak akurat dan sulit diakses. Dengan implementasi platform kami, Petugas RT/RW kini dapat mendata UMKM secara real-time, lengkap dengan informasi NIB dan foto produk. Hasilnya, pemerintah desa kini memiliki dasbor analitik yang akurat untuk membuat kebijakan yang mendukung pertumbuhan ekonomi lokal, dan para pelaku UMKM mendapatkan visibilitas yang lebih baik.
+                  </p>
+               </div>
+            </div>
           </div>
         </section>
       </main>
