@@ -3,99 +3,102 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { umkmSchema } from "@/lib/schema";
-import pool from './db';
+import { mockUmkm, mockUsers } from "@/lib/data";
 import type { UMKM } from "./types";
+import { getCurrentUser } from "@/server/actions";
 
-// This is a mock implementation. In a real app, you would interact with a database.
+
+// This file now uses mock data to align with the rest of the application,
+// ensuring no actual database connection is attempted.
 
 export async function createUmkm(values: z.infer<typeof umkmSchema>) {
-  const validatedFields = umkmSchema.safeParse(values);
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+        throw new Error("Anda harus login untuk membuat data.");
+    }
+    
+    if (currentUser.role !== 'Petugas RT/RW') {
+        throw new Error("Hanya Petugas RT/RW yang dapat membuat data UMKM.");
+    }
 
-  if (!validatedFields.success) {
-    throw new Error("Data tidak valid.");
-  }
-  
-  const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl } = validatedFields.data;
+    const validatedFields = umkmSchema.safeParse(values);
 
-  try {
-    const connection = await pool.getConnection();
-    const query = 'INSERT INTO umkm (businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    await connection.execute(query, [
-        businessName,
-        ownerName,
-        nib || null,
-        businessType,
-        address,
-        rtRw,
-        contact,
-        status,
-        startDate || new Date().toISOString().split('T')[0],
-        employeeCount || 0,
-        description || null,
-        imageUrl || 'https://placehold.co/600x400.png'
-    ]);
-    connection.release();
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Gagal membuat data UMKM.');
-  }
+    if (!validatedFields.success) {
+        throw new Error("Data tidak valid.");
+    }
+    
+    const newUmkm: UMKM = {
+        id: `umkm-${Date.now()}`,
+        ...validatedFields.data,
+        employeeCount: validatedFields.data.employeeCount || 0,
+        imageUrl: validatedFields.data.imageUrl || 'https://placehold.co/600x400.png',
+        createdAt: new Date().toISOString(),
+    };
 
-
-  revalidatePath("/dashboard/umkm");
+    mockUmkm.unshift(newUmkm);
+    revalidatePath("/dashboard/umkm");
 }
 
 export async function updateUmkm(
   id: string,
   values: z.infer<typeof umkmSchema>
 ) {
-  const validatedFields = umkmSchema.safeParse(values);
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+        throw new Error("Anda harus login untuk memperbarui data.");
+    }
 
-  if (!validatedFields.success) {
-    throw new Error("Data tidak valid.");
-  }
-  
-  const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, startDate, employeeCount, description, imageUrl } = validatedFields.data;
-  const umkmId = id.replace('umkm-','');
+    const umkmIndex = mockUmkm.findIndex((u) => u.id === id);
 
-  try {
-    const connection = await pool.getConnection();
-    const query = 'UPDATE umkm SET businessName = ?, ownerName = ?, nib = ?, businessType = ?, address = ?, rtRw = ?, contact = ?, status = ?, startDate = ?, employeeCount = ?, description = ?, imageUrl = ? WHERE id = ?';
-    await connection.execute(query, [
-        businessName,
-        ownerName,
-        nib || null,
-        businessType,
-        address,
-        rtRw,
-        contact,
-        status,
-        startDate || new Date().toISOString().split('T')[0],
-        employeeCount || 0,
-        description || null,
-        imageUrl || 'https://placehold.co/600x400.png',
-        umkmId
-    ]);
-    connection.release();
-  } catch (error) {
-     console.error('Database Error:', error);
-    throw new Error('Gagal memperbarui data UMKM.');
-  }
+    if (umkmIndex === -1) {
+        throw new Error("UMKM tidak ditemukan.");
+    }
+    
+    const umkmToUpdate = mockUmkm[umkmIndex];
+
+    if (currentUser.role === 'Petugas RT/RW' && currentUser.rtRw !== umkmToUpdate.rtRw) {
+        throw new Error("Anda tidak memiliki izin untuk mengedit data UMKM ini.");
+    }
+     if (currentUser.role === 'Admin Desa') {
+       throw new Error("Admin tidak dapat mengedit data UMKM.");
+    }
 
 
-  revalidatePath(`/dashboard/umkm`);
-  revalidatePath(`/dashboard/umkm/${id}/edit`);
+    const validatedFields = umkmSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+        throw new Error("Data tidak valid.");
+    }
+
+    mockUmkm[umkmIndex] = {
+        ...mockUmkm[umkmIndex],
+        ...validatedFields.data,
+    };
+
+    revalidatePath(`/dashboard/umkm`);
+    revalidatePath(`/dashboard/umkm/${id}/edit`);
 }
 
 export async function deleteUmkm(id: string) {
-    const umkmId = id.replace('umkm-','');
-    try {
-        const connection = await pool.getConnection();
-        const query = 'DELETE FROM umkm WHERE id = ?';
-        await connection.execute(query, [umkmId]);
-        connection.release();
-        revalidatePath("/dashboard/umkm");
-    } catch (error) {
-        console.error('Database Error:', error);
-        throw new Error('Gagal menghapus data UMKM.');
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+        throw new Error("Anda harus login untuk menghapus data.");
     }
+
+    const umkmIndex = mockUmkm.findIndex((u) => u.id === id);
+
+    if (umkmIndex === -1) {
+        throw new Error("UMKM tidak ditemukan.");
+    }
+    const umkmToDelete = mockUmkm[umkmIndex];
+
+    if (currentUser.role === 'Petugas RT/RW' && currentUser.rtRw !== umkmToDelete.rtRw) {
+        throw new Error("Anda tidak memiliki izin untuk menghapus data UMKM ini.");
+    }
+    if (currentUser.role === 'Admin Desa') {
+       throw new Error("Admin tidak dapat menghapus data UMKM.");
+    }
+
+    mockUmkm.splice(umkmIndex, 1);
+    revalidatePath("/dashboard/umkm");
 }
