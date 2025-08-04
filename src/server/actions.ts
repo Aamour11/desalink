@@ -8,7 +8,7 @@ import { executeQuery } from "@/lib/db";
 
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
 import type { UMKM, User, Announcement, Management } from "@/lib/types";
-import { mockAnnouncements } from "@/lib/data";
+import { mockAnnouncements, mockManagement } from "@/lib/data";
 
 const SESSION_COOKIE_NAME = "session_id";
 
@@ -147,6 +147,6 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
 }
 
 export async function getManagementData(): Promise<Management[]> {
-    // Return empty array to avoid db calls
-    return [];
+    // Return mock data to avoid db calls
+    return mockManagement;
 }
