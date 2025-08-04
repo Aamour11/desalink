@@ -2,10 +2,12 @@
 import Link from "next/link";
 import {
   ArrowLeft,
-  Calculator,
+  BookOpen,
+  Gamepad2,
+  Cpu,
   Database,
-  FunctionSquare,
-  LineChart,
+  ListOrdered,
+  Puzzle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,35 +15,63 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import { LogoIcon } from "@/components/icons";
 
 export default function AlgorithmsPage() {
-  const algorithms = [
+  const counterPickFactors = [
     {
-      icon: <Database className="h-8 w-8 text-primary" />,
-      title: "1. Pengumpulan Data Mentah",
-      description:
-        "Proses dimulai dengan pengumpulan data dari sumber utama. Dalam versi saat ini, data berasal dari array objek (mock data) yang merepresentasikan setiap UMKM. Setiap objek berisi atribut lengkap seperti jenis usaha, RT/RW, tanggal berdiri, dan jumlah karyawan.",
+      title: "Agresivitas",
+      description: "Menentukan gaya bermain (defensif, seimbang, agresif). Karakter agresif dapat diatasi oleh karakter dengan kemampuan bertahan dan serangan balik (punishment) yang kuat."
     },
     {
-      icon: <FunctionSquare className="h-8 w-8 text-primary" />,
-      title: "2. Algoritma Agregasi Data",
-      description:
-        "Data mentah kemudian diproses menggunakan algoritma agregasi. Fungsi perulangan seperti 'reduce' digunakan untuk mengelompokkan data. Contohnya, untuk menghitung UMKM per jenis usaha, algoritma akan mengiterasi setiap UMKM dan menjumlahkannya ke dalam kategori yang sesuai (Kuliner, Fashion, dll.), menghasilkan struktur data baru yang siap untuk divisualisasikan.",
+      title: "Defensiveness",
+      description: "Merujuk pada kekuatan bertahan karakter. Karakter dengan pertahanan rendah rentan terhadap tekanan, sementara yang bertahan tinggi bisa menjadi counter bagi lawan dengan serangan cepat."
     },
     {
-      icon: <Calculator className="h-8 w-8 text-primary" />,
-      title: "3. Perhitungan Statistik",
-      description:
-        "Setelah data diagregasi, perhitungan statistik dilakukan. Ini termasuk kalkulasi sederhana seperti 'Total UMKM' dan 'UMKM Aktif', hingga perhitungan yang lebih kompleks seperti 'Rata-rata Jumlah Karyawan', yang dihitung dengan membagi total semua karyawan dengan jumlah total UMKM.",
+      title: "Gaya Bertarung (Grappling vs. Striker)",
+      description: "Karakter tipe Grappler unggul dalam jarak dekat, seringkali menjadi counter efektif bagi tipe Striker yang mengandalkan pukulan dari jarak menengah."
     },
     {
-      icon: <LineChart className="h-8 w-8 text-primary" />,
-      title: "4. Transformasi untuk Visualisasi",
-      description:
-        "Hasil agregasi dan statistik kemudian diubah (transformasi) menjadi format yang sesuai untuk komponen grafik (seperti Recharts). Misalnya, data agregasi UMKM per tahun diubah menjadi array objek dengan properti 'name' (untuk tahun) dan 'value' (untuk jumlah), yang dapat langsung dirender menjadi grafik batang.",
+      title: "Range Control",
+      description: "Kemampuan mengontrol jarak pertarungan. Karakter dengan jangkauan serangan jauh secara alami unggul melawan karakter yang harus mendekat untuk menyerang."
     },
+    {
+      title: "Skill Level & Combo Complexity",
+      description: "Tingkat kesulitan menguasai karakter. Karakter dengan kombo sederhana namun efektif bisa menjadi pilihan counter yang baik melawan karakter yang kompleks."
+    },
+    {
+      title: "Mobility",
+      description: "Tingkat pergerakan dan kelincahan. Karakter cepat tipe Rushdown dirancang untuk menekan lawan dan menjadi counter bagi karakter yang lambat."
+    }
+  ];
+  
+  const flowchartSteps = [
+    {
+      title: "1. User Input",
+      description: "Pengguna mengisi form preferensi gaya bermain (agresivitas, defensiveness, grappling, zoning, dll.) dan bisa memasukkan karakter lawan untuk counter-pick."
+    },
+    {
+      title: "2. Ambil Semua Karakter",
+      description: "Sistem mengambil seluruh data karakter dari database, di mana setiap karakter memiliki nilai atribut yang sesuai dengan parameter input pengguna."
+    },
+    {
+      title: "3. Hitung Selisih Atribut",
+      description: "Sistem menghitung selisih antara preferensi pengguna dan atribut setiap karakter dengan rumus: Kompatibilitas = 10 – |nilai user – nilai karakter|."
+    },
+    {
+      title: "4. Skor Kecocokan (CBF Score)",
+      description: "Skor total dari perhitungan atribut dinormalisasi menjadi nilai persentase (0–100%) untuk menggambarkan tingkat kecocokan."
+    },
+    {
+      title: "5. Urutkan Skor",
+      description: "Semua karakter diurutkan berdasarkan skor akhir dari yang tertinggi ke terendah untuk menemukan yang paling cocok."
+    },
+    {
+      title: "6. Tampilkan Top 5 Rekomendasi",
+      description: "Sistem menampilkan lima karakter teratas yang paling cocok, lengkap dengan persentase kecocokan dan alasan mengapa karakter tersebut direkomendasikan."
+    }
   ];
 
   return (
@@ -65,33 +95,85 @@ export default function AlgorithmsPage() {
 
       <main className="flex-1">
         <section className="container py-20 sm:py-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">
-              Algoritma & Pemrosesan Data
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Memahami bagaimana data UMKM diolah dari data mentah menjadi
-              wawasan statistik yang berguna di dasbor.
-            </p>
-          </div>
-          <div className="mt-16 grid gap-8 md:grid-cols-2">
-            {algorithms.map((feature, index) => (
-              <Card key={index} className="flex flex-col bg-background/50">
-                <CardHeader>
-                  <div className="bg-secondary p-3 rounded-full w-max mb-4">
-                    {feature.icon}
-                  </div>
-                  <CardTitle className="font-headline text-xl">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="mx-auto max-w-4xl">
+            <div className="text-center">
+                <p className="font-bold text-primary">BAB 2</p>
+                <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl">
+                    TINJAUAN PUSTAKA
+                </h1>
+            </div>
+
+            <article className="mt-12 space-y-12">
+                <div>
+                    <h2 className="font-headline text-2xl font-bold mb-4 flex items-center gap-3"><BookOpen className="h-6 w-6 text-primary" /> 2.1 Deskripsi Topik Yang Sama</h2>
+                    <div className="space-y-4 text-muted-foreground">
+                        <p>Pada penelitian Raja Sakti Arief Daulay yang berjudul “Impelementasi Metode Basic Filtering Untuk Rekomendasi Game Coop Di steam” (Meidi Yulian Kandowangko, 2025), diuraikan bahwa Content-based filtering merupakan salah satu metode dalam sistem rekomendasi yang menggunakan metadata dari suatu item dalam katalog untuk memberikan rekomendasi yang sesuai bagi pengguna. Dalam pendekatannya, sistem akan menganalisis deskripsi dan fitur dari item yang disukai pengguna sebelumnya untuk menemukan konten lain yang mirip. Keunggulan dari metode ini adalah tidak membutuhkan banyak data dari pengguna dan tidak bergantung pada seberapa populer suatu item.[5][6]</p>
+                        <p>Pada penelitian Steven Pratama Putra yang berjudul "Model untuk Memprediksi Tingkat Kemenangan Berdasarkan Draft Pick Mobile Legends", penerapan algoritma CBF dapat diperluas untuk sistem rekomendasi counter pick dalam game fighting seperti Tekken. Dalam konteks mobile legend, CBF digunakan untuk menganalisis pola kemenangan dan kekalahan antar hero berdasarkan statistik pertandingan, namun konsep serupa dapat diterapkan pada karakter Tekken dengan mempertimbangkan karakteristik gameplay yang berbeda. Sistem counter pick Tekken menggunakan CBF dapat menganalisis data pertandingan berdasarkan fitur-fitur seperti kecepatan serangan, jangkauan, damage yang di hasilkan, pilihan bertahan, dan gerakan lanjutan setiap karakter. Algoritma akan menghitung jarak kedekatan antara karakter berdasarkan parameter gameplay tersebut, kemudian merekomendasikan karakter penangkal atau counter yang memiliki keunggulan strategis. Misalnya, jika pemain menghadapi karakter dengan serangan jarak dekat yang kuat, CBF dapat merekomendasikan karakter dengan kemampuan menguasai area dan menjaga jarak yang efektif berdasarkan pola kemenangan dari data pertandingan sebelumnya. Implementasi ini menunjukkan fleksibilitas algoritma CBF dalam domain gaming yang berbeda, dimana prinsip klasifikasi berdasarkan kedekatan data dapat diadaptasi untuk berbagai jenis analisis strategis dalam permainan kompetitif.[7]</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 className="font-headline text-2xl font-bold mb-4 flex items-center gap-3"><Gamepad2 className="h-6 w-6 text-primary" /> 2.2 Game Tekken</h2>
+                     <div className="space-y-4 text-muted-foreground">
+                        <p>Tekken adalah sebuah game pertarungan (fighting game) legendaris yang dikembangkan dan dipublikasikan oleh Bandai Namco Entertainment. Pertama kali dirilis pada tahun 1994, Tekken menjadi salah satu pionir dalam genre game pertarungan tiga dimensi (3D fighting), dan hingga saat ini telah menjadi salah satu seri game terpopuler dan paling ikonik di dunia.[8]</p>
+                        <h3 className="font-headline text-xl font-semibold text-foreground pt-4">2.2.1 Sejarah Singkat</h3>
+                        <p>Game pertama Tekken muncul di arcade (mesin ding-dong) dan segera menjadi populer karena menawarkan pertarungan yang realistis dengan karakter-karakter yang memiliki latar belakang dan gaya bertarung yang unik. Tak lama kemudian, game ini di-porting ke konsol PlayStation, dan menjadi salah satu alasan utama kesuksesan konsol tersebut di era 90-an.berikut adalah data karakter dan data user tekken 1 sampai dengan tekken 8 dari tahun ke tahun, berdasarkan data penjualan game dari situs bandi namco :</p>
+                        <p>Gambar di atas menunjukkan bahwa jumlah karakter mengalami peningkatan dari tahun ke tahun, dengan puncaknya pada Tekken 7 yang memiliki 50 karakter. Sementara itu, total penjualan tertinggi juga terjadi pada Tekken 7 dengan angka penjualan mencapai 12 juta kopi. Namun, meskipun Tekken 8 memiliki jumlah karakter yang masih cukup banyak (32 karakter), penjualannya justru menurun drastis hanya mencapai 3 juta kopi</p>
+                        <h3 className="font-headline text-xl font-semibold text-foreground pt-4">2.2.2 Konsep Counter Pick</h3>
+                        <p>Counter pick adalah strategi memilih karakter yang memiliki keunggulan matchup terhadap karakter lawan. Faktor-faktor yang mempengaruhi counter pick meliputi:</p>
+                    </div>
+                     <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {counterPickFactors.map((factor, index) => (
+                          <Card key={index} className="bg-background/50">
+                            <CardHeader>
+                              <CardTitle className="font-headline text-lg">{index + 1}. {factor.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-muted-foreground text-sm">
+                                {factor.description}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                </div>
+
+                 <div>
+                    <h2 className="font-headline text-2xl font-bold mb-4 flex items-center gap-3"><Database className="h-6 w-6 text-primary" /> 2.3 Dataset Karakteristik Karakter Tekken 8</h2>
+                     <div className="space-y-4 text-muted-foreground">
+                        <p>Dataset karakteristik karakter pada game Tekken 8 merupakan kumpulan data yang berisi informasi detail mengenai masing-masing karakter, dengan atribut gameplay seperti kecepatan, kekuatan, jangkauan, dan tingkat kesulitan. Data ini diambil langsung dari website resmi Bandai Namco Entertainment sebagai sumber informasi yang valid dan akurat. Tujuan dari pengumpulan dataset ini adalah untuk membangun sistem rekomendasi berbasis Content-Based Filtering (CBF) yang dapat memberikan saran karakter secara strategis berdasarkan parameter gameplay. Berikut adalah struktur tabel dataset yang digunakan:</p>
+                        <p>Untuk mendukung proses perhitungan dan analisis dalam aplikasi rekomendasi karakter game Tekken 8, data karakter diolah dan disimpan dalam bentuk tabel database menggunakan phpMyAdmin. Data ini mencakup 31 karakter yang masing-masing memiliki atribut numerik yang menggambarkan karakteristik gaya bermain, yaitu: Aggressiveness, Defensive, Grappling, Zoning, Difficulty, Combo Length, dan Mobility. Setiap atribut diberi nilai dalam skala 1–10, yang bersumber dari analisis manual berdasarkan informasi resmi dari Bandai Namco. Tabel ini kemudian dimasukkan ke dalam sistem database MySQL untuk mempermudah proses pencarian, pengambilan data, dan penghitungan algoritma Based-content filtering (BCF) dalam menentukan karakter yang cocok digunakan sebagai counter pick terhadap karakter lawan,berikut dataset yang sudah di konversi kedalam tabel di database mysql :</p>
+                        <p>Dengan dataset ini, sistem rekomendasi dapat mengkalkulasi jarak kemiripan antar karakter, sehingga mampu menghasilkan saran karakter counter pick secara cerdas dan berbasis data yang objektif.</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h2 className="font-headline text-2xl font-bold mb-4 flex items-center gap-3"><Cpu className="h-6 w-6 text-primary" /> 2.4 Algoritma Content-Based Filtering (CBF)</h2>
+                     <div className="space-y-4 text-muted-foreground">
+                        <p>Content-Based Filtering adalah metode sistem rekomendasi yang memberikan rekomendasi berdasarkan analisis karakteristik atau fitur dari item yang akan direkomendasikan. Dalam konteks sistem rekomendasi karakter Tekken, CBF akan menganalisis profil karakteristik gameplay setiap karakter untuk menemukan karakter yang memiliki atribut counter yang optimal.Berikut adalah gambaran algoritma content based filtering :</p>
+                        <h3 className="font-headline text-xl font-semibold text-foreground pt-4">Penjelasan Flowchart:</h3>
+                    </div>
+                    <div className="mt-8 grid gap-4 md:grid-cols-2">
+                        {flowchartSteps.map((step, index) => (
+                           <Card key={index} className="flex flex-col bg-background/50">
+                            <CardHeader>
+                              <CardTitle className="font-headline text-lg flex items-center gap-2">
+                                <div className="flex-shrink-0 bg-secondary p-2 rounded-full w-max">
+                                    <ListOrdered className="h-5 w-5 text-primary" />
+                                </div>
+                                {step.title}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-muted-foreground text-sm">
+                                {step.description}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                </div>
+            </article>
           </div>
         </section>
       </main>
