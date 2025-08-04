@@ -48,14 +48,14 @@ const bottomNavItems = [
   { href: "/dashboard/settings", icon: Settings, label: "Pengaturan" },
 ];
 
-// Mock user data for bypass
+// Mock user data for bypass - Now simulating a Petugas RT/RW
 const mockUser: Omit<User, "password_hash"> = {
-  id: 'user-bypass',
-  name: 'Developer',
-  email: 'dev@example.com',
-  role: 'Admin Desa' as const,
-  rtRw: '-',
-  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+  id: 'user-1',
+  name: 'Ahmad Fauzi',
+  email: 'ahmad.f@example.com',
+  role: 'Petugas RT/RW' as const,
+  rtRw: '001/001',
+  avatarUrl: 'https://placehold.co/100x100.png?text=AF'
 };
 
 

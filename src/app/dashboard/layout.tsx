@@ -6,14 +6,14 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { getCurrentUser } from "@/server/actions";
 import { redirect } from "next/navigation";
 
-// Mock user data for bypass
+// Mock user for bypass - Now simulating a Petugas RT/RW
 const mockUser = {
-  id: 'user-bypass',
-  name: 'Developer',
-  email: 'dev@example.com',
-  role: 'Admin Desa' as const,
-  rtRw: '-',
-  avatarUrl: 'https://placehold.co/100x100.png?text=D'
+  id: 'user-1',
+  name: 'Ahmad Fauzi',
+  email: 'ahmad.f@example.com',
+  role: 'Petugas RT/RW' as const,
+  rtRw: '001/001',
+  avatarUrl: 'https://placehold.co/100x100.png?text=AF'
 };
 
 export default async function DashboardLayout({ children }: PropsWithChildren) {
