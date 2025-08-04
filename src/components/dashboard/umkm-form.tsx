@@ -61,6 +61,7 @@ export function UmkmForm({ defaultValues, currentUser }: { defaultValues?: UMKM,
       status: defaultValues?.status || "aktif",
       legality: defaultValues?.legality || "Sedang Diproses",
       startDate: defaultValues?.startDate || "",
+      endDate: defaultValues?.endDate || "",
       employeeCount: defaultValues?.employeeCount || undefined,
       description: defaultValues?.description || "",
       imageUrl: defaultValues?.imageUrl || "",
@@ -312,7 +313,7 @@ export function UmkmForm({ defaultValues, currentUser }: { defaultValues?: UMKM,
                 </FormItem>
               )}
             />
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
                   name="status"
@@ -365,20 +366,6 @@ export function UmkmForm({ defaultValues, currentUser }: { defaultValues?: UMKM,
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tanggal Berdiri Usaha</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
-                      </FormControl>
-                       <FormDescription>Opsional</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                  <FormField
                   control={form.control}
                   name="employeeCount"
@@ -392,6 +379,36 @@ export function UmkmForm({ defaultValues, currentUser }: { defaultValues?: UMKM,
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+            </div>
+             <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Tanggal Berdiri Usaha</FormLabel>
+                        <FormControl>
+                            <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                        </FormControl>
+                        <FormDescription>Opsional</FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Berlaku Hingga</FormLabel>
+                        <FormControl>
+                            <Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ''} />
+                        </FormControl>
+                        <FormDescription>Opsional</FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                 />
             </div>
              <div className="grid md:grid-cols-2 gap-6">

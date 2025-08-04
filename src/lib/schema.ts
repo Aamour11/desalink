@@ -20,6 +20,7 @@ export const umkmSchema = z.object({
     required_error: "Status legalitas harus dipilih.",
   }),
   startDate: z.string().optional(),
+  endDate: z.string().optional(),
   employeeCount: z.coerce.number().int().positive().optional(),
   description: z.string().optional(),
   imageUrl: z.string().optional(),

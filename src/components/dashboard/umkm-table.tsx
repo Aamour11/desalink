@@ -299,6 +299,13 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
+                                    <Calendar className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Berlaku Hingga</p>
+                                        <p className="text-muted-foreground">{selectedUmkm.endDate ? format(new Date(selectedUmkm.endDate), "d MMMM yyyy", { locale: indonesiaLocale }) : '-'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
                                     <Hash className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
                                     <div>
                                         <p className="font-semibold">NIB</p>

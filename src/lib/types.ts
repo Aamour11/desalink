@@ -11,6 +11,7 @@ export type UMKM = {
   status: "aktif" | "tidak aktif";
   legality: "Lengkap" | "Tidak Lengkap" | "Sedang Diproses";
   startDate?: string;
+  endDate?: string;
   employeeCount: number;
   description?: string;
   imageUrl: string;
