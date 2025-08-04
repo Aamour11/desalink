@@ -50,16 +50,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { setOpenMobile, user } = useSidebar();
-  const [isOriginalUserAdmin, setIsOriginalUserAdmin] = React.useState(false);
-
-  React.useEffect(() => {
-    // This logic must run on the client side.
-    const sessionCookie = document.cookie.split('; ').find(row => row.startsWith('session_id='));
-    const sessionUserId = sessionCookie ? sessionCookie.split('=')[1] : null;
-    setIsOriginalUserAdmin(sessionUserId === 'user-admin');
-  }, []);
-
-
+  
   const handleNavigate = (href: string) => {
     router.push(href);
     setOpenMobile(false); 
@@ -83,6 +74,9 @@ export function DashboardSidebar() {
   };
 
   const isDisplayingAsAdmin = user?.role === "Admin Desa";
+  // The original user is the admin if their actual ID is 'user-admin'.
+  // The `user` object might be a simulated one, but its ID remains consistent for this check.
+  const isOriginalUserAdmin = user?.id === 'user-admin';
 
   return (
     <Sidebar>
