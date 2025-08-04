@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut } from "@/server/actions";
+import React from "react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -49,6 +50,15 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { setOpenMobile, user } = useSidebar();
+  const [isOriginalUserAdmin, setIsOriginalUserAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    // This logic must run on the client side.
+    const sessionCookie = document.cookie.split('; ').find(row => row.startsWith('session_id='));
+    const sessionUserId = sessionCookie ? sessionCookie.split('=')[1] : null;
+    setIsOriginalUserAdmin(sessionUserId === 'user-admin');
+  }, []);
+
 
   const handleNavigate = (href: string) => {
     router.push(href);
@@ -61,15 +71,10 @@ export function DashboardSidebar() {
   };
   
   const handleRoleSwitch = () => {
-    // Get the original logged-in user's role from the user object passed by the provider
-    // This is more reliable than reading another cookie.
-    const currentActiveRole = user?.role === 'Admin Desa' ? 'admin' : 'petugas';
-    const newRole = currentActiveRole === 'admin' ? 'petugas' : 'admin';
-    
-    // Set cookie to notify middleware of the desired role for the next request
+    // This logic is safe as it's triggered by a user click, which is always client-side.
+    const newRole = user?.role === 'Admin Desa' ? 'petugas' : 'admin';
     document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
     
-    // Force a full page reload to ensure all server components re-render with the new role
     if (newRole === 'petugas') {
       window.location.href = '/dashboard/umkm';
     } else {
@@ -77,14 +82,6 @@ export function DashboardSidebar() {
     }
   };
 
-  // The user object from the context already reflects the *original* logged-in user.
-  // We need to determine if the *original* user was an admin to show the button.
-  // The actual displayed role (in the header, etc.) is based on what `getCurrentUser` returns,
-  // which can be the simulated role.
-  const sessionUserId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
-  const isOriginalUserAdmin = sessionUserId === 'user-admin';
-
-  // This reflects the role currently being displayed
   const isDisplayingAsAdmin = user?.role === "Admin Desa";
 
   return (

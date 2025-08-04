@@ -48,15 +48,19 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     
     // Fallback for demo mode (no one logged in)
     if (!sessionUserId) {
-        return mockUsers.find(u => u.id === 'user-admin') || null;
+        return mockUsers.find(u => u.role === 'Admin Desa') || null;
     }
 
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
+     if (!originalUser) {
+        // This case should not happen if session is valid, but good to handle.
+        return null; 
+    }
     
     // If the original user is not an Admin, they can't switch roles.
     // Always return their own user data.
-    if (originalUser?.role !== 'Admin Desa') {
-      return originalUser || null;
+    if (originalUser.role !== 'Admin Desa') {
+      return originalUser;
     }
 
     // If the original user IS an admin, check if they want to simulate another role.
@@ -65,7 +69,7 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     if (activeRole === 'petugas') {
       // Find the first Petugas user to act as the mock.
       const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
-      return mockPetugas || null; // Return mock Petugas or null if none found
+      return mockPetugas || originalUser; // Return mock Petugas, or fallback to admin if none found
     }
 
     // If no simulation is active, or role is 'admin', return the original admin user.
