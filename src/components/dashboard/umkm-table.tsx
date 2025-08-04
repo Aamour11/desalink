@@ -179,7 +179,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                 <SelectItem value="tidak aktif">Tidak Aktif</SelectItem>
               </SelectContent>
             </Select>
-             {isAdmin && (
+             
               <>
                <Select
                 defaultValue={rwFilter}
@@ -211,7 +211,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                     </SelectContent>
                 </Select>
               </>
-             )}
+             
           </div>
           <div className="flex gap-2">
               <Button variant="outline" onClick={handleExportCSV}>
@@ -410,5 +410,3 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
     </>
   );
 }
-
-    
