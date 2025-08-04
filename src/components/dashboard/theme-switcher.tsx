@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -26,7 +27,7 @@ export function ThemeSwitcher() {
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       <Button
         variant={theme === "light" ? "default" : "outline"}
         onClick={() => setTheme("light")}
