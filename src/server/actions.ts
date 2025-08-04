@@ -1,8 +1,9 @@
 'use server';
+require('dotenv').config();
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies } from "next/cookies";
 import { RowDataPacket } from "mysql2";
 
 import pool from "@/lib/db";
