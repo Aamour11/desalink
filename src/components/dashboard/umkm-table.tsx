@@ -52,6 +52,9 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
       params.set(key, value);
     } else {
       params.delete(key);
+       if (key === 'rw') {
+        params.delete('rt');
+      }
     }
     replace(`${pathname}?${params.toString()}`);
   };
@@ -60,23 +63,34 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
   const typeFilter = searchParams.get("type") || "all";
   const statusFilter = searchParams.get("status") || "all";
   const rwFilter = searchParams.get("rw") || "all";
+  const rtFilter = searchParams.get("rt") || "all";
+
 
   const allRws = React.useMemo(() => {
     const rws = new Set(data.map(umkm => umkm.rtRw.split('/')[1]));
     return Array.from(rws).sort();
   }, [data]);
+  
+  const rtsInSelectedRw = React.useMemo(() => {
+    if (rwFilter === 'all') return [];
+    const rts = new Set(data.filter(umkm => umkm.rtRw.split('/')[1] === rwFilter).map(umkm => umkm.rtRw.split('/')[0]));
+    return Array.from(rts).sort();
+  }, [data, rwFilter]);
+
 
   const filteredUmkm: UMKM[] = React.useMemo(() => 
     data.filter((umkm) => {
+      const [rt, rw] = umkm.rtRw.split('/');
       const matchesQuery =
         umkm.businessName.toLowerCase().includes(query.toLowerCase()) ||
         umkm.ownerName.toLowerCase().includes(query.toLowerCase()) ||
         umkm.rtRw.includes(query);
       const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
       const matchesStatus = statusFilter === "all" || umkm.status === statusFilter;
-      const matchesRw = rwFilter === "all" || umkm.rtRw.split('/')[1] === rwFilter;
-      return matchesQuery && matchesType && matchesStatus && matchesRw;
-  }), [data, query, typeFilter, statusFilter, rwFilter]);
+      const matchesRw = rwFilter === "all" || rw === rwFilter;
+      const matchesRt = rtFilter === "all" || rt === rtFilter;
+      return matchesQuery && matchesType && matchesStatus && matchesRw && matchesRt;
+  }), [data, query, typeFilter, statusFilter, rwFilter, rtFilter]);
 
 
   const handleExportCSV = () => {
@@ -166,6 +180,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
               </SelectContent>
             </Select>
              {isAdmin && (
+              <>
                <Select
                 defaultValue={rwFilter}
                 onValueChange={(value) => handleFilter("rw", value)}
@@ -180,6 +195,22 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                     ))}
                 </SelectContent>
                 </Select>
+                 <Select
+                    defaultValue={rtFilter}
+                    onValueChange={(value) => handleFilter("rt", value)}
+                    disabled={rwFilter === 'all'}
+                    >
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Semua RT" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Semua RT</SelectItem>
+                        {rtsInSelectedRw.map(rt => (
+                            <SelectItem key={rt} value={rt}>RT {rt}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+              </>
              )}
           </div>
           <div className="flex gap-2">
