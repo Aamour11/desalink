@@ -14,13 +14,22 @@ export function middleware(request: NextRequest) {
 
   // If the user is trying to access a protected route without a session, redirect to the login page.
   if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionCookie) {
-    // Store the intended URL to redirect after login, if desired.
     const loginUrl = new URL('/login', request.url)
-    // loginUrl.searchParams.set('from', request.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
  
-  return NextResponse.next()
+  const response = NextResponse.next();
+
+  // This is a workaround to apply headers set in server actions
+  // In a real app, login/logout should ideally be API routes.
+  if (request.headers.has('Set-Cookie')) {
+    const newCookies = request.headers.get('Set-Cookie');
+    if (newCookies) {
+        response.headers.set('Set-Cookie', newCookies);
+    }
+  }
+
+  return response
 }
  
 export const config = {

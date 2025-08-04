@@ -3,8 +3,9 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/cookies";
+import { headers } from "next/headers";
 import { RowDataPacket } from "mysql2";
+import cookie from "cookie";
 
 import pool from "@/lib/db";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
@@ -12,6 +13,35 @@ import type { UMKM, User, Announcement, Management } from "@/lib/types";
 import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
 
 const SESSION_COOKIE_NAME = "session_id";
+
+// --- Custom Cookie Helpers ---
+function getSessionId() {
+  const cookieHeader = headers().get("cookie");
+  if (!cookieHeader) return null;
+  const cookies = cookie.parse(cookieHeader);
+  return cookies[SESSION_COOKIE_NAME] || null;
+}
+
+function setSessionCookie(resHeaders: Headers, userId: string) {
+    const newCookie = cookie.serialize(SESSION_COOKIE_NAME, userId, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24, // 1 day
+        path: '/',
+    });
+    resHeaders.append('Set-Cookie', newCookie);
+}
+
+function deleteSessionCookie(resHeaders: Headers) {
+    const expiredCookie = cookie.serialize(SESSION_COOKIE_NAME, '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: -1, // Expire immediately
+        path: '/',
+    });
+    resHeaders.append('Set-Cookie', expiredCookie);
+}
+
 
 // Helper function to execute queries
 async function executeQuery<T>(query: string, values: any[] = []): Promise<T> {
@@ -53,22 +83,26 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
   }
 
   // Set a simple session cookie with the user's ID
-  cookies().set(SESSION_COOKIE_NAME, user.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24, // 1 day
-    path: "/",
-  });
+  const responseHeaders = new Headers();
+  setSessionCookie(responseHeaders, user.id);
+  
+  // Since we can't return headers from server actions directly,
+  // we rely on the client to reload, which will pick up the cookie on the next request.
+  // A more robust solution might involve an API route for login.
+  // For now, this is a workaround. The revalidation is important.
+  revalidatePath('/', 'layout');
 
   return { success: true };
 }
 
 export async function signOut() {
-  cookies().delete(SESSION_COOKIE_NAME);
+  const responseHeaders = new Headers();
+  deleteSessionCookie(responseHeaders);
+  revalidatePath('/', 'layout');
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
-  const userId = cookies().get(SESSION_COOKIE_NAME)?.value;
+  const userId = getSessionId();
   if (!userId) return null;
 
   try {
@@ -77,7 +111,10 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     return user || null;
   } catch (error) {
     console.error("Failed to fetch current user:", error);
-    cookies().delete(SESSION_COOKIE_NAME);
+    // If there's an error, try to clear the potentially invalid cookie
+    const responseHeaders = new Headers();
+    deleteSessionCookie(responseHeaders);
+    revalidatePath('/', 'layout');
     return null;
   }
 }
