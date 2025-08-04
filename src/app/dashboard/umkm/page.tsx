@@ -28,17 +28,20 @@ export default async function UmkmPage() {
         <div>
           <h1 className="font-headline text-3xl font-bold tracking-tight">Data UMKM</h1>
           <p className="text-muted-foreground mt-1">
-            Kelola, cari, dan filter data UMKM di Desa Anda.
+            {canAddUmkm 
+              ? `Kelola data UMKM untuk wilayah ${currentUser.rtRw}.`
+              : "Kelola, cari, dan filter data UMKM di Desa Anda."
+            }
           </p>
         </div>
-        {canAddUmkm && (
-            <Button asChild className="w-full sm:w-auto">
-                <Link href="/dashboard/umkm/new">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Tambah UMKM
-                </Link>
-            </Button>
-        )}
+        
+        <Button asChild className="w-full sm:w-auto">
+            <Link href="/dashboard/umkm/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Tambah UMKM
+            </Link>
+        </Button>
+       
       </div>
 
       <UmkmTable data={allUmkm} currentUser={currentUser} />
