@@ -57,6 +57,7 @@ const userRefinement = (data: z.infer<typeof baseUserSchema>) => {
     if (data.role === 'Petugas RT/RW') {
         return !!data.rtRw && /^\d{3}\/\d{3}$/.test(data.rtRw);
     }
+    // For Admin Desa, rtRw can be optional or '-'
     return true;
 };
 const refinementOptions = {
