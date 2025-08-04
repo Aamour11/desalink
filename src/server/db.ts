@@ -9,7 +9,7 @@ export let mockUsers: User[] = [
         id: "user-1",
         name: "Admin Desa",
         email: "admin@desa.com",
-        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
+        password_hash: '$2a$10$8UpR7g6JkTvsA6Vugm341u.3JtG1zUnzC3QdO3pIZ2z2f5t7B/0Pa', // Hashed "password123"
         role: "Admin Desa",
         rtRw: "-",
         avatarUrl: "https://placehold.co/100x100.png?text=A",
@@ -18,7 +18,7 @@ export let mockUsers: User[] = [
         id: "user-2",
         name: "Budi Santoso",
         email: "budi@desa.com",
-        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
+        password_hash: '$2a$10$8UpR7g6JkTvsA6Vugm341u.3JtG1zUnzC3QdO3pIZ2z2f5t7B/0Pa', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "001/001",
         avatarUrl: "https://placehold.co/100x100.png?text=B",
@@ -27,7 +27,7 @@ export let mockUsers: User[] = [
         id: "user-3",
         name: "Citra Lestari",
         email: "citra@desa.com",
-        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
+        password_hash: '$2a$10$8UpR7g6JkTvsA6Vugm341u.3JtG1zUnzC3QdO3pIZ2z2f5t7B/0Pa', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "001/002",
         avatarUrl: "https://placehold.co/100x100.png?text=C",
@@ -36,7 +36,7 @@ export let mockUsers: User[] = [
         id: "user-4",
         name: "Dedi Kurniawan",
         email: "dedi@desa.com",
-        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
+        password_hash: '$2a$10$8UpR7g6JkTvsA6Vugm341u.3JtG1zUnzC3QdO3pIZ2z2f5t7B/0Pa', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "002/001",
         avatarUrl: "https://placehold.co/100x100.png?text=D",
@@ -45,7 +45,7 @@ export let mockUsers: User[] = [
         id: "user-5",
         name: "Eka Wulandari",
         email: "eka@desa.com",
-        password_hash: '$2a$10$wOK.i4yJZRcM3G9V4o/C8.LhJMAZH1DltJBPpAEKjVz5tO3O4ISiG', // Hashed "password123"
+        password_hash: '$2a$10$8UpR7g6JkTvsA6Vugm341u.3JtG1zUnzC3QdO3pIZ2z2f5t7B/0Pa', // Hashed "password123"
         role: "Petugas RT/RW",
         rtRw: "003/001",
         avatarUrl: "https://placehold.co/100x100.png?text=E",
