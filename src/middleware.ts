@@ -14,13 +14,15 @@ export function middleware(request: NextRequest) {
 
   // If the user is trying to access a protected route without a session, redirect to the login page.
   if (request.nextUrl.pathname.startsWith('/dashboard') && !sessionCookie) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    // Store the intended URL to redirect after login, if desired.
+    const loginUrl = new URL('/login', request.url)
+    // loginUrl.searchParams.set('from', request.nextUrl.pathname)
+    return NextResponse.redirect(loginUrl)
   }
  
   return NextResponse.next()
 }
  
-// See "Matching Paths" below to learn more
 export const config = {
   matcher: ['/dashboard/:path*', '/login', '/signup', '/signup-petugas'],
 }
