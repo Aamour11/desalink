@@ -43,6 +43,29 @@ CREATE TABLE IF NOT EXISTS umkm (
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`;
 
+const createManagementTableQuery = `
+CREATE TABLE IF NOT EXISTS management (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  position VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  email VARCHAR(255),
+  avatarUrl VARCHAR(255),
+  aiHint VARCHAR(255)
+);`;
+
+const insertManagementDataQuery = `
+INSERT INTO management (name, position, phone, email, avatarUrl, aiHint) VALUES
+('Bapak Widodo', 'Ketua RW 01', '0812-3456-7890', 'widodo@example.com', 'https://placehold.co/100x100.png?text=W', 'man portrait'),
+('Bapak Susanto', 'Ketua RW 02', '0823-4567-8901', 'susanto@example.com', 'https://placehold.co/100x100.png?text=S', 'man portrait'),
+('Ibu Hartini', 'Ketua RW 03', '0834-5678-9012', 'hartini@example.com', 'https://placehold.co/100x100.png?text=H', 'woman portrait'),
+('Bapak Prabowo', 'Ketua RW 04', '0812-3456-7890', 'prabowo@example.com', 'https://placehold.co/100x100.png?text=P', 'man portrait'),
+('Bapak Gibran', 'Ketua RW 05', '0823-4567-8901', 'gibran@example.com', 'https://placehold.co/100x100.png?text=G', 'man portrait'),
+('Ibu Puan', 'Ketua RW 06', '0834-5678-9012', 'puan@example.com', 'https://placehold.co/100x100.png?text=P', 'woman portrait')
+ON DUPLICATE KEY UPDATE name=name;
+`;
+
+
 // Main function to connect and create tables
 async function initializeDatabase() {
   let connection;
@@ -73,6 +96,15 @@ async function initializeDatabase() {
     // Create the umkm table
     await connection.execute(createUmkmTableQuery);
     console.log('Table "umkm" created or already exists.');
+    
+    // Create the management table
+    await connection.execute(createManagementTableQuery);
+    console.log('Table "management" created or already exists.');
+
+    // Insert initial management data
+    await connection.execute(insertManagementDataQuery);
+    console.log('Initial management data inserted or already exists.');
+
 
     console.log('\nDatabase initialization complete! You can now run the application.');
 

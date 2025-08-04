@@ -11,9 +11,9 @@ export type UMKM = {
   status: "aktif" | "tidak aktif";
   legality: "Lengkap" | "Tidak Lengkap" | "Sedang Diproses";
   startDate?: string;
-  employeeCount?: number;
+  employeeCount: number;
   description?: string;
-  imageUrl?: string;
+  imageUrl: string;
   legalityDocumentUrl?: string;
   createdAt: string;
 };
@@ -32,4 +32,14 @@ export type Announcement = {
     id: string;
     message: string;
     createdAt: string;
+}
+
+export type Management = {
+    id: number;
+    name: string;
+    position: string;
+    phone: string;
+    email: string;
+    avatarUrl: string;
+    aiHint: string;
 }

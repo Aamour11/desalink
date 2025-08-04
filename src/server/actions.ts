@@ -10,7 +10,7 @@ import { RowDataPacket } from "mysql2";
 
 import pool from "@/lib/db";
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
-import type { UMKM, User, Announcement } from "@/lib/types";
+import type { UMKM, User, Announcement, Management } from "@/lib/types";
 import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-that-is-long-enough";
@@ -337,4 +337,8 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
     // This remains mock as there is no announcements table
     if (mockAnnouncements.length === 0) return null;
     return mockAnnouncements[0];
+}
+
+export async function getManagementData(): Promise<Management[]> {
+    return await executeQuery<Management[] & RowDataPacket[]>("SELECT * FROM management ORDER BY id");
 }
