@@ -75,18 +75,17 @@ export function DashboardSidebar() {
   const handleLogout = async () => {
     // Clear role preference on logout
     localStorage.removeItem("activeRole");
+    document.cookie = 'activeRole=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     await signOut();
     router.push("/login");
   };
   
   const handleRoleSwitch = () => {
     const newRole = activeRole === 'admin' ? 'petugas' : 'admin';
-    // 1. Store the new role preference on the client
     localStorage.setItem("activeRole", newRole);
-    // 2. Set a cookie that the middleware can read to inform the server render
     document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
     
-    // 3. Force a full page reload to ensure the server re-renders with the new role context
+    // Force a full page reload to ensure the server re-renders with the new role context
     if (newRole === 'petugas') {
       window.location.href = '/dashboard/umkm';
     } else {
@@ -94,12 +93,9 @@ export function DashboardSidebar() {
     }
   };
 
-  // The role displayed in the UI is based on the simulated role from localStorage.
   const isDisplayingAsAdmin = activeRole === 'admin';
-  // The ability to switch roles is based on the user's *actual, original* role.
   const isOriginalUserAdmin = user?.role === "Admin Desa";
 
-  // Prevent rendering the switch button on the server to avoid hydration mismatch
   if (!isClient) {
       return (
         <Sidebar>
@@ -121,7 +117,7 @@ export function DashboardSidebar() {
           <div className="bg-primary p-2 rounded-lg">
             <LogoIcon className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[state=expanded]:hidden">
+          <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[state=expanded]:block hidden">
             DesaLink
           </span>
         </Link>
@@ -129,7 +125,6 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => {
-            // Use the client-side activeRole to determine menu visibility
             if (item.adminOnly && !isDisplayingAsAdmin) {
               return null;
             }
@@ -151,7 +146,6 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
         <SidebarMenu>
-           {/* Only show the switch button if the original user is an admin */}
            {isOriginalUserAdmin && (
              <SidebarMenuItem>
                 <SidebarMenuButton
