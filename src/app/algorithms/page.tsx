@@ -23,54 +23,54 @@ export default function AlgorithmsPage() {
   const counterPickFactors = [
     {
       title: "Agresivitas",
-      description: "Menentukan gaya bermain (defensif, seimbang, agresif). Karakter agresif dapat diatasi oleh karakter dengan kemampuan bertahan dan serangan balik (punishment) yang kuat."
+      description: "Menentukan apakah gaya bermain karakter cenderung defensif, seimbang, atau agresif. Karakter yang sangat agresif mungkin dapat diatasi oleh karakter dengan kemampuan bertahan dan serangan balik (punishment) yang kuat."
     },
     {
       title: "Defensiveness",
-      description: "Merujuk pada kekuatan bertahan karakter. Karakter dengan pertahanan rendah rentan terhadap tekanan, sementara yang bertahan tinggi bisa menjadi counter bagi lawan dengan serangan cepat."
+      description: "Merujuk pada seberapa kuat kemampuan bertahan seorang karakter. Karakter dengan pertahanan rendah (low) rentan terhadap tekanan beruntun, sementara karakter dengan pertahanan tinggi (high) bisa menjadi counter bagi lawan yang mengandalkan serangan cepat namun kurang kuat."
     },
     {
       title: "Gaya Bertarung (Grappling vs. Striker)",
-      description: "Karakter tipe Grappler unggul dalam jarak dekat, seringkali menjadi counter efektif bagi tipe Striker yang mengandalkan pukulan dari jarak menengah."
+      description: "Ini adalah spektrum gaya bertarung utama. Karakter tipe Grappler yang unggul dalam pertarungan jarak dekat seringkali menjadi counter efektif bagi tipe Striker yang mengandalkan pukulan dan tendangan dari jarak menengah."
     },
     {
       title: "Range Control",
-      description: "Kemampuan mengontrol jarak pertarungan. Karakter dengan jangkauan serangan jauh secara alami unggul melawan karakter yang harus mendekat untuk menyerang."
+      description: "Kemampuan karakter untuk mengontrol jarak pertarungan. Karakter dengan jangkauan serangan jauh (Long Range) secara alami unggul melawan karakter yang harus mendekat untuk menyerang (Close Range)."
     },
     {
       title: "Skill Level & Combo Complexity",
-      description: "Tingkat kesulitan menguasai karakter. Karakter dengan kombo sederhana namun efektif bisa menjadi pilihan counter yang baik melawan karakter yang kompleks."
+      description: "Tingkat kesulitan dalam menguasai karakter dan kompleksitas kombonya. Terkadang, karakter dengan kombo sederhana namun efektif dapat menjadi pilihan counter yang baik melawan karakter kompleks yang membutuhkan eksekusi tinggi dari pemain lawan."
     },
     {
       title: "Mobility",
-      description: "Tingkat pergerakan dan kelincahan. Karakter cepat tipe Rushdown dirancang untuk menekan lawan dan menjadi counter bagi karakter yang lambat."
+      description: "Tingkat pergerakan dan kelincahan karakter. Karakter cepat tipe Rushdown dirancang untuk menekan lawan secara terus-menerus dan menjadi counter bagi karakter lambat tipe Tank atau karakter yang butuh ruang untuk mengatur serangan."
     }
   ];
   
   const flowchartSteps = [
     {
       title: "1. User Input",
-      description: "Pengguna mengisi form preferensi gaya bermain (agresivitas, defensiveness, grappling, zoning, dll.) dan bisa memasukkan karakter lawan untuk counter-pick."
+      description: "Pengguna terlebih dahulu mengisi form yang tersedia dengan preferensi gaya bermain. Form ini terdiri dari beberapa parameter, seperti tingkat agresivitas, defensiveness (pertahanan), grappling, zoning (penguasaan jarak), tingkat kesulitan, panjang kombinasi serangan (combo length), dan mobilitas. Pilihan karakter lawan (jika ada) juga dapat dimasukkan sebagai opsi tambahan untuk kebutuhan counter-pick."
     },
     {
-      title: "2. Ambil Semua Karakter",
-      description: "Sistem mengambil seluruh data karakter dari database, di mana setiap karakter memiliki nilai atribut yang sesuai dengan parameter input pengguna."
+      title: "2. Ambil Semua Karakter dari Database",
+      description: "Setelah menerima input pengguna, sistem mengambil seluruh data karakter dari tabel characters di database. Setiap karakter memiliki nilai atribut yang sama dengan parameter yang diinput pengguna. Nilai-nilai ini digunakan sebagai profil konten (item) untuk proses perbandingan."
     },
     {
       title: "3. Hitung Selisih Atribut",
-      description: "Sistem menghitung selisih antara preferensi pengguna dan atribut setiap karakter dengan rumus: Kompatibilitas = 10 – |nilai user – nilai karakter|."
+      description: "Sistem menghitung selisih antara nilai preferensi pengguna dan nilai atribut dari setiap karakter. Perhitungan ini dilakukan dengan rumus dasar: Kompabiliti = 10 – |nilai user – nilai karakter|. Hasil dari tiap atribut dijumlahkan untuk membentuk total skor kecocokan dasar karakter."
     },
     {
       title: "4. Skor Kecocokan (CBF Score)",
-      description: "Skor total dari perhitungan atribut dinormalisasi menjadi nilai persentase (0–100%) untuk menggambarkan tingkat kecocokan."
+      description: "Skor total dari perhitungan atribut dinormalisasi menjadi nilai persentase (0–100%) untuk menggambarkan tingkat kecocokan karakter secara keseluruhan dengan preferensi pengguna."
     },
     {
       title: "5. Urutkan Skor",
-      description: "Semua karakter diurutkan berdasarkan skor akhir dari yang tertinggi ke terendah untuk menemukan yang paling cocok."
+      description: "Semua karakter kemudian diurutkan berdasarkan skor akhir (skor kecocokan + bonus counter-pick, jika ada) dari yang tertinggi ke terendah."
     },
     {
       title: "6. Tampilkan Top 5 Rekomendasi",
-      description: "Sistem menampilkan lima karakter teratas yang paling cocok, lengkap dengan persentase kecocokan dan alasan mengapa karakter tersebut direkomendasikan."
+      description: "Akhirnya, sistem menampilkan lima karakter teratas yang paling cocok berdasarkan skor akhir tersebut. Tampilan rekomendasi juga menyertakan persentase kecocokan, deskripsi gaya bermain karakter, serta alasan kenapa karakter tersebut cocok dengan preferensi pengguna dan Algoritma berakhir."
     }
   ];
 
@@ -151,7 +151,7 @@ export default function AlgorithmsPage() {
                     <h2 className="font-headline text-2xl font-bold mb-4 flex items-center gap-3"><Cpu className="h-6 w-6 text-primary" /> 2.4 Algoritma Content-Based Filtering (CBF)</h2>
                      <div className="space-y-4 text-muted-foreground">
                         <p>Content-Based Filtering adalah metode sistem rekomendasi yang memberikan rekomendasi berdasarkan analisis karakteristik atau fitur dari item yang akan direkomendasikan. Dalam konteks sistem rekomendasi karakter Tekken, CBF akan menganalisis profil karakteristik gameplay setiap karakter untuk menemukan karakter yang memiliki atribut counter yang optimal.Berikut adalah gambaran algoritma content based filtering :</p>
-                        <h3 className="font-headline text-xl font-semibold text-foreground pt-4">Penjelasan Flowchart:</h3>
+                        <h3 className="font-headline text-xl font-semibold text-foreground pt-4">Penjelasan flowchart pada gambar 2.4 di atas:</h3>
                     </div>
                     <div className="mt-8 grid gap-4 md:grid-cols-2">
                         {flowchartSteps.map((step, index) => (
