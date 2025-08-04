@@ -61,20 +61,25 @@ export function DashboardSidebar() {
   };
   
   const handleRoleSwitch = () => {
+    // This logic relies on the fact that only an Admin can see the switch button.
     const currentActiveRoleCookie = document.cookie.split('; ').find(row => row.startsWith('activeRole='))?.split('=')[1];
     const newRole = currentActiveRoleCookie === 'admin' ? 'petugas' : 'admin';
     
     document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
     
-    // Navigate to the most relevant page for the new role
+    // Force a full page reload to ensure all server components re-render with the new role
     if (newRole === 'petugas') {
-      router.push('/dashboard/umkm');
+      window.location.href = '/dashboard/umkm';
     } else {
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     }
   };
 
-  const userIsAdmin = user?.role === "Admin Desa";
+  // Determine if the original logged-in user is an Admin, regardless of the switched role.
+  // We need to check the user ID because the user object itself might be a mock petugas.
+  const isOriginalUserAdmin = user?.id === 'user-admin';
+  // Determine the currently displayed role
+  const isDisplayingAsAdmin = user?.role === "Admin Desa";
 
   return (
     <Sidebar>
@@ -91,7 +96,7 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => {
-            if (item.adminOnly && !userIsAdmin) {
+            if (item.adminOnly && !isDisplayingAsAdmin) {
               return null;
             }
             return (
@@ -112,17 +117,19 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
         <SidebarMenu>
-           <SidebarMenuItem>
-              <SidebarMenuButton
-                  variant="ghost"
-                  className="w-full justify-start"
-                  tooltip={{ children: userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
-                  icon={<Replace />}
-                  onClick={handleRoleSwitch}
-              >
-                {userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+           {isOriginalUserAdmin && (
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                    variant="ghost"
+                    className="w-full justify-start"
+                    tooltip={{ children: isDisplayingAsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
+                    icon={<Replace />}
+                    onClick={handleRoleSwitch}
+                >
+                  {isDisplayingAsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+           )}
 
           {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>

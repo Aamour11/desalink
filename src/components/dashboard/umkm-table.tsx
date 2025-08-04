@@ -80,6 +80,8 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
 
   const filteredUmkm: UMKM[] = React.useMemo(() => 
     data.filter((umkm) => {
+      // For Petugas, the data is already pre-filtered by `getUmkmData` action.
+      // So, we just apply the client-side filters on top of the pre-filtered data.
       const [rt, rw] = umkm.rtRw.split('/');
       const matchesQuery =
         umkm.businessName.toLowerCase().includes(query.toLowerCase()) ||
@@ -87,10 +89,13 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
         umkm.rtRw.includes(query);
       const matchesType = typeFilter === "all" || umkm.businessType === typeFilter;
       const matchesStatus = statusFilter === "all" || umkm.status === statusFilter;
-      const matchesRw = rwFilter === "all" || rw === rwFilter;
-      const matchesRt = rtFilter === "all" || rt === rtFilter;
+      
+      // For Admin, apply RT/RW filters. For Petugas, these filters are ignored.
+      const matchesRw = currentUser?.role === 'Admin Desa' ? (rwFilter === "all" || rw === rwFilter) : true;
+      const matchesRt = currentUser?.role === 'Admin Desa' ? (rtFilter === "all" || rt === rtFilter) : true;
+      
       return matchesQuery && matchesType && matchesStatus && matchesRw && matchesRt;
-  }), [data, query, typeFilter, statusFilter, rwFilter, rtFilter]);
+  }), [data, query, typeFilter, statusFilter, rwFilter, rtFilter, currentUser]);
 
 
   const handleExportCSV = () => {
@@ -130,8 +135,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
     doc.save('laporan-umkm.pdf');
   };
 
-  const isPetugas = currentUser?.role === 'Petugas RT/RW';
-  const isAdmin = currentUser?.role === 'Admin Desa';
+  const isAdminView = currentUser?.role === 'Admin Desa';
   
   const legalityInfo = {
     'Lengkap': { icon: <FileCheck2 className="h-5 w-5 text-green-600" />, text: "Lengkap", color: "success" },
@@ -180,49 +184,53 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
               </SelectContent>
             </Select>
              
-              <>
-               <Select
-                defaultValue={rwFilter}
-                onValueChange={(value) => handleFilter("rw", value)}
-                >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Semua RW" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">Semua RW</SelectItem>
-                    {allRws.map(rw => (
-                        <SelectItem key={rw} value={rw}>RW {rw}</SelectItem>
-                    ))}
-                </SelectContent>
-                </Select>
-                 <Select
-                    defaultValue={rtFilter}
-                    onValueChange={(value) => handleFilter("rt", value)}
-                    disabled={rwFilter === 'all'}
+              {isAdminView && (
+                <>
+                <Select
+                    defaultValue={rwFilter}
+                    onValueChange={(value) => handleFilter("rw", value)}
                     >
                     <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Semua RT" />
+                        <SelectValue placeholder="Semua RW" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Semua RT</SelectItem>
-                        {rtsInSelectedRw.map(rt => (
-                            <SelectItem key={rt} value={rt}>RT {rt}</SelectItem>
+                        <SelectItem value="all">Semua RW</SelectItem>
+                        {allRws.map(rw => (
+                            <SelectItem key={rw} value={rw}>RW {rw}</SelectItem>
                         ))}
                     </SelectContent>
-                </Select>
-              </>
+                    </Select>
+                    <Select
+                        defaultValue={rtFilter}
+                        onValueChange={(value) => handleFilter("rt", value)}
+                        disabled={rwFilter === 'all'}
+                        >
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Semua RT" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua RT</SelectItem>
+                            {rtsInSelectedRw.map(rt => (
+                                <SelectItem key={rt} value={rt}>RT {rt}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </>
+              )}
              
           </div>
-          <div className="flex gap-2">
-              <Button variant="outline" onClick={handleExportCSV}>
-                <FileDown className="mr-2 h-4 w-4" />
-                Ekspor CSV
-              </Button>
-              <Button variant="outline" onClick={handleExportPDF}>
-                <FileText className="mr-2 h-4 w-4" />
-                Ekspor PDF
-              </Button>
-          </div>
+          {isAdminView && (
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={handleExportCSV}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Ekspor CSV
+                </Button>
+                <Button variant="outline" onClick={handleExportPDF}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Ekspor PDF
+                </Button>
+            </div>
+          )}
         </div>
         <ScrollArea className="rounded-lg border whitespace-nowrap shadow-sm">
           <Table>
@@ -268,8 +276,8 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                       </Badge>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      {isPetugas && umkm.rtRw === currentUser?.rtRw && <UmkmTableActions umkmId={umkm.id} />}
-                      {isAdmin && <UmkmTableActions umkmId={umkm.id} />}
+                      {currentUser?.role === 'Petugas RT/RW' && umkm.rtRw === currentUser?.rtRw && <UmkmTableActions umkmId={umkm.id} />}
+                      {currentUser?.role === 'Admin Desa' && <UmkmTableActions umkmId={umkm.id} />}
                     </TableCell>
                   </TableRow>
                 ))

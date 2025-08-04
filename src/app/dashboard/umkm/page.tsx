@@ -25,6 +25,7 @@ export default async function UmkmPage({
     return <div>Loading...</div>; // Or redirect to login
   }
 
+  // A user can add UMKM if they are a Petugas, or an Admin simulating a Petugas
   const canAddUmkm = currentUser?.role === 'Petugas RT/RW';
 
   return (
