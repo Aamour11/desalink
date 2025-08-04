@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from "zod";
@@ -15,7 +14,7 @@ import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock
 
 // Throw an error if the JWT_SECRET is not set in the .env file
 if (!process.env.JWT_SECRET) {
-    throw new Error("FATAL ERROR: JWT_SECRET is not defined in .env file.");
+    throw new Error("FATAL ERROR: JWT_SECRET is not defined. Please ensure it is set in your .env file.");
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "1d";
