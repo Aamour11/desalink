@@ -269,6 +269,7 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {isPetugas && umkm.rtRw === currentUser?.rtRw && <UmkmTableActions umkmId={umkm.id} />}
+                      {isAdmin && <UmkmTableActions umkmId={umkm.id} />}
                     </TableCell>
                   </TableRow>
                 ))
@@ -409,3 +410,5 @@ export function UmkmTable({ data, currentUser }: { data: UMKM[], currentUser: Om
     </>
   );
 }
+
+    
