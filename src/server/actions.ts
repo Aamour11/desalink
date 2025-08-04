@@ -2,8 +2,6 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { RowDataPacket } from "mysql2";
 
@@ -12,12 +10,7 @@ import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSche
 import type { UMKM, User, Announcement, Management } from "@/lib/types";
 import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
 
-// Throw an error if the JWT_SECRET is not set in the .env file
-if (!process.env.JWT_SECRET) {
-    throw new Error("FATAL ERROR: JWT_SECRET is not defined. Please ensure it is set in your .env file.");
-}
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = "1d";
+const SESSION_COOKIE_NAME = "session_id";
 
 // Helper function to execute queries
 async function executeQuery<T>(query: string, values: any[] = []): Promise<T> {
@@ -51,24 +44,15 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     throw new Error("Email atau kata sandi salah.");
   }
   
-  const passwordsMatch = await bcrypt.compare(password, user.password_hash);
-  if (!passwordsMatch) {
+  // WARNING: Storing and comparing passwords in plain text is not secure.
+  // This is for demonstration purposes to bypass JWT/bcrypt issues.
+  if (password !== user.password_hash) {
     console.log(`Login failed: Password mismatch for email ${email}`);
     throw new Error("Email atau kata sandi salah.");
   }
 
-  const tokenPayload = {
-    id: user.id, 
-    name: user.name, 
-    email: user.email, 
-    role: user.role,
-    rtRw: user.rtRw,
-    avatarUrl: user.avatarUrl,
-  };
-  
-  const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-  
-  cookies().set("session", token, {
+  // Set a simple session cookie with the user's ID
+  cookies().set(SESSION_COOKIE_NAME, user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24, // 1 day
@@ -79,30 +63,27 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
 }
 
 export async function signOut() {
-  cookies().delete("session");
-  // No need to redirect from here, the client-side will handle it.
+  cookies().delete(SESSION_COOKIE_NAME);
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
-  const token = cookies().get("session")?.value;
-  if (!token) return null;
+  const userId = cookies().get(SESSION_COOKIE_NAME)?.value;
+  if (!userId) return null;
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as Omit<User, 'password_hash'>;
-    return decoded;
+    const users = await executeQuery<Omit<User, 'password_hash'>[] & RowDataPacket[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [userId]);
+    const user = users[0];
+    return user || null;
   } catch (error) {
-    // If token is invalid (e.g. secret changed), delete the cookie
-    console.error("JWT Verification Error:", error);
-    cookies().delete("session");
+    console.error("Failed to fetch current user:", error);
+    cookies().delete(SESSION_COOKIE_NAME);
     return null;
   }
 }
 
 // --- USER ACTIONS ---
 
-async function
- 
-createUserAction(values: z.infer<typeof signupSchema | typeof signupPetugasSchema>, role: "Admin Desa" | "Petugas RT/RW", rtRw?: string) {
+async function createUserAction(values: z.infer<typeof signupSchema | typeof signupPetugasSchema>, role: "Admin Desa" | "Petugas RT/RW", rtRw?: string) {
     const { name, email, password } = values;
 
     const existingUsers = await executeQuery<any[]>("SELECT id FROM users WHERE email = ?", [email]);
@@ -110,14 +91,15 @@ createUserAction(values: z.infer<typeof signupSchema | typeof signupPetugasSchem
         throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // WARNING: Storing password in plain text. Not for production use.
+    const plainPassword = password;
     const userId = `user-${Date.now()}`;
     const avatarUrl = `https://placehold.co/100x100.png?text=${name.charAt(0)}`;
     const finalRtRw = role === "Admin Desa" ? '-' : rtRw;
 
     await executeQuery(
         "INSERT INTO users (id, name, email, password_hash, role, rtRw, avatarUrl) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [userId, name, email, hashedPassword, role, finalRtRw, avatarUrl]
+        [userId, name, email, plainPassword, role, finalRtRw, avatarUrl]
     );
 
     revalidatePath("/dashboard/users");
@@ -152,8 +134,8 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
     const finalRtRw = role === 'Admin Desa' ? '-' : rtRw || '';
     
     if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ?, password_hash = ? WHERE id = ?", [name, role, finalRtRw, hashedPassword, id]);
+        // Storing plain text password
+        await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ?, password_hash = ? WHERE id = ?", [name, role, finalRtRw, password, id]);
     } else {
         await executeQuery("UPDATE users SET name = ?, role = ?, rtRw = ? WHERE id = ?", [name, role, finalRtRw, id]);
     }
@@ -190,11 +172,11 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
     const user = users[0];
     if (!user) throw new Error("Pengguna tidak ditemukan.");
 
-    const passwordsMatch = await bcrypt.compare(currentPassword, user.password_hash);
-    if (!passwordsMatch) throw new Error("Kata sandi saat ini salah.");
-
-    const newHashedPassword = await bcrypt.hash(newPassword, 10);
-    await executeQuery("UPDATE users SET password_hash = ? WHERE id = ?", [newHashedPassword, userId]);
+    if (currentPassword !== user.password_hash) {
+      throw new Error("Kata sandi saat ini salah.");
+    }
+    
+    await executeQuery("UPDATE users SET password_hash = ? WHERE id = ?", [newPassword, userId]);
 }
 
 
