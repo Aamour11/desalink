@@ -53,20 +53,16 @@ export function DashboardSidebar() {
   const { setOpenMobile, activeUser, setActiveUser } = useSidebar();
   
   useEffect(() => {
-    // On initial load, set the active user from the server action
-    // This respects the cookie/header logic for role switching
+    // This effect now primarily fetches user data to populate the sidebar context
+    // It is no longer responsible for redirection, simplifying its role.
     const fetchAndSetUser = async () => {
         try {
             const user = await getCurrentUser();
             if (user) {
                 setActiveUser(user);
-            } else {
-                // If no user is found client-side, something is wrong, redirect to login
-                window.location.href = "/login";
             }
         } catch (e) {
-            console.error("Failed to fetch current user, redirecting.", e);
-            window.location.href = "/login";
+            console.error("Failed to fetch current user for sidebar.", e);
         }
     }
     fetchAndSetUser();
