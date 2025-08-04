@@ -45,34 +45,35 @@ export async function signOut() {
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
     const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
+    const activeRole = headers().get('x-active-role') || cookies().get(ROLE_COOKIE_NAME)?.value;
     
     // Fallback for demo mode (no one logged in)
     if (!sessionUserId) {
-        return mockUsers.find(u => u.role === 'Admin Desa') || null;
+        const mockUser = mockUsers.find(u => u.role === 'Admin Desa');
+        return mockUser || null;
     }
 
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
      if (!originalUser) {
-        // This case should not happen if session is valid, but good to handle.
         return null; 
     }
     
-    // If the original user is not an Admin, they can't switch roles.
-    // Always return their own user data.
-    if (originalUser.role !== 'Admin Desa') {
-      return originalUser;
-    }
-
-    // If the original user IS an admin, check if they want to simulate another role.
-    const activeRole = headers().get('x-active-role');
-    
-    if (activeRole === 'petugas') {
+    // If the user wants to simulate a petugas
+    if (originalUser.role === 'Admin Desa' && activeRole === 'petugas') {
       // Find the first Petugas user to act as the mock.
       const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
-      return mockPetugas || originalUser; // Return mock Petugas, or fallback to admin if none found
+      // Return mock Petugas, but ensure we keep the original admin's ID for context if needed
+      // while maintaining the 'Petugas RT/RW' role for UI purposes.
+      if (mockPetugas) {
+         return {
+            ...mockPetugas, // Has role 'Petugas RT/RW', name, etc.
+            id: originalUser.id, // IMPORTANT: Keep the original admin ID to know who is simulating
+            role: 'Petugas RT/RW' // Explicitly set role for clarity
+        };
+      }
     }
 
-    // If no simulation is active, or role is 'admin', return the original admin user.
+    // If no simulation is active, or the user is not an Admin, return their original data.
     return originalUser;
 }
 
@@ -177,8 +178,17 @@ export async function getUmkmById(id: string): Promise<UMKM | null> {
 }
 
 export async function getUserById(id: string): Promise<Omit<User, 'password_hash'> | null> {
-    const user = mockUsers.find(u => u.id === id) || null;
-    return user;
+    // If the ID is the admin's ID, but they are simulating a petugas, we might want to return the simulated profile
+    // For now, returning the actual user profile is simpler.
+    const user = mockUsers.find(u => u.id === id);
+    if (user) return user;
+
+    // It's possible the ID belongs to an admin who is simulating a role.
+    // In that case, we should find the admin user.
+    const adminUser = mockUsers.find(u => u.role === "Admin Desa");
+    if (adminUser?.id === id) return adminUser;
+    
+    return null;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {

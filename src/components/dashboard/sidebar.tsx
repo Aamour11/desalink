@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut } from "@/server/actions";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -50,6 +50,20 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { setOpenMobile, user } = useSidebar();
+  const [activeRole, setActiveRole] = useState("admin");
+
+  useEffect(() => {
+    // This code runs only on the client, so window is defined.
+    const storedRole = localStorage.getItem("activeRole");
+    if (storedRole) {
+      setActiveRole(storedRole);
+    } else {
+      // If nothing is stored, default to the user's actual role.
+      const initialRole = user?.role === 'Admin Desa' ? 'admin' : 'petugas';
+      setActiveRole(initialRole);
+      localStorage.setItem("activeRole", initialRole);
+    }
+  }, [user?.role]);
   
   const handleNavigate = (href: string) => {
     router.push(href);
@@ -57,15 +71,17 @@ export function DashboardSidebar() {
   };
 
   const handleLogout = async () => {
+    localStorage.removeItem("activeRole");
     await signOut();
     router.push("/login");
   };
   
   const handleRoleSwitch = () => {
-    // This logic is safe as it's triggered by a user click, which is always client-side.
-    const newRole = user?.role === 'Admin Desa' ? 'petugas' : 'admin';
+    const newRole = activeRole === 'admin' ? 'petugas' : 'admin';
+    localStorage.setItem("activeRole", newRole);
     document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
     
+    // Redirect to the appropriate page for the new role
     if (newRole === 'petugas') {
       window.location.href = '/dashboard/umkm';
     } else {
@@ -73,10 +89,10 @@ export function DashboardSidebar() {
     }
   };
 
-  const isDisplayingAsAdmin = user?.role === "Admin Desa";
-  // The original user is the admin if their actual ID is 'user-admin'.
-  // The `user` object might be a simulated one, but its ID remains consistent for this check.
-  const isOriginalUserAdmin = user?.id === 'user-admin';
+  // The role displayed in the UI is based on the simulated role (from localStorage).
+  const isDisplayingAsAdmin = activeRole === 'admin';
+  // The ability to switch roles is based on the user's *actual* role.
+  const isOriginalUserAdmin = user?.role === "Admin Desa";
 
   return (
     <Sidebar>

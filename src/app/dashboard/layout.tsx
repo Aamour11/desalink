@@ -5,22 +5,14 @@ import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { getCurrentUser } from "@/server/actions";
 import { redirect } from "next/navigation";
-import { mockUsers } from "@/lib/data";
 
 export default async function DashboardLayout({ children }: PropsWithChildren) {
   let user = await getCurrentUser();
 
   if (!user) {
-    // This is the fallback for demo mode when no one is logged in.
-    // It should not redirect to login, but use a mock admin instead.
-    const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
-    if (mockAdmin) {
-      user = mockAdmin;
-    } else {
-       // If even the mock admin isn't found, something is very wrong with the data.
-       // Redirecting to login is the safest fallback.
-       return redirect("/login");
-    }
+     // If no user is found (not even a mock one), something is wrong.
+     // Redirecting to login is the safest fallback.
+     return redirect("/login");
   }
 
   return (
