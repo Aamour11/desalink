@@ -46,27 +46,30 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
     const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
     
-    // This is for demo mode where no one is logged in.
+    // Fallback for demo mode (no one logged in)
     if (!sessionUserId) {
-        const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
-        return mockAdmin || null;
+        return mockUsers.find(u => u.id === 'user-admin') || null;
     }
 
-    const activeRole = headers().get('x-active-role') || cookies().get(ROLE_COOKIE_NAME)?.value;
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
     
-    // Logic for role switching
-    if (originalUser?.role === 'Admin Desa') {
-      if (activeRole === 'petugas') {
-        // When admin switches to 'petugas' view, show the first petugas user.
-        return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;
-      }
-      // Otherwise, show the admin user.
-      return originalUser;
+    // If the original user is not an Admin, they can't switch roles.
+    // Always return their own user data.
+    if (originalUser?.role !== 'Admin Desa') {
+      return originalUser || null;
     }
 
-    // Regular users (Petugas) will always see their own data.
-    return originalUser || null;
+    // If the original user IS an admin, check if they want to simulate another role.
+    const activeRole = headers().get('x-active-role');
+    
+    if (activeRole === 'petugas') {
+      // Find the first Petugas user to act as the mock.
+      const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
+      return mockPetugas || null; // Return mock Petugas or null if none found
+    }
+
+    // If no simulation is active, or role is 'admin', return the original admin user.
+    return originalUser;
 }
 
 // --- USER ACTIONS ---

@@ -61,9 +61,12 @@ export function DashboardSidebar() {
   };
   
   const handleRoleSwitch = () => {
-    const currentActiveRoleCookie = document.cookie.split('; ').find(row => row.startsWith('activeRole='))?.split('=')[1];
-    const newRole = currentActiveRoleCookie === 'admin' ? 'petugas' : 'admin';
+    // Get the original logged-in user's role from the user object passed by the provider
+    // This is more reliable than reading another cookie.
+    const currentActiveRole = user?.role === 'Admin Desa' ? 'admin' : 'petugas';
+    const newRole = currentActiveRole === 'admin' ? 'petugas' : 'admin';
     
+    // Set cookie to notify middleware of the desired role for the next request
     document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
     
     // Force a full page reload to ensure all server components re-render with the new role
@@ -74,8 +77,14 @@ export function DashboardSidebar() {
     }
   };
 
-  // Determine if the original logged-in user is an Admin, regardless of the switched role.
-  const isOriginalUserAdmin = user?.id === 'user-admin';
+  // The user object from the context already reflects the *original* logged-in user.
+  // We need to determine if the *original* user was an admin to show the button.
+  // The actual displayed role (in the header, etc.) is based on what `getCurrentUser` returns,
+  // which can be the simulated role.
+  const sessionUserId = document.cookie.split('; ').find(row => row.startsWith('session_id='))?.split('=')[1];
+  const isOriginalUserAdmin = sessionUserId === 'user-admin';
+
+  // This reflects the role currently being displayed
   const isDisplayingAsAdmin = user?.role === "Admin Desa";
 
   return (

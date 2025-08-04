@@ -11,13 +11,14 @@ export default async function DashboardLayout({ children }: PropsWithChildren) {
   let user = await getCurrentUser();
 
   if (!user) {
-    // If no user is logged in, use the main Admin Desa as a mock user
-    // to allow dashboard access without login (demo mode).
+    // This is the fallback for demo mode when no one is logged in.
+    // It should not redirect to login, but use a mock admin instead.
     const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
     if (mockAdmin) {
       user = mockAdmin;
     } else {
-       // If for some reason the mock admin is not found, redirect to login as a fallback.
+       // If even the mock admin isn't found, something is very wrong with the data.
+       // Redirecting to login is the safest fallback.
        return redirect("/login");
     }
   }
