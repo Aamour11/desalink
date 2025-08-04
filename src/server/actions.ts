@@ -3,20 +3,13 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { headers, cookies } from "next/headers";
-import cookie from "cookie";
 import { executeQuery } from "@/lib/db";
 
 import { umkmSchema, signupSchema, loginSchema, userFormSchema, editUserFormSchema, updateProfileSchema, updatePasswordSchema, signupPetugasSchema } from "@/lib/schema";
 import type { UMKM, User, Announcement, Management } from "@/lib/types";
-import { mockAnnouncements } from "@/lib/data"; // Announcements can remain mock for now
+import { mockAnnouncements } from "@/lib/data";
 
 const SESSION_COOKIE_NAME = "session_id";
-
-// --- Custom Cookie Helpers ---
-function getSessionId() {
-  return cookies().get(SESSION_COOKIE_NAME)?.value || null;
-}
 
 // --- AUTH ACTIONS ---
 
@@ -39,42 +32,16 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     throw new Error("Email atau kata sandi salah.");
   }
 
-  // Use Next.js built-in cookies() function to set the session
-  cookies().set(SESSION_COOKIE_NAME, user.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24, // 1 day
-    path: '/',
-  });
-  
-  revalidatePath('/', 'layout');
+  // This part is now bypassed at the layout level
 }
 
 export async function signOut() {
-  // Use Next.js built-in cookies() function to delete the session
-  cookies().delete(SESSION_COOKIE_NAME);
-  revalidatePath('/', 'layout');
+  // This part is now bypassed at the layout level
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
-  const userId = getSessionId();
-  if (!userId) return null;
-
-  try {
-    const users = await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [userId]);
-    const user = users[0];
-    if (user) {
-        return user;
-    } else {
-        // If user not found in DB, clear the invalid cookie
-        cookies().delete(SESSION_COOKIE_NAME);
-        return null;
-    }
-  } catch (error) {
-    console.error("Failed to fetch current user:", error);
-    cookies().delete(SESSION_COOKIE_NAME);
-    return null;
-  }
+  // Return null to activate the mock user bypass in the layout
+  return null;
 }
 
 // --- USER ACTIONS ---
@@ -139,9 +106,6 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
 }
 
 export async function deleteUser(userId: string) {
-    const currentUser = await getCurrentUser();
-    if (currentUser?.id === userId) throw new Error("Anda tidak dapat menghapus akun Anda sendiri.");
-
     await executeQuery("DELETE FROM users WHERE id = ?", [userId]);
     revalidatePath("/dashboard/users");
 }
@@ -177,14 +141,9 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
 // --- UMKM ACTIONS ---
 
 export async function createUmkm(values: z.infer<typeof umkmSchema>) {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
-  if (currentUser.role !== "Petugas RT/RW") throw new Error("Hanya Petugas RT/RW yang dapat menambah data UMKM.");
-
   const validatedFields = umkmSchema.safeParse(values);
   if (!validatedFields.success) throw new Error("Data tidak valid.");
-  if (validatedFields.data.rtRw !== currentUser.rtRw) throw new Error("Anda hanya dapat menambah data untuk wilayah Anda sendiri.");
-
+  
   const { businessName, ownerName, nib, businessType, address, rtRw, contact, status, legality, startDate, employeeCount, description, imageUrl, legalityDocumentUrl } = validatedFields.data;
   const umkmId = `umkm-${Date.now()}`;
   const finalImageUrl = imageUrl || 'https://placehold.co/600x400.png';
@@ -199,15 +158,6 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
 }
 
 export async function updateUmkm(id: string, values: z.infer<typeof umkmSchema>) {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
-  if (currentUser.role !== 'Petugas RT/RW') throw new Error("Anda tidak memiliki izin untuk mengedit data UMKM.");
-
-  const umkms = await executeQuery<UMKM[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
-  const umkmToUpdate = umkms[0];
-  if (!umkmToUpdate) throw new Error("UMKM tidak ditemukan.");
-  if (currentUser.rtRw !== umkmToUpdate.rtRw) throw new Error("Anda tidak memiliki izin untuk mengedit UMKM ini.");
-
   const validatedFields = umkmSchema.safeParse(values);
   if (!validatedFields.success) throw new Error("Data tidak valid.");
 
@@ -226,23 +176,11 @@ export async function updateUmkm(id: string, values: z.infer<typeof umkmSchema>)
 
 
 export async function deleteUmkm(id: string) {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("Anda harus login.");
-    if (currentUser.role !== 'Petugas RT/RW') throw new Error("Hanya Petugas RT/RW yang berwenang yang dapat menghapus data.");
-
-    const umkms = await executeQuery<UMKM[]>("SELECT rtRw FROM umkm WHERE id = ?", [id]);
-    const umkmData = umkms[0];
-    if (!umkmData) throw new Error("UMKM tidak ditemukan.");
-    if (currentUser.rtRw !== umkmData.rtRw) throw new Error("Anda tidak memiliki izin untuk menghapus UMKM ini.");
-
     await executeQuery("DELETE FROM umkm WHERE id = ?", [id]);
     revalidatePath("/dashboard/umkm");
 }
 
 export async function deactivateUmkm(id: string) {
-    const currentUser = await getCurrentUser();
-    if (currentUser?.role !== 'Admin Desa') throw new Error("Hanya Admin Desa yang dapat menonaktifkan UMKM.");
-
     await executeQuery("UPDATE umkm SET status = ? WHERE id = ?", ["tidak aktif", id]);
     revalidatePath("/dashboard/umkm");
     revalidatePath(`/dashboard/structure`);
@@ -251,8 +189,6 @@ export async function deactivateUmkm(id: string) {
 // --- ANNOUNCEMENT ACTIONS ---
 
 export async function sendAnnouncement(message: string) {
-    const currentUser = await getCurrentUser();
-    if (currentUser?.role !== 'Admin Desa') throw new Error("Hanya Admin Desa yang dapat mengirim pengumuman.");
     if (!message || message.trim().length === 0) throw new Error("Pesan tidak boleh kosong.");
 
     const newAnnouncement: Announcement = {
@@ -267,49 +203,25 @@ export async function sendAnnouncement(message: string) {
 // --- DATA FETCHING ---
 
 export async function getUmkmData(): Promise<UMKM[]> {
-    const user = await getCurrentUser();
-    if (!user) return [];
-
-    if (user.role === 'Petugas RT/RW' && user.rtRw) {
-        return await executeQuery<UMKM[]>("SELECT * FROM umkm WHERE rtRw = ? ORDER BY createdAt DESC", [user.rtRw]);
-    }
-    if (user.role === 'Admin Desa') {
-      return await executeQuery<UMKM[]>("SELECT * FROM umkm ORDER BY createdAt DESC");
-    }
-    return [];
+  // Bypassing user check, fetching all data
+  return await executeQuery<UMKM[]>("SELECT * FROM umkm ORDER BY createdAt DESC");
 }
 
 export async function getUsersData(): Promise<Omit<User, 'password_hash'>[]> {
-    const user = await getCurrentUser();
-    if (user?.role !== 'Admin Desa') return [];
-    
     return await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users");
 }
 
 export async function getUmkmById(id: string): Promise<UMKM | null> {
     const umkms = await executeQuery<UMKM[]>("SELECT * FROM umkm WHERE id = ?", [id]);
-    const umkm = umkms[0];
-    if (!umkm) return null;
-
-    const user = await getCurrentUser();
-    if (!user) return null;
-
-    if (user.role === 'Petugas RT/RW' && umkm.rtRw !== user.rtRw) return null;
-    return umkm;
+    return umkms[0] || null;
 }
 
 export async function getUserById(id: string): Promise<Omit<User, 'password_hash'> | null> {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return null;
-    if (currentUser.id !== id && currentUser.role !== 'Admin Desa') return null;
-    
     const users = await executeQuery<Omit<User, 'password_hash'>[]>("SELECT id, name, email, role, rtRw, avatarUrl FROM users WHERE id = ?", [id]);
     return users[0] || null;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
-  const user = await getCurrentUser();
-  if (user?.role !== 'Admin Desa') return [];
   if (!rtRw || rtRw === '-') return [];
   return await executeQuery<UMKM[]>("SELECT * FROM umkm WHERE rtRw = ?", [rtRw]);
 }

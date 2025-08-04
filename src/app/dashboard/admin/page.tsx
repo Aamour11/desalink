@@ -24,13 +24,12 @@ import { DatabaseBackup, BellRing, UserCog, Ban, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import type { User, UMKM } from "@/lib/types";
-import { getCurrentUser, getUsersData, getUmkmData, sendAnnouncement } from "@/server/actions";
+import { getUsersData, getUmkmData, sendAnnouncement } from "@/server/actions";
 import Loading from "@/app/loading";
 import Papa from "papaparse";
 
 export default function AdminCenterPage() {
     const { toast } = useToast();
-    const [currentUser, setCurrentUser] = useState<Omit<User, 'password_hash'> | null>(null);
     const [allUsers, setAllUsers] = useState<Omit<User, 'password_hash'>[]>([]);
     const [allUmkm, setAllUmkm] = useState<UMKM[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,14 +40,10 @@ export default function AdminCenterPage() {
     useEffect(() => {
       async function fetchData() {
         try {
-          const user = await getCurrentUser();
-          setCurrentUser(user);
-          if (user?.role === "Admin Desa") {
             const usersData = await getUsersData();
             const umkmData = await getUmkmData();
             setAllUsers(usersData);
             setAllUmkm(umkmData);
-          }
         } catch (error) {
           toast({ variant: "destructive", title: "Gagal memuat data", description: "Tidak dapat mengambil data pengguna atau UMKM." });
         } finally {
@@ -119,29 +114,6 @@ export default function AdminCenterPage() {
 
     if (loading) {
       return <Loading />;
-    }
-    
-    if (currentUser?.role !== "Admin Desa") {
-        return (
-            <div className="flex flex-col items-center justify-center h-full text-center p-4">
-                <Card className="max-w-md w-full">
-                    <CardHeader className="items-center">
-                        <div className="p-3 rounded-full bg-destructive/10">
-                         <Ban className="h-12 w-12 text-destructive" />
-                        </div>
-                        <CardTitle className="font-headline text-2xl">Akses Ditolak</CardTitle>
-                        <CardDescription>
-                         Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin Desa yang dapat masuk.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button asChild className="w-full">
-                            <Link href="/dashboard">Kembali ke Dashboard</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        )
     }
 
   return (
@@ -247,5 +219,3 @@ export default function AdminCenterPage() {
     </>
   );
 }
-
-    

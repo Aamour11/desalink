@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children }: PropsWithChildren) {
       <div className="flex h-screen bg-muted/40">
         <DashboardSidebar />
         <div className="flex flex-col flex-1">
-          <DashboardHeader />
+          <DashboardHeader user={user} />
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
             {children}
           </main>

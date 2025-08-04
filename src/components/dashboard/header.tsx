@@ -15,30 +15,20 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "../ui/input";
 import { LogOut, Search, Settings, User } from "lucide-react";
-import { signOut, getCurrentUser } from "@/server/actions";
+import { signOut } from "@/server/actions";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import type { User as UserType } from "@/lib/types";
 import { Skeleton } from "../ui/skeleton";
 
-export function DashboardHeader() {
+export function DashboardHeader({ user }: { user: Omit<UserType, "password_hash"> | null }) {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<Omit<UserType, "password_hash"> | null>(null);
-
-  useEffect(() => {
-    async function fetchUser() {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-    }
-    fetchUser();
-  }, []);
-
+  
   const handleLogout = async () => {
-    await signOut();
+    // Since we are bypassing login, logout just redirects to login page.
     window.location.href = '/login';
   }
 
-  if (!currentUser) {
+  if (!user) {
     return (
        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
          <SidebarTrigger />
@@ -69,7 +59,7 @@ export function DashboardHeader() {
             className="overflow-hidden rounded-full ml-auto"
           >
             <Image
-              src={currentUser.avatarUrl}
+              src={user.avatarUrl}
               width={40}
               height={40}
               alt="Avatar"
@@ -81,15 +71,15 @@ export function DashboardHeader() {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+              <p className="text-sm font-medium leading-none">{user.name}</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {currentUser.email}
+                {user.email}
               </p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href={`/dashboard/users/${currentUser.id}`}>
+            <Link href={`/dashboard/users/${user.id}`}>
               <User className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </Link>
@@ -110,5 +100,3 @@ export function DashboardHeader() {
     </header>
   );
 }
-
-    
