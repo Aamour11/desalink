@@ -61,10 +61,12 @@ export function DashboardSidebar() {
   };
   
   const handleRoleSwitch = () => {
-    const currentRole = document.cookie.split('; ').find(row => row.startsWith('activeRole='))?.split('=')[1];
-    const newRole = currentRole === 'admin' ? 'petugas' : 'admin';
+    // This logic relies on the `getCurrentUser` action reading the cookie.
+    const currentActiveRoleCookie = document.cookie.split('; ').find(row => row.startsWith('activeRole='))?.split('=')[1];
+    const newRole = currentActiveRoleCookie === 'admin' ? 'petugas' : 'admin';
     
     // Set cookie for middleware to pick up on the next request
+    // This cookie is read by `getCurrentUser` to determine which mock user to show
     document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
     
     // Force a reload to ensure all server components re-fetch data with the new role context
@@ -109,17 +111,19 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
         <SidebarMenu>
-          <SidebarMenuItem>
-             <SidebarMenuButton
-                variant="ghost"
-                className="w-full justify-start"
-                tooltip={{ children: userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
-                icon={<Replace />}
-                onClick={handleRoleSwitch}
-            >
-                {userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {user?.id === 'user-admin-master' && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                    variant="ghost"
+                    className="w-full justify-start"
+                    tooltip={{ children: userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
+                    icon={<Replace />}
+                    onClick={handleRoleSwitch}
+                >
+                    {userIsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+          )}
 
           {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>

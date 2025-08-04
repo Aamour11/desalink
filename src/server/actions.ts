@@ -45,27 +45,28 @@ export async function signOut() {
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
     const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
-    if (!sessionUserId) return null;
-
-    const activeRole = cookies().get(ROLE_COOKIE_NAME)?.value;
-
-    if (activeRole === 'admin') {
-        // If role is admin, always return the main admin user
-        return mockUsers.find(u => u.role === 'Admin Desa') || null;
-    } 
     
-    if (activeRole === 'petugas') {
-        // If the logged-in user is an Admin, show them the first Petugas as a sample.
-        const originalUser = mockUsers.find(u => u.id === sessionUserId);
-        if (originalUser?.role === 'Admin Desa') {
-            return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;
-        }
-        // If the logged-in user is a Petugas, just return their own data.
-        return originalUser || null;
+    // This is for demo mode where no one is logged in.
+    if (!sessionUserId) {
+        const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
+        return mockAdmin || null;
     }
 
-    // Fallback: if no role cookie is set (e.g. first login), return the original user.
-    return mockUsers.find(u => u.id === sessionUserId) || null;
+    const activeRole = headers().get('x-active-role') || cookies().get(ROLE_COOKIE_NAME)?.value;
+    const originalUser = mockUsers.find(u => u.id === sessionUserId);
+
+    // This logic allows an admin to switch between viewing as admin and as a sample petugas
+    if (originalUser?.id === 'user-admin-master') {
+      if (activeRole === 'petugas') {
+        // When admin switches to 'petugas' view, show the first petugas user.
+        return mockUsers.find(u => u.role === 'Petugas RT/RW') || null;
+      }
+      // Otherwise, show the admin user.
+      return originalUser;
+    }
+
+    // Regular users (Petugas) will always see their own data.
+    return originalUser || null;
 }
 
 // --- USER ACTIONS ---
