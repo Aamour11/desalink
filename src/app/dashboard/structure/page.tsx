@@ -41,6 +41,7 @@ import { format } from "date-fns";
 import { id as indonesiaLocale } from 'date-fns/locale';
 import { Briefcase, Calendar, MapPin, Phone, User as UserIcon, Hash, CheckCircle, XCircle, Users, FileCheck2, AlertTriangle, Clock, PowerOff, FileText, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Loading from "@/app/loading";
 
 
 type UmkmByRw = {
@@ -51,7 +52,7 @@ type UmkmByRw = {
 
 export default function StructurePage() {
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<Omit<User, 'password_hash'> | null>(null);
   const [allUmkm, setAllUmkm] = useState<UMKM[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUmkm, setSelectedUmkm] = useState<UMKM | null>(null);
@@ -60,13 +61,18 @@ export default function StructurePage() {
 
   const fetchData = async () => {
       setLoading(true);
-      const [user, umkmData] = await Promise.all([
-          getCurrentUser(),
-          getUmkmData()
-      ]);
-      setCurrentUser(user);
-      setAllUmkm(umkmData);
-      setLoading(false);
+      try {
+        const [user, umkmData] = await Promise.all([
+            getCurrentUser(),
+            getUmkmData()
+        ]);
+        setCurrentUser(user);
+        setAllUmkm(umkmData);
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal memuat data." });
+      } finally {
+        setLoading(false);
+      }
   };
 
   useEffect(() => {
@@ -121,31 +127,7 @@ export default function StructurePage() {
   const petugasRw = isPetugas ? currentUser?.rtRw.split("/")[1] : null;
 
   if (loading) {
-      return (
-          <div className="space-y-6">
-               <div>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">
-                    Struktur Wilayah UMKM
-                </h1>
-                <p className="text-muted-foreground">
-                    Visualisasi hierarki data UMKM berdasarkan wilayah RT dan RW.
-                </p>
-            </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Memuat Data...</CardTitle>
-                    <CardDescription>
-                        Harap tunggu sebentar.
-                    </CardDescription>
-                </CardHeader>
-                 <CardContent>
-                    <div className="text-center text-muted-foreground py-8">
-                        Memuat data UMKM...
-                    </div>
-                </CardContent>
-            </Card>
-          </div>
-      )
+      return <Loading />;
   }
 
   return (
@@ -376,3 +358,5 @@ export default function StructurePage() {
     </>
   );
 }
+
+    

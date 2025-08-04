@@ -30,8 +30,8 @@ import Papa from "papaparse";
 
 export default function AdminCenterPage() {
     const { toast } = useToast();
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [allUsers, setAllUsers] = useState<User[]>([]);
+    const [currentUser, setCurrentUser] = useState<Omit<User, 'password_hash'> | null>(null);
+    const [allUsers, setAllUsers] = useState<Omit<User, 'password_hash'>[]>([]);
     const [allUmkm, setAllUmkm] = useState<UMKM[]>([]);
     const [loading, setLoading] = useState(true);
     const [isNotifyDialogOpen, setIsNotifyDialogOpen] = useState(false);
@@ -123,15 +123,23 @@ export default function AdminCenterPage() {
     
     if (currentUser?.role !== "Admin Desa") {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-                <Ban className="h-20 w-20 text-destructive mb-4" />
-                <h1 className="font-headline text-3xl font-bold">Akses Ditolak</h1>
-                <p className="text-muted-foreground mt-2">
-                    Anda tidak memiliki izin untuk mengakses halaman ini.
-                </p>
-                 <Button asChild className="mt-6">
-                    <Link href="/dashboard">Kembali ke Dashboard</Link>
-                </Button>
+            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                <Card className="max-w-md w-full">
+                    <CardHeader className="items-center">
+                        <div className="p-3 rounded-full bg-destructive/10">
+                         <Ban className="h-12 w-12 text-destructive" />
+                        </div>
+                        <CardTitle className="font-headline text-2xl">Akses Ditolak</CardTitle>
+                        <CardDescription>
+                         Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin Desa yang dapat masuk.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild className="w-full">
+                            <Link href="/dashboard">Kembali ke Dashboard</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         )
     }
@@ -239,3 +247,5 @@ export default function AdminCenterPage() {
     </>
   );
 }
+
+    

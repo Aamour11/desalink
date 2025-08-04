@@ -37,7 +37,7 @@ import { useRouter } from "next/navigation";
 export default function SettingsPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<Omit<User, 'password_hash'> | null>(null);
   const [loading, setLoading] = useState(true);
   
   const profileForm = useForm<z.infer<typeof updateProfileSchema>>({
@@ -58,14 +58,20 @@ export default function SettingsPage() {
   
   useEffect(() => {
     async function fetchUser() {
-      const user = await getCurrentUser();
-      if (user) {
-        setCurrentUser(user);
-        profileForm.setValue('name', user.name);
-      } else {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          profileForm.setValue('name', user.name);
+        } else {
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error("Failed to fetch user", error);
         router.push('/login');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     fetchUser();
   }, [profileForm, router]);
@@ -239,3 +245,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    

@@ -45,7 +45,7 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = React.useState(false);
   const [isDocUploading, setIsDocUploading] = React.useState(false);
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [currentUser, setCurrentUser] = React.useState<Omit<User, 'password_hash'> | null>(null);
   const imageInputRef = React.useRef<HTMLInputElement>(null);
   const docInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -141,15 +141,14 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
   const onSubmit = async (data: UmkmFormValues) => {
     try {
       if (defaultValues) {
-        // Pass the old image URL to the update action
-        await updateUmkm(defaultValues.id, data, defaultValues.imageUrl);
+        await updateUmkm(defaultValues.id, data);
         toast({ title: "Sukses", description: "Data UMKM berhasil diperbarui." });
       } else {
         await createUmkm(data);
         toast({ title: "Sukses", description: "UMKM baru berhasil ditambahkan." });
       }
       router.push("/dashboard/umkm");
-      router.refresh(); // Refresh the page to show new data
+      router.refresh();
     } catch (error) {
        const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan data.";
        toast({ variant: 'destructive', title: "Gagal", description: errorMessage });
@@ -504,3 +503,5 @@ export function UmkmForm({ defaultValues }: { defaultValues?: UMKM }) {
     </Form>
   );
 }
+
+    

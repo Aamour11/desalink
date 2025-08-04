@@ -38,6 +38,7 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
     throw new Error("Email atau kata sandi salah.");
   }
 
+  // Payload for the JWT should not contain sensitive info like password hash
   const tokenPayload = {
     id: user.id, 
     name: user.name, 
@@ -64,7 +65,7 @@ export async function signOut() {
   cookieStore.delete("session");
 }
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
   const cookieStore = cookies();
   const token = cookieStore.get("session")?.value;
 
@@ -73,12 +74,12 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as User;
-    // We need to return the full user object including password hash for other functions to work
-    const userFromDb = mockUsers.find(u => u.id === decoded.id);
-    return userFromDb || null;
+    // The decoded token is the source of truth for the current user's session data.
+    const decoded = jwt.verify(token, JWT_SECRET) as Omit<User, 'password_hash'>;
+    return decoded;
   } catch (error) {
     // Token is invalid or expired
+    console.error("JWT Verification Error:", error);
     return null;
   }
 }
@@ -197,9 +198,11 @@ export async function updateUser(id: string, values: z.infer<typeof editUserForm
 }
 
 export async function deleteUser(userId: string) {
-    if (userId === 'user-1') {
-      throw new Error('Admin utama tidak dapat dihapus.');
+    const currentUser = await getCurrentUser();
+    if (currentUser?.id === userId) {
+        throw new Error("Anda tidak dapat menghapus akun Anda sendiri.");
     }
+
     const index = mockUsers.findIndex(u => u.id === userId);
     if (index !== -1) {
         mockUsers.splice(index, 1);
@@ -235,12 +238,11 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
     }
     
     const { currentPassword, newPassword } = validatedFields.data;
-    const userIndex = mockUsers.findIndex(u => u.id === userId);
+    const user = mockUsers.find(u => u.id === userId);
 
-    if (userIndex === -1) {
+    if (!user) {
         throw new Error("Pengguna tidak ditemukan.");
     }
-    const user = mockUsers[userIndex];
 
     const passwordsMatch = await bcrypt.compare(currentPassword, user.password_hash);
     if (!passwordsMatch) {
@@ -248,13 +250,16 @@ export async function updatePassword(userId: string, values: z.infer<typeof upda
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    user.password_hash = hashedNewPassword;
+    const userIndex = mockUsers.findIndex(u => u.id === userId);
+    mockUsers[userIndex].password_hash = hashedNewPassword;
 }
 
 // --- UMKM ACTIONS ---
 
 export async function createUmkm(values: z.infer<typeof umkmSchema>) {
   const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
+
   if (currentUser?.role !== "Petugas RT/RW") {
     throw new Error("Hanya Petugas RT/RW yang dapat menambah data UMKM.");
   }
@@ -283,10 +288,11 @@ export async function createUmkm(values: z.infer<typeof umkmSchema>) {
 
 export async function updateUmkm(
   id: string,
-  values: z.infer<typeof umkmSchema>,
-  oldImageUrl?: string | null
+  values: z.infer<typeof umkmSchema>
 ) {
   const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
+
   const umkmToUpdate = mockUmkm.find(u => u.id === id);
 
   if (!umkmToUpdate) {
@@ -296,9 +302,10 @@ export async function updateUmkm(
   if (currentUser?.role === 'Petugas RT/RW' && currentUser.rtRw !== umkmToUpdate.rtRw) {
       throw new Error("Anda tidak memiliki izin untuk mengedit UMKM ini.");
   }
-
-  if (currentUser?.role === 'Admin Desa') {
-       throw new Error("Admin tidak dapat mengedit data UMKM.");
+  
+  // Admins cannot edit, only Petugas RT/RW for their own area
+  if (currentUser?.role !== 'Petugas RT/RW') {
+       throw new Error("Anda tidak memiliki izin untuk mengedit data UMKM.");
   }
 
   const validatedFields = umkmSchema.safeParse(values);
@@ -316,16 +323,16 @@ export async function updateUmkm(
   const oldUmkmData = mockUmkm[umkmIndex];
 
   // Logic to delete old image if a new one is uploaded
-  if (oldImageUrl && imageUrl && oldImageUrl !== imageUrl) {
-    if (!oldImageUrl.includes("placehold.co")) {
+  if (oldUmkmData.imageUrl && imageUrl && oldUmkmData.imageUrl !== imageUrl) {
+    if (!oldUmkmData.imageUrl.includes("placehold.co")) {
       try {
-        const oldImagePath = join(process.cwd(), "public", oldImageUrl);
+        const oldImagePath = join(process.cwd(), "public", oldUmkmData.imageUrl);
         await stat(oldImagePath);
         await unlink(oldImagePath);
         console.log(`Successfully deleted old image: ${oldImagePath}`);
       } catch (error: any) {
         if (error.code === 'ENOENT') {
-          console.log(`Old image not found, skipping deletion: ${oldImageUrl}`);
+          console.log(`Old image not found, skipping deletion: ${oldUmkmData.imageUrl}`);
         } else {
           console.error("Error deleting old image:", error);
         }
@@ -363,6 +370,8 @@ export async function updateUmkm(
 
 export async function deleteUmkm(id: string) {
     const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("Anda harus login untuk melakukan tindakan ini.");
+
     const umkmIndex = mockUmkm.findIndex(u => u.id === id);
     if (umkmIndex === -1) {
       throw new Error("UMKM tidak ditemukan.");
@@ -372,14 +381,12 @@ export async function deleteUmkm(id: string) {
     if (currentUser?.role === 'Petugas RT/RW' && currentUser.rtRw !== umkmData.rtRw) {
         throw new Error("Anda tidak memiliki izin untuk menghapus UMKM ini.");
     }
-     if (currentUser?.role === 'Admin Desa') {
-       throw new Error("Admin tidak dapat menghapus data UMKM.");
+     if (currentUser?.role !== 'Petugas RT/RW') {
+       throw new Error("Hanya Petugas RT/RW yang berwenang yang dapat menghapus data UMKM.");
     }
-
 
     mockUmkm.splice(umkmIndex, 1);
 
-    // Delete image file
     if (umkmData?.imageUrl && !umkmData.imageUrl.includes("placehold.co")) {
          try {
             const imagePath = join(process.cwd(), "public", umkmData.imageUrl);
@@ -394,7 +401,6 @@ export async function deleteUmkm(id: string) {
             }
         }
     }
-    // Delete document file
     if (umkmData?.legalityDocumentUrl && !umkmData.legalityDocumentUrl.includes("placehold.co")) {
          try {
             const docPath = join(process.cwd(), "public", umkmData.legalityDocumentUrl);
@@ -451,8 +457,7 @@ export async function sendAnnouncement(message: string) {
         createdAt: new Date().toISOString(),
     };
 
-    // Replace old announcement with the new one
-    mockAnnouncements[0] = newAnnouncement;
+    mockAnnouncements.unshift(newAnnouncement);
 
     revalidatePath("/dashboard");
     return { success: true };
@@ -463,28 +468,28 @@ export async function sendAnnouncement(message: string) {
 export async function getUmkmData(): Promise<UMKM[]> {
     const user = await getCurrentUser();
     
-    if (user?.role === 'Petugas RT/RW' && user.rtRw) {
+    if(!user) return [];
+
+    if (user.role === 'Petugas RT/RW' && user.rtRw) {
         return mockUmkm.filter(u => u.rtRw === user.rtRw);
     }
     
-    // Sort by most recently created for Admin
-    if(user?.role === 'Admin Desa') {
+    if(user.role === 'Admin Desa') {
       return [...mockUmkm].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
 
     return [];
 }
 
-export async function getUsersData(): Promise<User[]> {
+export async function getUsersData(): Promise<Omit<User, 'password_hash'>[]> {
     const user = await getCurrentUser();
     if (user?.role !== 'Admin Desa') {
         return [];
     }
-    // Return all users without their password hashes
     return [...mockUsers].map(u => {
       const { password_hash, ...userWithoutPassword } = u;
       return userWithoutPassword;
-    }) as User[];
+    });
 }
 
 export async function getUmkmById(id: string): Promise<UMKM | null> {
@@ -493,26 +498,29 @@ export async function getUmkmById(id: string): Promise<UMKM | null> {
 
     const user = await getCurrentUser();
 
-    // Security check: Petugas can only access UMKM in their own area
     if (user?.role === 'Petugas RT/RW' && umkm.rtRw !== user.rtRw) {
         return null;
+    }
+    
+    if (user?.role === 'Admin Desa') {
+        return umkm;
     }
 
     return umkm;
 }
 
 
-export async function getUserById(id: string): Promise<User | null> {
-    const user = await getCurrentUser();
-    // Only Admin can fetch user profiles
-    if (user?.role !== 'Admin Desa') {
-        // Allow users to view their own profile
-        if (id === user?.id) {
-           const self = mockUsers.find(u => u.id === id);
-           if (!self) return null;
-           const { password_hash, ...userWithoutPassword } = self;
-           return userWithoutPassword as User;
-        }
+export async function getUserById(id: string): Promise<Omit<User, 'password_hash'> | null> {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return null;
+
+    // Allow users to view their own profile
+    if (id === currentUser.id) {
+        return currentUser;
+    }
+    
+    // Only Admin can fetch other user profiles
+    if (currentUser.role !== 'Admin Desa') {
         return null;
     }
     
@@ -520,7 +528,7 @@ export async function getUserById(id: string): Promise<User | null> {
     if (!targetUser) return null;
     
     const { password_hash, ...userWithoutPassword } = targetUser;
-    return userWithoutPassword as User;
+    return userWithoutPassword;
 }
 
 export async function getUmkmManagedByUser(rtRw: string): Promise<UMKM[]> {
@@ -535,6 +543,7 @@ export async function getLatestAnnouncement(): Promise<Announcement | null> {
     if (mockAnnouncements.length === 0) {
         return null;
     }
-    // Return the latest announcement
     return mockAnnouncements[0];
 }
+
+    

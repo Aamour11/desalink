@@ -35,12 +35,18 @@ import { Button } from "@/components/ui/button";
 import type { User } from "@/lib/types";
 import { ScrollArea } from "../ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { deleteUser } from "@/server/actions";
+import { deleteUser, getCurrentUser } from "@/server/actions";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export function UsersTable({ data }: { data: User[] }) {
+export function UsersTable({ data }: { data: Omit<User, 'password_hash'>[] }) {
   const { toast } = useToast();
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<Omit<User, 'password_hash'> | null>(null);
+
+  useEffect(() => {
+    getCurrentUser().then(setCurrentUser);
+  }, []);
 
   const handleDelete = async (userId: string) => {
     try {
@@ -128,7 +134,10 @@ export function UsersTable({ data }: { data: User[] }) {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <AlertDialogTrigger asChild>
-                         <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={user.id === 'user-1'}>
+                         <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive" 
+                            disabled={user.id === currentUser?.id}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" /> Hapus
                         </DropdownMenuItem>
                         </AlertDialogTrigger>
@@ -157,3 +166,5 @@ export function UsersTable({ data }: { data: User[] }) {
     </ScrollArea>
   );
 }
+
+    

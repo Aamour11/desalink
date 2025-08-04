@@ -19,10 +19,11 @@ import { signOut, getCurrentUser } from "@/server/actions";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { User as UserType } from "@/lib/types";
+import { Skeleton } from "../ui/skeleton";
 
 export function DashboardHeader() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [currentUser, setCurrentUser] = useState<Omit<UserType, "password_hash"> | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
@@ -34,15 +35,17 @@ export function DashboardHeader() {
 
   const handleLogout = async () => {
     await signOut();
-    router.push('/login');
-    router.refresh();
+    window.location.href = '/login';
   }
 
   if (!currentUser) {
     return (
        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
          <SidebarTrigger />
-         <div className="flex-1" />
+         <div className="flex items-center gap-4 ml-auto">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+         </div>
        </header>
     );
   }
@@ -107,3 +110,5 @@ export function DashboardHeader() {
     </header>
   );
 }
+
+    
