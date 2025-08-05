@@ -1,3 +1,4 @@
+
 import type { Announcement, Management, UMKM, User } from "@/lib/types";
 
 // This file now only contains mock data for Announcements
@@ -38,57 +39,6 @@ export const mockManagement: Management[] = [
     email: "agus.w@example.com",
     avatarUrl: "https://placehold.co/100x100.png?text=AW",
     aiHint: "man official"
-  },
-];
-
-export const mockUsers: Omit<User, "password_hash">[] = [
-  {
-    id: "user-admin",
-    name: "Admin Desa",
-    email: "admin@desa.com",
-    role: "Admin Desa",
-    rtRw: "-",
-    avatarUrl: "https://placehold.co/100x100.png?text=AD",
-  },
-  {
-    id: "user-1",
-    name: "Ahmad Fauzi",
-    email: "ahmad.f@example.com",
-    role: "Petugas RT/RW",
-    rtRw: "001/001",
-    avatarUrl: "https://placehold.co/100x100.png?text=AF",
-  },
-  {
-    id: "user-2",
-    name: "Dewi Lestari",
-    email: "dewi.l@example.com",
-    role: "Petugas RT/RW",
-    rtRw: "002/001",
-    avatarUrl: "https://placehold.co/100x100.png?text=DL",
-  },
-  {
-    id: "user-3",
-    name: "Candra Wijaya",
-    email: "candra.w@example.com",
-    role: "Petugas RT/RW",
-    rtRw: "003/001",
-    avatarUrl: "https://placehold.co/100x100.png?text=CW",
-  },
-   {
-    id: "user-4",
-    name: "Fitri Handayani",
-    email: "fitri.h@example.com",
-    role: "Petugas RT/RW",
-    rtRw: "001/002",
-    avatarUrl: "https://placehold.co/100x100.png?text=FH",
-  },
-   {
-    id: "user-5",
-    name: "Gilang Permana",
-    email: "gilang.p@example.com",
-    role: "Petugas RT/RW",
-    rtRw: "002/002",
-    avatarUrl: "https://placehold.co/100x100.png?text=GP",
   },
 ];
 
@@ -163,3 +113,7 @@ const generateMockUmkmData = (): UMKM[] => {
 }
 
 export const mockUmkm: UMKM[] = generateMockUmkmData();
+
+// User data is no longer mocked from this file. It is fetched from DB.
+// This is kept for reference but is not used by the application logic.
+export const mockUsers: Omit<User, "password_hash">[] = [];
