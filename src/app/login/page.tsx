@@ -47,8 +47,8 @@ export default function LoginPage() {
         title: "Login Berhasil",
         description: "Mengalihkan ke dasbor...",
       });
-      // This is the most reliable way to navigate and refresh the session state across the app.
-      router.push('/dashboard');
+      // Use window.location.assign for a full page refresh to ensure middleware detects the new session.
+      window.location.assign('/dashboard');
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Terjadi kesalahan";
