@@ -37,10 +37,13 @@ import { ScrollArea } from "../ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { deleteUser } from "@/server/actions";
 import { useRouter } from "next/navigation";
+import { useSidebar } from "../ui/sidebar";
 
-export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_hash'>[], currentUser: Omit<User, 'password_hash'> | null }) {
+export function UsersTable({ data }: { data: Omit<User, 'password_hash'>[] }) {
   const { toast } = useToast();
   const router = useRouter();
+  const { user: currentUser } = useSidebar();
+
 
   const handleDelete = async (userId: string) => {
     try {
@@ -149,7 +152,7 @@ export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_h
                         <DropdownMenuSeparator />
                         <AlertDialogTrigger asChild>
                          <DropdownMenuItem 
-                            className="text-destructive focus:text-destructive" 
+                            className="text-destructive focus:text-destructive focus:bg-destructive/10" 
                             disabled={user.id === currentUser?.id}
                           >
                             <Trash2 className="mr-2 h-4 w-4" /> Hapus

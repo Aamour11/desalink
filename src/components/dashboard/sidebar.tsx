@@ -28,6 +28,7 @@ import { LogoIcon } from "@/components/icons";
 import { signOut } from "@/server/actions";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -51,7 +52,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { setOpenMobile, user } = useSidebar();
+  const { setOpenMobile, user, state: sidebarState } = useSidebar();
   const [isClient, setIsClient] = useState(false);
 
   const isSimulating = searchParams.has('sim_user');
@@ -73,7 +74,8 @@ export function DashboardSidebar() {
   };
   
   const handleStopSimulation = () => {
-    window.location.href = '/dashboard';
+    // Navigate to the base dashboard URL without any query parameters.
+    router.push('/dashboard');
   }
 
   if (!isClient || !user) {
@@ -106,14 +108,23 @@ export function DashboardSidebar() {
       </SidebarHeader>
       <SidebarContent>
         {isSimulating && isUserAdmin && (
-            <div className="p-3 group-data-[state=expanded]:block hidden">
-                <div className="bg-yellow-400/20 border border-yellow-400/50 text-yellow-300 p-3 rounded-lg text-sm text-center">
-                    <h4 className="font-bold mb-1">Mode Simulasi</h4>
-                    <p>Anda melihat sebagai Petugas. Beberapa menu disembunyikan.</p>
-                    <Button variant="ghost" size="sm" className="mt-2 h-auto py-1 px-2 text-yellow-300 hover:bg-yellow-400/30" onClick={handleStopSimulation}>
-                        <UserX className="mr-2 h-4 w-4" /> Kembali ke Admin
-                    </Button>
-                </div>
+             <div className="p-3">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className="bg-yellow-400/20 border border-yellow-400/50 text-yellow-300 p-3 rounded-lg text-sm text-center cursor-pointer" onClick={handleStopSimulation}>
+                            <div className="group-data-[state=collapsed]:hidden">
+                                <h4 className="font-bold mb-1">Mode Simulasi</h4>
+                                <p>Klik untuk kembali ke akun Admin Anda.</p>
+                            </div>
+                            <UserX className="h-5 w-5 mx-auto group-data-[state=expanded]:hidden" />
+                        </div>
+                    </TooltipTrigger>
+                    {sidebarState === 'collapsed' && (
+                        <TooltipContent side="right" align="center">
+                            <p>Kembali ke Admin</p>
+                        </TooltipContent>
+                    )}
+                </Tooltip>
             </div>
         )}
         <SidebarMenu>

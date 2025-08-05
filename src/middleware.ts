@@ -24,6 +24,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
  
+  // If the user is not authenticated and trying to access a protected page, redirect to login
+  if (!sessionToken && !isAuthPage && request.nextUrl.pathname !== '/') {
+      return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   return NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -34,9 +39,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   // Match all routes except for static files, API routes, and the homepage
   matcher: [
-    '/dashboard/:path*', 
-    '/login', 
-    '/signup', 
-    '/signup-petugas',
+    '/((?!api|_next/static|_next/image|favicon.ico|uploads|.*\\.png$).*)'
   ],
 }

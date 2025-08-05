@@ -34,7 +34,7 @@ export default async function UsersPage() {
         </Button>
       </div>
 
-      <UsersTable data={users} currentUser={currentUser} />
+      <UsersTable data={users} />
     </div>
   );
 }

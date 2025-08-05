@@ -1,6 +1,6 @@
 
 import { getUserById, getUmkmManagedByUser, getCurrentUser } from "@/server/actions";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -22,7 +22,8 @@ export default async function UserProfilePage({ params }: { params: { id: string
   ]);
 
   if (!user || !currentUser) {
-    notFound();
+    // Should be caught by middleware, but as a safeguard
+    redirect('/login');
   }
 
   // Only Admin can see the list of managed UMKM on a profile page

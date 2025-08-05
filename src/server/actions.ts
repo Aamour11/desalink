@@ -38,27 +38,21 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
     const simulationUserId = headers().get('x-simulation-user-id');
 
-    const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
-
     if (!sessionUserId) {
-        // If no one is logged in, default to a generic Admin view for demo purposes.
-        return mockAdmin || null;
+       return null;
     }
 
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
     
     if (!originalUser) {
-        // If the session cookie is invalid, also default to a generic Admin view.
-        return mockAdmin || null;
+        return null;
     }
     
     // Role simulation logic
     if (originalUser.role === 'Admin Desa' && simulationUserId) {
       const simulatedUser = mockUsers.find(u => u.id === simulationUserId && u.role === 'Petugas RT/RW');
       if (simulatedUser) {
-          // Return the simulated user profile, but crucially, keep the original Admin's ID for auth
-          // and add the original role to distinguish them.
-         return { ...simulatedUser, id: originalUser.id, originalRole: originalUser.role };
+         return simulatedUser;
       }
     }
 
