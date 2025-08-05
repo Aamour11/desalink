@@ -93,132 +93,73 @@ export const mockUsers: Omit<User, "password_hash">[] = [
 ];
 
 
-export const mockUmkm: UMKM[] = [
-    {
-      id: "umkm-1",
-      businessName: "Warung Kopi Senja",
-      ownerName: "Bambang G.",
-      businessType: "Kuliner",
-      address: "Jl. Merdeka No. 1",
-      rtRw: "001/001",
-      contact: "08123456789",
-      status: "aktif",
-      legality: "Lengkap",
-      startDate: "2022-01-15",
-      endDate: "2025-01-14",
-      employeeCount: 3,
-      description: "Warung kopi sederhana dengan biji kopi pilihan dari seluruh nusantara.",
-      imageUrl: "https://placehold.co/600x400.png",
-      legalityDocumentUrl: "/path/to/doc.pdf",
-      createdAt: new Date().toISOString(),
-      nib: '1234567890123'
-    },
-    {
-      id: "umkm-2",
-      businessName: "Jahit & Fashion",
-      ownerName: "Rina S.",
-      businessType: "Fashion",
-      address: "Jl. Pahlawan No. 2",
-      rtRw: "002/001",
-      contact: "08234567890",
-      status: "aktif",
-      legality: "Sedang Diproses",
-      startDate: "2021-08-20",
-      endDate: "2024-08-19",
-      employeeCount: 5,
-      description: "Menerima jahitan pakaian pria dan wanita, serta menjual baju jadi.",
-      imageUrl: "https://placehold.co/600x400.png",
-      createdAt: new Date().toISOString(),
-      nib: '2345678901234'
-    },
-    {
-      id: "umkm-3",
-      businessName: "Kerajinan Rotan",
-      ownerName: "Eko Prasetyo",
-      businessType: "Kerajinan",
-      address: "Gg. Damai No. 3",
-      rtRw: "001/001",
-      contact: "08345678901",
-      status: "tidak aktif",
-      legality: "Tidak Lengkap",
-      startDate: "2020-03-10",
-      endDate: "2023-03-09",
-      employeeCount: 2,
-      description: "Membuat berbagai macam kerajinan tangan dari bahan dasar rotan alami.",
-      imageUrl: "https://placehold.co/600x400.png",
-      createdAt: new Date().toISOString(),
-      nib: '3456789012345'
-    },
-     {
-      id: "umkm-4",
-      businessName: "Bengkel Motor Jaya",
-      ownerName: "Agus Setiawan",
-      businessType: "Jasa",
-      address: "Jl. Industri No. 10",
-      rtRw: "003/001",
-      contact: "085678901234",
-      status: "aktif",
-      legality: "Lengkap",
-      startDate: "2019-11-01",
-      endDate: "2024-10-31",
-      employeeCount: 4,
-      description: "Servis motor, ganti oli, dan suku cadang original.",
-      imageUrl: "https://placehold.co/600x400.png",
-      createdAt: new Date().toISOString(),
-      nib: '4567890123456'
-    },
-     {
-      id: "umkm-5",
-      businessName: "Tani Makmur",
-      ownerName: "Siti Partinah",
-      businessType: "Pertanian",
-      address: "Area Sawah Sejahtera",
-      rtRw: "001/002",
-      contact: "08111222333",
-      status: "aktif",
-      legality: "Lengkap",
-      startDate: "2018-02-12",
-      endDate: "2026-02-11",
-      employeeCount: 10,
-      description: "Kelompok tani yang menjual hasil panen sayur dan buah segar.",
-      imageUrl: "https://placehold.co/600x400.png",
-      createdAt: new Date().toISOString(),
-      nib: '5678901234567'
-    },
-     {
-      id: "umkm-6",
-      businessName: "Catering Ibu Fitri",
-      ownerName: "Fitri Handayani",
-      businessType: "Kuliner",
-      address: "Jl. Sejahtera No. 5",
-      rtRw: "001/002",
-      contact: "082233445566",
-      status: "aktif",
-      legality: "Sedang Diproses",
-      startDate: "2023-01-30",
-      endDate: "2026-01-29",
-      employeeCount: 6,
-      description: "Menyediakan nasi kotak dan tumpeng untuk berbagai acara.",
-      imageUrl: "https://placehold.co/600x400.png",
-      createdAt: new Date().toISOString(),
-      nib: '6789012345678'
-    },
-     {
-      id: "umkm-7",
-      businessName: "Laundry Bersih",
-      ownerName: "Gilang Permana",
-      businessType: "Jasa",
-      address: "Jl. Wangi No. 8",
-      rtRw: "002/002",
-      contact: "083344556677",
-      status: "aktif",
-      legality: "Lengkap",
-      startDate: "2022-06-18",
-      endDate: "2025-06-17",
-      employeeCount: 3,
-      description: "Jasa cuci dan setrika pakaian kiloan dan satuan. Cepat dan bersih.",
-      imageUrl: "https://placehold.co/600x400.png",
-      createdAt: new Date().toISOString(),
-      nib: '7890123456789'
+const generateMockUmkmData = (): UMKM[] => {
+  const umkmData: UMKM[] = [];
+  const businessTypes: UMKM['businessType'][] = ["Kuliner", "Fashion", "Kerajinan", "Jasa", "Pertanian"];
+  const statuses: UMKM['status'][] = ["aktif", "tidak aktif"];
+  const legalities: UMKM['legality'][] = ["Lengkap", "Tidak Lengkap", "Sedang Diproses"];
+  
+  const ownerFirstNames = ["Adi", "Budi", "Cici", "Dedi", "Eka", "Fani", "Gita", "Hadi", "Indah", "Joko"];
+  const ownerLastNames = ["Nugroho", "Susanto", "Lestari", "Wijaya", "Permata", "Santoso", "Wati", "Pratama"];
+  
+  const businessKuliner = ["Warung", "Kedai", "Bakso", "Sate", "Nasi Goreng", "Ayam Bakar", "Es Teh", "Jus Buah"];
+  const businessFashion = ["Butik", "Distro", "Jahit", "Pakaian Anak", "Hijab Store", "Sepatu"];
+  const businessKerajinan = ["Rotan", "Kayu Jati", "Batik Tulis", "Gerabah", "Souvenir Unik"];
+  const businessJasa = ["Bengkel", "Laundry", "Pangkas Rambut", "Servis AC", "Fotokopi", "Rental PS"];
+  const businessPertanian = ["Tani Makmur", "Kelompok Tani", "Hidroponik", "Pupuk Organik", "Bibit Unggul"];
+
+  const streetNames = ["Merdeka", "Pahlawan", "Sejahtera", "Damai", "Industri", "Pendidikan", "Sudirman", "Gajah Mada"];
+
+  let umkmId = 1;
+
+  for (let rw = 1; rw <= 26; rw++) {
+    const totalRtInRw = Math.floor(Math.random() * 5) + 3; // 3 to 7 RTs
+    for (let rt = 1; rt <= totalRtInRw; rt++) {
+      const totalUmkmInRt = Math.floor(Math.random() * 3) + 1; // 1 to 3 UMKM
+      for (let i = 0; i < totalUmkmInRt; i++) {
+        
+        const businessType = businessTypes[Math.floor(Math.random() * businessTypes.length)];
+        let businessName = "";
+        switch (businessType) {
+            case "Kuliner": businessName = `${businessKuliner[Math.floor(Math.random() * businessKuliner.length)]} Barokah`; break;
+            case "Fashion": businessName = `${businessFashion[Math.floor(Math.random() * businessFashion.length)]} Collection`; break;
+            case "Kerajinan": businessName = `Griya ${businessKerajinan[Math.floor(Math.random() * businessKerajinan.length)]}`; break;
+            case "Jasa": businessName = `${businessJasa[Math.floor(Math.random() * businessJasa.length)]} Jaya`; break;
+            case "Pertanian": businessName = `Sumber ${businessPertanian[Math.floor(Math.random() * businessPertanian.length)]}`; break;
+        }
+
+        const ownerName = `${ownerFirstNames[Math.floor(Math.random() * ownerFirstNames.length)]} ${ownerLastNames[Math.floor(Math.random() * ownerLastNames.length)]}`;
+        
+        const startYear = 2018 + Math.floor(Math.random() * 6); // 2018-2023
+        const startMonth = Math.floor(Math.random() * 12) + 1;
+        const startDay = Math.floor(Math.random() * 28) + 1;
+        const startDate = new Date(startYear, startMonth - 1, startDay);
+        
+        const umkm: UMKM = {
+          id: `umkm-${umkmId}`,
+          businessName: businessName,
+          ownerName: ownerName,
+          businessType: businessType,
+          address: `Jl. ${streetNames[Math.floor(Math.random() * streetNames.length)]} No. ${umkmId}`,
+          rtRw: `${String(rt).padStart(3, '0')}/${String(rw).padStart(3, '0')}`,
+          contact: `08${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          legality: legalities[Math.floor(Math.random() * legalities.length)],
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: new Date(startDate.getFullYear() + 5, startDate.getMonth(), startDate.getDate()).toISOString().split('T')[0],
+          employeeCount: Math.floor(Math.random() * 10) + 1,
+          description: `Deskripsi singkat untuk ${businessName} yang dimiliki oleh ${ownerName}. Berlokasi di wilayah RT ${rt}/RW ${rw}.`,
+          imageUrl: "https://placehold.co/600x400.png",
+          createdAt: new Date().toISOString(),
+          nib: `${Math.floor(1000000000000 + Math.random() * 9000000000000)}`
+        };
+        
+        umkmData.push(umkm);
+        umkmId++;
+      }
     }
-];
+  }
+  return umkmData;
+}
+
+export const mockUmkm: UMKM[] = generateMockUmkmData();
