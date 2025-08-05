@@ -15,10 +15,10 @@ const SESSION_COOKIE_NAME = "session_id";
 // --- AUTH ACTIONS ---
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
-  // Dummy login logic for demonstration
+  // Simplified dummy login logic for demonstration
   let user: Omit<User, "password_hash"> | undefined;
 
-  if (values.email.includes('admin')) {
+  if (values.email.toLowerCase().includes('admin')) {
     // If email contains 'admin', log in as the main admin.
     user = mockUsers.find(u => u.role === "Admin Desa");
   } else {
@@ -60,6 +60,7 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     
     if (originalUser.role === 'Admin Desa' && simulationUserId) {
       const simulatedUser = mockUsers.find(u => u.id === simulationUserId && u.role === 'Petugas RT/RW');
+      // If simulated user is not found, fallback to original admin user instead of logging out
       if (simulatedUser) {
          return simulatedUser;
       }
