@@ -4,6 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   Users,
   LayoutGrid,
@@ -12,10 +13,6 @@ import {
   PlusCircle,
   Upload,
   ArrowRight,
-  User,
-  LineChart,
-  Store,
-  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +23,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LogoIcon, CilameLogoIcon } from "@/components/icons";
+import { signIn } from "@/server/actions";
+import { useToast } from "@/hooks/use-toast";
 
 
 function AnimatedBarChart() {
@@ -70,6 +69,10 @@ function ThreeDCardAnimation() {
 
 
 export function LandingPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+
   const features = [
     {
       icon: <Users className="h-8 w-8 text-primary" />,
@@ -108,6 +111,25 @@ export function LandingPage() {
         "Hasilkan laporan lengkap mengenai daftar dan statistik UMKM untuk dianalisis.",
     },
   ];
+
+  const handleAdminLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      await signIn({ email: "admin@desa.com", password: "password" }); // Password is not checked in mock
+      toast({
+        title: "Login Berhasil",
+        description: "Mengalihkan ke dasbor admin...",
+      });
+      router.push('/dashboard');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Login Gagal",
+        description: "Akun admin default tidak ditemukan.",
+      });
+      setIsLoggingIn(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -155,8 +177,8 @@ export function LandingPage() {
             <div
               className="mt-8 flex justify-center gap-4"
             >
-              <Button size="lg" asChild>
-                <Link href="/dashboard">Masuk ke Dashboard</Link>
+              <Button size="lg" onClick={handleAdminLogin} disabled={isLoggingIn}>
+                {isLoggingIn ? "Memproses..." : "Masuk ke Dashboard"}
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/features">Pelajari Fitur</Link>
