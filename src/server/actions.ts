@@ -45,18 +45,24 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
     
     if (!originalUser) {
+        // This case should ideally not happen if the session cookie is valid.
+        // It's a safeguard.
+        cookies().delete(SESSION_COOKIE_NAME);
         return null;
     }
     
-    // Role simulation logic
+    // Role simulation logic: only an Admin can simulate a Petugas.
     if (originalUser.role === 'Admin Desa' && simulationUserId) {
       const simulatedUser = mockUsers.find(u => u.id === simulationUserId && u.role === 'Petugas RT/RW');
+      // If a valid Petugas user is found for simulation, return them.
       if (simulatedUser) {
          return simulatedUser;
       }
+      // If the simulation user ID is invalid or not a Petugas, we fall through
+      // and return the original Admin user, preventing a logout.
     }
 
-    // If no simulation is active return their original, unmodified user data.
+    // If no simulation is active or if simulation is invalid, return the original user.
     return originalUser;
 }
 
