@@ -115,12 +115,13 @@ export function LandingPage() {
   const handleAdminLogin = async () => {
     setIsLoggingIn(true);
     try {
-      await signIn({ email: "admin@desa.com", password: "password" }); // Password is not checked in mock
+      await signIn({ email: "admin@desa.com", password: "password" });
       toast({
         title: "Login Berhasil",
         description: "Mengalihkan ke dasbor admin...",
       });
-      router.push('/dashboard');
+      // Use window.location.assign for a full page refresh which helps middleware detect the new cookie
+      window.location.assign('/dashboard');
     } catch (error) {
       toast({
         variant: "destructive",
