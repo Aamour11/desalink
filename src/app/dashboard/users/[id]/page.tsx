@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, AtSign, MapPin, User as UserIcon, Briefcase, LayoutGrid } from "lucide-react";
+import { ArrowLeft, AtSign, MapPin, User as UserIcon, Briefcase } from "lucide-react";
 import { UmkmTable } from "@/components/dashboard/umkm-table";
 
 export default async function UserProfilePage({ params }: { params: { id: string } }) {
@@ -28,8 +28,6 @@ export default async function UserProfilePage({ params }: { params: { id: string
   // Only Admin can see the list of managed UMKM on a profile page
   const umkmManagedByUser = user.role === "Petugas RT/RW" ? await getUmkmManagedByUser(user.rtRw) : [];
   
-  const canSimulate = currentUser.role === 'Admin Desa' && user.role === 'Petugas RT/RW';
-
   return (
     <div className="space-y-8">
        <div className="flex items-center gap-4">
@@ -78,17 +76,6 @@ export default async function UserProfilePage({ params }: { params: { id: string
                         <span>Wilayah: {user.rtRw}</span>
                     </div>
                 )}
-                 {canSimulate && (
-                    <div className="pt-4 border-t">
-                        <Button asChild className="w-full">
-                           <Link href={`/dashboard?sim_user=${user.id}`}>
-                                <LayoutGrid className="mr-2 h-4 w-4" />
-                                Lihat Dasbor Petugas
-                           </Link>
-                        </Button>
-                        <p className="text-xs text-center mt-2 text-muted-foreground">Simulasikan tampilan sebagai {user.name}.</p>
-                    </div>
-                 )}
             </CardContent>
           </Card>
         </div>

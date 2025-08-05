@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Eye, LayoutGrid } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -67,6 +67,10 @@ export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_h
       });
     }
   };
+
+  const canSimulate = (targetUser: Omit<User, 'password_hash'>) => {
+      return currentUser?.role === 'Admin Desa' && targetUser.role === 'Petugas RT/RW';
+  }
 
 
   return (
@@ -134,6 +138,14 @@ export function UsersTable({ data, currentUser }: { data: Omit<User, 'password_h
                              <Pencil className="mr-2 h-4 w-4" /> Edit
                            </Link>
                         </DropdownMenuItem>
+                        {canSimulate(user) && (
+                            <DropdownMenuItem asChild>
+                                <Link href={`/dashboard?sim_user=${user.id}`}>
+                                    <LayoutGrid className="mr-2 h-4 w-4" />
+                                    Lihat Dasbor Petugas
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <AlertDialogTrigger asChild>
                          <DropdownMenuItem 
