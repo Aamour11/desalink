@@ -1,5 +1,5 @@
 
-import { getUserById, getUmkmManagedByUser } from "@/server/actions";
+import { getUserById, getUmkmManagedByUser, getCurrentUser } from "@/server/actions";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,19 +12,23 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, AtSign, MapPin, User as UserIcon, Briefcase } from "lucide-react";
+import { ArrowLeft, AtSign, MapPin, User as UserIcon, Briefcase, LayoutGrid } from "lucide-react";
 import { UmkmTable } from "@/components/dashboard/umkm-table";
-import type { UMKM } from "@/lib/types";
 
 export default async function UserProfilePage({ params }: { params: { id: string } }) {
-  const user = await getUserById(params.id);
+  const [user, currentUser] = await Promise.all([
+      getUserById(params.id),
+      getCurrentUser()
+  ]);
 
-  if (!user) {
+  if (!user || !currentUser) {
     notFound();
   }
 
   // Only Admin can see the list of managed UMKM on a profile page
   const umkmManagedByUser = user.role === "Petugas RT/RW" ? await getUmkmManagedByUser(user.rtRw) : [];
+  
+  const canSimulate = currentUser.role === 'Admin Desa' && user.role === 'Petugas RT/RW';
 
   return (
     <div className="space-y-8">
@@ -74,6 +78,17 @@ export default async function UserProfilePage({ params }: { params: { id: string
                         <span>Wilayah: {user.rtRw}</span>
                     </div>
                 )}
+                 {canSimulate && (
+                    <div className="pt-4 border-t">
+                        <Button asChild className="w-full">
+                           <Link href={`/dashboard?sim_user=${user.id}`}>
+                                <LayoutGrid className="mr-2 h-4 w-4" />
+                                Lihat Dasbor Petugas
+                           </Link>
+                        </Button>
+                        <p className="text-xs text-center mt-2 text-muted-foreground">Simulasikan tampilan sebagai {user.name}.</p>
+                    </div>
+                 )}
             </CardContent>
           </Card>
         </div>
@@ -91,7 +106,7 @@ export default async function UserProfilePage({ params }: { params: { id: string
                 <CardContent>
                     {user.role === "Petugas RT/RW" ? (
                        umkmManagedByUser.length > 0 ? (
-                         <UmkmTable data={umkmManagedByUser} />
+                         <UmkmTable data={umkmManagedByUser} currentUser={user} />
                        ): (
                          <p className="text-center text-muted-foreground py-8">
                             Belum ada data UMKM untuk wilayah ini.

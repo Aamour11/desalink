@@ -11,7 +11,6 @@ import type { UMKM, User, Announcement, Management } from "@/lib/types";
 import { mockAnnouncements, mockManagement, mockUmkm, mockUsers } from "@/lib/data";
 
 const SESSION_COOKIE_NAME = "session_id";
-const ROLE_COOKIE_NAME = "activeRole";
 
 // --- AUTH ACTIONS ---
 
@@ -29,23 +28,15 @@ export async function signIn(values: z.infer<typeof loginSchema>) {
       maxAge: 60 * 60 * 24 * 7, // One week
       path: '/',
     });
-  
-  // Set the default role to switch to. Admin defaults to admin, Petugas defaults to petugas.
-  const defaultRole = user.role === 'Admin Desa' ? 'admin' : 'petugas';
-  cookies().set(ROLE_COOKIE_NAME, defaultRole, {
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-      path: '/',
-  });
 }
 
 export async function signOut() {
   cookies().delete(SESSION_COOKIE_NAME);
-  cookies().delete(ROLE_COOKIE_NAME);
 }
 
 export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | null> {
     const sessionUserId = cookies().get(SESSION_COOKIE_NAME)?.value;
-    const activeRole = headers().get('x-active-role') || cookies().get(ROLE_COOKIE_NAME)?.value;
+    const simulationUserId = headers().get('x-simulation-user-id');
 
     const mockAdmin = mockUsers.find(u => u.role === 'Admin Desa');
 
@@ -55,29 +46,23 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     }
 
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
-
+    
     if (!originalUser) {
         // If the session cookie is invalid, also default to a generic Admin view.
         return mockAdmin || null;
     }
     
-    // This is the core logic for role simulation.
-    // Check if the *original* user is an Admin and if they want to *simulate* a Petugas.
-    if (originalUser.role === 'Admin Desa' && activeRole === 'petugas') {
-      // Find a mock petugas to impersonate. Using the first one for consistency.
-      const mockPetugas = mockUsers.find(u => u.role === 'Petugas RT/RW');
-      if (mockPetugas) {
-         // Return the full mock Petugas profile, but importantly,
-         // keep the original Admin's ID so the session remains valid.
-         return {
-            ...mockPetugas, 
-            id: originalUser.id, 
-        };
+    // Role simulation logic
+    if (originalUser.role === 'Admin Desa' && simulationUserId) {
+      const simulatedUser = mockUsers.find(u => u.id === simulationUserId && u.role === 'Petugas RT/RW');
+      if (simulatedUser) {
+          // Return the simulated user profile, but crucially, keep the original Admin's ID for auth
+          // and add the original role to distinguish them.
+         return { ...simulatedUser, id: originalUser.id, originalRole: originalUser.role };
       }
     }
 
-    // If no simulation is active (e.g., an Admin viewing as an Admin, or a Petugas viewing as themselves),
-    // return their original, unmodified user data.
+    // If no simulation is active return their original, unmodified user data.
     return originalUser;
 }
 

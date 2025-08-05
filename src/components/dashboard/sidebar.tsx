@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Sidebar,
   SidebarHeader,
@@ -22,11 +22,12 @@ import {
   Shield,
   Contact,
   Network,
-  Replace,
+  UserX,
 } from "lucide-react";
 import { LogoIcon } from "@/components/icons";
 import { signOut } from "@/server/actions";
 import React, { useEffect, useState } from "react";
+import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutGrid, label: "Dashboard" },
@@ -48,55 +49,34 @@ const bottomNavItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { setOpenMobile, user } = useSidebar();
-  const [activeRole, setActiveRole] = useState("admin");
   const [isClient, setIsClient] = useState(false);
 
+  const isSimulating = searchParams.has('sim_user');
+
   useEffect(() => {
-    // This effect runs only on the client-side
     setIsClient(true);
-    const storedRole = localStorage.getItem("activeRole");
-    if (storedRole) {
-      setActiveRole(storedRole);
-    } else if (user) {
-      // If no role is stored, set the default based on the user's actual role
-      const initialRole = user.role === 'Admin Desa' ? 'admin' : 'petugas';
-      setActiveRole(initialRole);
-      localStorage.setItem("activeRole", initialRole);
-    }
-  }, [user]);
+  }, []);
   
   const handleNavigate = (href: string) => {
-    router.push(href);
+    // Preserve simulation query param when navigating
+    const url = isSimulating ? `${href}?${searchParams.toString()}` : href;
+    router.push(url);
     setOpenMobile(false); 
   };
 
   const handleLogout = async () => {
-    // Clear role preference on logout
-    localStorage.removeItem("activeRole");
-    document.cookie = 'activeRole=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     await signOut();
     router.push("/login");
   };
   
-  const handleRoleSwitch = () => {
-    const newRole = activeRole === 'admin' ? 'petugas' : 'admin';
-    localStorage.setItem("activeRole", newRole);
-    document.cookie = `activeRole=${newRole}; path=/; max-age=31536000`; // Expires in 1 year
-    
-    // Force a full page reload to ensure the server re-renders with the new role context
-    if (newRole === 'petugas') {
-      window.location.href = '/dashboard/umkm';
-    } else {
-      window.location.href = '/dashboard';
-    }
-  };
+  const handleStopSimulation = () => {
+    window.location.href = '/dashboard';
+  }
 
-  const isDisplayingAsAdmin = activeRole === 'admin';
-  const isOriginalUserAdmin = user?.role === "Admin Desa";
-
-  if (!isClient) {
+  if (!isClient || !user) {
       return (
         <Sidebar>
             <SidebarHeader>
@@ -109,6 +89,8 @@ export function DashboardSidebar() {
         </Sidebar>
       );
   }
+
+  const isUserAdmin = user.role === 'Admin Desa';
 
   return (
     <Sidebar>
@@ -123,9 +105,20 @@ export function DashboardSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
+        {isSimulating && isUserAdmin && (
+            <div className="p-3 group-data-[state=expanded]:block hidden">
+                <div className="bg-yellow-400/20 border border-yellow-400/50 text-yellow-300 p-3 rounded-lg text-sm text-center">
+                    <h4 className="font-bold mb-1">Mode Simulasi</h4>
+                    <p>Anda melihat sebagai Petugas. Beberapa menu disembunyikan.</p>
+                    <Button variant="ghost" size="sm" className="mt-2 h-auto py-1 px-2 text-yellow-300 hover:bg-yellow-400/30" onClick={handleStopSimulation}>
+                        <UserX className="mr-2 h-4 w-4" /> Kembali ke Admin
+                    </Button>
+                </div>
+            </div>
+        )}
         <SidebarMenu>
           {navItems.map((item) => {
-            if (item.adminOnly && !isDisplayingAsAdmin) {
+            if (item.adminOnly && (isSimulating || !isUserAdmin)) {
               return null;
             }
             return (
@@ -146,19 +139,6 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <div className="w-full border-t border-sidebar-border/50 my-2 group-data-[state=expanded]:w-full group-data-[state=collapsed]:w-2/3 mx-auto" />
         <SidebarMenu>
-           {isOriginalUserAdmin && (
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                    variant="ghost"
-                    tooltip={{ children: isDisplayingAsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin" }}
-                    icon={<Replace />}
-                    onClick={handleRoleSwitch}
-                >
-                  {isDisplayingAsAdmin ? "Beralih ke Petugas" : "Beralih ke Admin"}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-           )}
-
           {bottomNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
