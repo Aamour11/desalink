@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -29,35 +30,42 @@ type ChartData = {
 }[];
 
 export function UmkmPerRtRwChart({ data }: { data: ChartData }) {
+  // Increase height based on data length for better readability
+  const chartHeight = Math.max(300, data.length * 35);
+
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="font-headline">UMKM per RT/RW</CardTitle>
+        <CardTitle className="font-headline">UMKM per Wilayah</CardTitle>
         <CardDescription>
           Jumlah Usaha Mikro, Kecil, dan Menengah di setiap wilayah RT/RW
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <ChartContainer config={chartConfig} className="w-full" style={{ height: `${chartHeight}px` }}>
           <BarChart
             accessibilityLayer
             data={data}
-            margin={{ top: 20, right: 20, bottom: 20, left: 0 }}
+            layout="vertical"
+            margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
           >
-            <CartesianGrid vertical={false} />
-            <XAxis
+            <CartesianGrid horizontal={false} />
+            <YAxis
               dataKey="name"
+              type="category"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
               tickFormatter={(value) => `RT/RW ${value}`}
+              className="text-xs"
             />
-            <YAxis />
+            <XAxis dataKey="value" type="number" hide />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="dashed" />}
             />
-            <Bar dataKey="value" fill="var(--color-value)" radius={8} />
+            <Bar dataKey="value" layout="vertical" fill="var(--color-value)" radius={4}>
+            </Bar>
           </BarChart>
         </ChartContainer>
       </CardContent>
