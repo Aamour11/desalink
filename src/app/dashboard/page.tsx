@@ -34,12 +34,6 @@ export default async function DashboardPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const umkmPerRtRw = umkmData.reduce((acc, umkm) => {
-    const key = umkm.rtRw;
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  
   const umkmPerYear = umkmData
     .filter(u => u.startDate)
     .reduce((acc, umkm) => {
@@ -60,10 +54,6 @@ export default async function DashboardPage() {
     value,
   }));
 
-  const chartDataPerRtRw = Object.entries(umkmPerRtRw).map(
-    ([name, value]) => ({ name, value })
-  );
-  
   const chartDataPerYear = Object.entries(umkmPerYear).map(([name, value]) => ({
     name,
     value,
@@ -108,7 +98,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-         <UmkmPerRtRwChart data={chartDataPerRtRw} />
+         <UmkmPerRtRwChart allData={umkmData} />
          <UmkmPerTypeChart data={chartDataPerType} />
       </div>
 

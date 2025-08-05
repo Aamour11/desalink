@@ -50,11 +50,13 @@ export function UmkmPerTypeChart({ data: rawData }: { data: {name: string, value
         return rawData.reduce((acc, item) => acc + item.value, 0);
     }, [rawData]);
 
+    // Ensure chartData always includes a 'fill' property from the config
     const chartData = React.useMemo(() => {
+        // Use a broader type assertion for chartConfig to allow string indexing
         const typeColors = chartConfig as Record<string, { color?: string }>;
         return rawData.map((item) => ({
             ...item,
-            fill: typeColors[item.name]?.color || "hsl(var(--chart-5))"
+            fill: typeColors[item.name]?.color || "hsl(var(--muted-foreground))" // Fallback color
         }));
     }, [rawData]);
 
@@ -83,8 +85,8 @@ export function UmkmPerTypeChart({ data: rawData }: { data: {name: string, value
               innerRadius={60}
               strokeWidth={5}
             >
-              {chartData.map((entry) => (
-                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>
           </PieChart>
