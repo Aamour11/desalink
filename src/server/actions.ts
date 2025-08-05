@@ -15,10 +15,19 @@ const SESSION_COOKIE_NAME = "session_id";
 // --- AUTH ACTIONS ---
 
 export async function signIn(values: z.infer<typeof loginSchema>) {
-  // In a real app, you'd also check the password here.
-  const user = mockUsers.find(u => u.email === values.email);
+  // Dummy login logic for demonstration
+  let user: Omit<User, "password_hash"> | undefined;
+
+  if (values.email.includes('admin')) {
+    // If email contains 'admin', log in as the main admin.
+    user = mockUsers.find(u => u.role === "Admin Desa");
+  } else {
+    // Otherwise, log in as the first available officer.
+    user = mockUsers.find(u => u.role === "Petugas RT/RW");
+  }
+  
   if (!user) {
-    throw new Error("Kombinasi email dan kata sandi salah.");
+    throw new Error("Akun dummy tidak ditemukan. Pastikan ada data Admin dan Petugas di sistem.");
   }
 
   // Set session cookie
@@ -45,24 +54,17 @@ export async function getCurrentUser(): Promise<Omit<User, 'password_hash'> | nu
     const originalUser = mockUsers.find(u => u.id === sessionUserId);
     
     if (!originalUser) {
-        // This case should ideally not happen if the session cookie is valid.
-        // It's a safeguard.
         cookies().delete(SESSION_COOKIE_NAME);
         return null;
     }
     
-    // Role simulation logic: only an Admin can simulate a Petugas.
     if (originalUser.role === 'Admin Desa' && simulationUserId) {
       const simulatedUser = mockUsers.find(u => u.id === simulationUserId && u.role === 'Petugas RT/RW');
-      // If a valid Petugas user is found for simulation, return them.
       if (simulatedUser) {
          return simulatedUser;
       }
-      // If the simulation user ID is invalid or not a Petugas, we fall through
-      // and return the original Admin user, preventing a logout.
     }
 
-    // If no simulation is active or if simulation is invalid, return the original user.
     return originalUser;
 }
 
@@ -157,13 +159,10 @@ export async function getUmkmData(forceAll = false): Promise<UMKM[]> {
   
   if (!user) return [];
 
-  // If role is Petugas (either real or simulated), filter data by their rtRw.
-  // The `forceAll` flag is used by pages like Structure to override this filtering for Admin.
   if (user.role === 'Petugas RT/RW' && !forceAll) {
     return mockUmkm.filter(umkm => umkm.rtRw === user.rtRw);
   }
 
-  // Admin sees all data.
   return mockUmkm;
 }
 
